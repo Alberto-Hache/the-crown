@@ -19,8 +19,8 @@ def calculate_coord1to3(n_rows):
     return coord1to3
 
 
-def calculate_prince_moves():
-    prince_moves = [
+def calculate_simple_moves():
+    simple_moves = [
         # row 1 (bottom)
         [1],  # 0
         [13, 0, 2],
@@ -78,7 +78,7 @@ def calculate_prince_moves():
         # row 1
         [46]  # 48; this move kept for Soldiers' use.
     ]
-    return prince_moves
+    return simple_moves
 
 
 if __name__ == "__main__":

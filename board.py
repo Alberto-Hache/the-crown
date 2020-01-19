@@ -12,13 +12,14 @@ KNIGHT = "Knight"
 
 # Load precalculated tables:
 coord1to3 = utils.calculate_coord1to3(N_ROWS)
-prince_moves = utils.calculate_prince_moves()
+simple_moves = utils.calculate_simple_moves()
 
 piece_char = {
     PRINCE: ("P", "p"),
     SOLDIER: ("S", "s"),
     KNIGHT: ("K", "k")
 }
+color_name = ["White", "Black"]
 
 
 class Board:
@@ -48,6 +49,9 @@ class Board:
         x1, x2, y = coord1to3[coord]
         self.board3d[x1][x2][y] = piece
 
+    def make_move(self, move):
+        pass
+
     def print_char(self, draw_coords=False):
         left_indent = 0 if not draw_coords else 1
         current_pos = self.n_positions - 1
@@ -76,6 +80,7 @@ class Board:
                 print(" "*n_indent + "/" + "---·"*(n_pos_in_row//2) + "---\\")
             current_pos -= n_pos_in_row
             n_pos_in_row += 2
+        print(color_name[self.turn] + " to move.")
 
     def print_1d(self):
         print("[")
