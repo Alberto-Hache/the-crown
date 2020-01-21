@@ -6,9 +6,9 @@ N_ROWS = 7
 WHITE = 0
 BLACK = 1
 EMPTY = " "
-PRINCE = "Prince"
-SOLDIER = "Soldier"
-KNIGHT = "Knight"
+PRINCE = 0
+SOLDIER = 1
+KNIGHT = 2
 
 # Load precalculated tables:
 coord1to3 = utils.calculate_coord1to3(N_ROWS)
@@ -19,7 +19,8 @@ piece_char = {
     SOLDIER: ("S", "s"),
     KNIGHT: ("K", "k")
 }
-color_name = ["White", "Black"]
+piece_name = ("Prince", "Knight", "Soldier")
+color_name = ("White", "Black")
 
 
 class Board:
@@ -29,8 +30,8 @@ class Board:
         self.crown_position = N_ROWS ** 2 - 1
         self.prince_position = [N_ROWS * 2 - 2, 0]
 
-        self.pieces = [[], []]  # Pieces on the board from each side, 0=WHITE, 1=BLACK.
-        self.pieces_removed = [[], []]  # Pieces removed during game.
+        self.pieces = [[], []]  # Pieces on the board from 0=WHITE, 1=BLACK.
+        self.piece_count = np.zeros((2, 3))  # 2 sides x 3 piece types.
 
         self.board1d = np.full((self.n_positions), None)
         self.board3d = np.full((N_ROWS, N_ROWS, N_ROWS), None)
@@ -39,6 +40,7 @@ class Board:
         self.include_piece(PRINCE, BLACK, 0)
         self.include_piece(PRINCE, WHITE, N_ROWS * 2 - 2)
         self.turn = WHITE
+        self.computer_side = WHITE
 
     def include_piece(self, type, color, coord):
         # Create the piece.
@@ -48,9 +50,35 @@ class Board:
         self.board1d[coord] = piece
         x1, x2, y = coord1to3[coord]
         self.board3d[x1][x2][y] = piece
+        # Update piece counts.
+        self.piece_count[color][type] += 1
+
+    def remove_piece(self, coord):
+        # Identify the piece.
+        piece = self.board1d[coord]
+        # Update board references.
+        self.pieces[color].remove(piece)
+        self.board1d[coord] = None
+        x1, x2, y = coord1to3[coord]
+        self.board3d[x1][x2][y] = None
+        # Update piece counts.
+        self.piece_count[color][piece.type] -= 1
 
     def make_move(self, move):
-        pass
+        coord1, coord2 = move
+        # Identify the piece(s).
+        piece1 = self.board1d[coord1]
+        piece2 = self.board1d[coord2]
+        # Piece2 captured?
+        if piece2 is not None:
+            self.remove_piece(coord2)
+        # Move piece1
+        self.board1d[coord1] = None
+        x1, x2, y = coord1to3[coord1]
+        self.board3d[x1][x2][y] = None
+        self.board1d[coord2] = piece1
+        x1, x2, y = coord1to3[coord2]
+        self.board3d[x1][x2][y] = piece1
 
     def print_char(self, draw_coords=False):
         left_indent = 0 if not draw_coords else 1
@@ -63,7 +91,8 @@ class Board:
             black_pos = True  # Start in black position.
             print(" "*n_indent + "/", end='')  # Initial blanks.
             # Draw row with pieces.
-            for pos in range(current_pos - n_pos_in_row + 1, current_pos + 1, +1):
+            for pos in range(current_pos - n_pos_in_row + 1,
+                             current_pos + 1, +1):
                 piece = self.board1d[pos]
                 edge = "\\" if black_pos else "/"
                 if piece is None:
@@ -93,10 +122,10 @@ class Board:
 
 
 class Piece:
-    def __init__(self, type, color, coords):
+    def __init__(self, type, color, coord):
         self.type = type
         self.color = color
-        self.coords = coords
+        self.coord = coord
 
     def print(self):
         print(self.type)
