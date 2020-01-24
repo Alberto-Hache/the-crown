@@ -76,7 +76,7 @@ def calculate_simple_moves():
         [48, 45, 47],  # 46
         [46, 43],  # 47
         # row 1
-        [46]  # 48; this move kept for Soldiers' use.
+        [46]  # 48; for Soldiers' use only.
     ]
     return simple_moves
 
