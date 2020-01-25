@@ -1,5 +1,6 @@
 import numpy as np
 import utils
+import types
 
 N_ROWS = 7
 
@@ -44,7 +45,7 @@ class Board:
 
     def include_piece(self, type, color, coord):
         # Create the piece.
-        piece = Piece(type, color, coord)
+        piece=types.SimpleNamespace(type = type, color = color, coord = coord)
         # Update board references.
         self.pieces[color].append(piece)
         self.board1d[coord] = piece
@@ -57,12 +58,12 @@ class Board:
         # Identify the piece.
         piece = self.board1d[coord]
         # Update board references.
-        self.pieces[color].remove(piece)
+        self.pieces[piece.color].remove(piece)
         self.board1d[coord] = None
         x1, x2, y = coord1to3[coord]
         self.board3d[x1][x2][y] = None
         # Update piece counts.
-        self.piece_count[color][piece.type] -= 1
+        self.piece_count[piece.color][piece.type] -= 1
 
     def make_move(self, move):
         coord1, coord2 = move
@@ -80,16 +81,19 @@ class Board:
         x1, x2, y = coord1to3[coord2]
         self.board3d[x1][x2][y] = piece1
 
-    def print_char(self, draw_coords=False):
-        left_indent = 0 if not draw_coords else 1
+    def print_char(self):
         current_pos = self.n_positions - 1
         n_pos_in_row = 1
-        n_indent = left_indent + 2*self.n_rows
-        print(" "*n_indent + "·")
+        n_indent = 2*self.n_rows + 2
+        # Draw the top.
+        line = ".".rjust(n_indent)
+        print(line)
+        # Draw the rows.
         for row in range(self.n_rows, 0, -1):  # rows from 7 to 1.
             n_indent -= 1
             black_pos = True  # Start in black position.
-            print(" "*n_indent + "/", end='')  # Initial blanks.
+            line = ("{} /".format(row*2 - 1)).rjust(n_indent)
+            print(line, end='')
             # Draw row with pieces.
             for pos in range(current_pos - n_pos_in_row + 1,
                              current_pos + 1, +1):
@@ -103,10 +107,16 @@ class Board:
             print(" ")
             # Draw row with horizontal edge.
             n_indent -= 1
-            if row == 1:  # Top bottom edge.
-                print("·" + "---·"*(n_pos_in_row//2) + "---·")
+            if row == 1:  # Bottom edge.
+                print(" ·" + "---·"*(n_pos_in_row//2) + "---·")
+                char_ord = ord('a')
+                print("  ", end='')
+                for i in range(self.n_rows):
+                    print("{} / ".format(chr(char_ord + i)), end = '')
+                print("")
             else:  # Regular edge.
-                print(" "*n_indent + "/" + "---·"*(n_pos_in_row//2) + "---\\")
+                line = "/".rjust(n_indent) + "---."*(n_pos_in_row//2) + "---\\"
+                print(line)
             current_pos -= n_pos_in_row
             n_pos_in_row += 2
         print(color_name[self.turn] + " to move.")
@@ -119,13 +129,3 @@ class Board:
             else:
                 print(piece_char[piece.type][piece.color], end='')
         print("]")
-
-
-class Piece:
-    def __init__(self, type, color, coord):
-        self.type = type
-        self.color = color
-        self.coord = coord
-
-    def print(self):
-        print(self.type)
