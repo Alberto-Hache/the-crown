@@ -80,7 +80,7 @@ def calculate_simple_moves():
     )
     return simple_moves
 
-def calculate_knight_moves(n_rows):
+def calculate_knight_moves():
     knight_moves = (
         # row 1 (bottom)
         # From 0:
@@ -452,6 +452,14 @@ def calculate_knight_moves(n_rows):
         )
     )
     return knight_moves
+
+def calculate_kingdoms(n):
+    kingdoms = np.zeros((2, n), dtype=bool)
+    white_k = [8, 9, 10, 11, 12, 21, 22, 23, 32]
+    black_k = [0, 1, 2, 3, 4, 13, 14, 15, 24]
+    kingdoms[0][white_k] = True
+    kingdoms[1][black_k] = True
+    return kingdoms
 
 
 if __name__ == "__main__":
