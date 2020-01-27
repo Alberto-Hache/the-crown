@@ -22,7 +22,7 @@ def play(board):
     alpha_beta_window = [-float("inf"), float("inf")]
     while not search_end:
         move, result, game_end, end_status = mini_max(
-            board, depth=0, side=board.turn, alpha_beta_window)
+            board, depth=0, side=board.turn, alpha_beta_window = alpha_beta_window)
         search_end = True  # No iterated search for now.
     return move, result, game_end, end_status
 
@@ -33,14 +33,50 @@ def mini_max(board, depth, side, alpha_beta_window):
         # A leave node: Evaluate board.
     # else, Keep exploring:
         # Calculate pseudo_moves (not checked as legal).
+        # n_moves_tried = 0
         # while len(moves) > 0:
             # m = pick_move()
             # new_board, legal = make_move(board, m)
             # if legal:
-                # 
+                # n_moves_tried +=1
 
     
     return move, result, game_end, end_status
+
+
+def position_attacked(board, pos, attacking_side):
+    attacked = False
+
+    # ALGORITHM I: (Problem: uses two check-ups)
+    #
+    # Check for adjacent pieces (from attacking_side)
+    # attacked = some piece found from attacking_side
+    # if not attacked:
+    #   Loop over each of the 6 directions till attacked == True
+    #       Get the closest piece in that direction and its distance
+    #       if it's from the attacking_side:
+    #           if it's a Knight:
+    #               attacked = True
+    #           elif it's a Soldier:
+    #               attacked = (distance == 1) or 
+    #                           (distance == 2 and Soldier in its kingdom)
+    #           else: (the Prince)
+    #               attacked = (distance == 1)
+
+    # ALGORITHM II: (Problem: directions overlap in 3 first postions)
+    #
+    # Loop over each of the 6 directions till attacked == True
+    #   Get the closest piece in that direction and its distance
+    #   If it's from the attacking_side:
+    #       If it's a Knight:
+    #           attacked = True
+    #       elif it's a Soldier:
+    #           attacked = (distance == 1) or
+    #                       (distance == 2 and Soldier in its kingdom)
+    #       else: (the Prince)
+    #           attacked = (distance == 1)
+
+    return attacked
 
 
 def evaluate(board):
