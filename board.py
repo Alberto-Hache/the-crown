@@ -3,6 +3,7 @@ import utils
 import types
 
 N_ROWS = 7
+N_POSITIONS = N_ROWS ** 2
 
 WHITE = 0
 BLACK = 1
@@ -15,6 +16,7 @@ KNIGHT = 2
 coord1to3 = utils.calculate_coord1to3(N_ROWS)
 simple_moves = utils.calculate_simple_moves()
 knight_moves = utils.calculate_knight_moves()
+kingdoms = utils.calculate_kingdoms(N_POSITIONS)
 
 piece_char = {
     PRINCE: ("P", "p"),

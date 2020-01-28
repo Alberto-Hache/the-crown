@@ -1,3 +1,4 @@
+import numpy as np
 import board as bd
 
 # AI search hyperparameters
@@ -45,36 +46,26 @@ def mini_max(board, depth, side, alpha_beta_window):
 
 
 def position_attacked(board, pos, attacking_side):
+
     attacked = False
-
-    # ALGORITHM I: (Problem: uses two check-ups)
-    #
-    # Check for adjacent pieces (from attacking_side)
-    # attacked = some piece found from attacking_side
-    # if not attacked:
-    #   Loop over each of the 6 directions till attacked == True
-    #       Get the closest piece in that direction and its distance
-    #       if it's from the attacking_side:
-    #           if it's a Knight:
-    #               attacked = True
-    #           elif it's a Soldier:
-    #               attacked = (distance == 1) or 
-    #                           (distance == 2 and Soldier in its kingdom)
-    #           else: (the Prince)
-    #               attacked = (distance == 1)
-
-    # ALGORITHM II: (Problem: directions overlap in 3 first postions)
-    #
     # Loop over each of the 6 directions till attacked == True
-    #   Get the closest piece in that direction and its distance
-    #   If it's from the attacking_side:
-    #       If it's a Knight:
-    #           attacked = True
-    #       elif it's a Soldier:
-    #           attacked = (distance == 1) or
-    #                       (distance == 2 and Soldier in its kingdom)
-    #       else: (the Prince)
-    #           attacked = (distance == 1)
+    for positions in bd.knight_moves[pos]:  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] for pos = 0
+        # Get the closest piece in that direction and its distance.
+        pieces = board.board1d[positions]  # [None, None, piece_1, None, ...]
+        pos_in_direction = np.where(pieces)[0][0]  # 2 or ERROR! (check for no pieces found)
+        closest_piece = pieces[pos_in_direction]  # piece_1
+
+        if closest_piece.color == attacking_side:  # If it's from the attacking_side; keep checking.
+            if closest_piece.type == bd.KNIGHT:  # If it's a Knight; attacked = True.
+                attacked = True
+            elif closest_piece.type == bd.SOLDIER:  # If it's a Soldier; check proximity and position in its kingdom.
+                attacked = (pos_in_direction == 0) or \
+                           (pos_in_direction == 1 and \
+                            bd.kingdoms[attacking_side][positions[pos_in_direction]])
+            else:  # If it's a Prince; check if it's adjacent.
+                attacked = (pos_in_direction == 0)
+        if attacked:
+            break
 
     return attacked
 
