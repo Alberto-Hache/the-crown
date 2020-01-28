@@ -14,6 +14,7 @@ KNIGHT = 2
 # Load precalculated tables:
 coord1to3 = utils.calculate_coord1to3(N_ROWS)
 simple_moves = utils.calculate_simple_moves()
+knight_moves = utils.calculate_knight_moves()
 
 piece_char = {
     PRINCE: ("P", "p"),
