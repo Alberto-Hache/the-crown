@@ -30,7 +30,7 @@ def play(board):
 
 def mini_max(board, depth, side, alpha_beta_window):
     move, result, game_end, end_status = (None, None), None, True, ON_GOING
-    # If depth >= MAX_DEPTH.
+    # If depth == MAX_DEPTH.
         # A leave node: Evaluate board.
     # else, Keep exploring:
         # Calculate pseudo_moves (not checked as legal).
@@ -48,11 +48,14 @@ def mini_max(board, depth, side, alpha_beta_window):
 def position_attacked(board, pos, attacking_side):
 
     attacked = False
-    # Loop over each of the 6 directions till attacked == True
+    # Loop over each of the up to 6 directions till attacked == True
     for positions in bd.knight_moves[pos]:  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] for pos = 0
         # Get the closest piece in that direction and its distance.
         pieces = board.board1d[positions]  # [None, None, piece_1, None, ...]
-        pos_in_direction = np.where(pieces)[0][0]  # 2 or ERROR! (check for no pieces found)
+        try:
+            pos_in_direction = np.where(pieces)[0][0]  # 2
+        except IndexError:
+            break  # No pieces found in that direction.
         closest_piece = pieces[pos_in_direction]  # piece_1
 
         if closest_piece.color == attacking_side:  # If it's from the attacking_side; keep checking.
@@ -65,7 +68,7 @@ def position_attacked(board, pos, attacking_side):
             else:  # If it's a Prince; check if it's adjacent.
                 attacked = (pos_in_direction == 0)
         if attacked:
-            break
+            break  # No need to check the other directions.
 
     return attacked
 
