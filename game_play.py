@@ -54,21 +54,21 @@ def position_attacked(board, pos, attacking_side):
         pieces = board.board1d[positions]  # [None, None, piece_1, None, ...]
         try:
             pos_in_direction = np.where(pieces)[0][0]  # 2
-        except IndexError:
-            break  # No pieces found in that direction.
-        closest_piece = pieces[pos_in_direction]  # piece_1
+            closest_piece = pieces[pos_in_direction]  # piece_1
 
-        if closest_piece.color == attacking_side:  # If it's from the attacking_side; keep checking.
-            if closest_piece.type == bd.KNIGHT:  # If it's a Knight; attacked = True.
-                attacked = True
-            elif closest_piece.type == bd.SOLDIER:  # If it's a Soldier; check proximity and position in its kingdom.
-                attacked = (pos_in_direction == 0) or \
-                           (pos_in_direction == 1 and \
-                            bd.kingdoms[attacking_side][positions[pos_in_direction]])
-            else:  # If it's a Prince; check if it's adjacent.
-                attacked = (pos_in_direction == 0)
-        if attacked:
-            break  # No need to check the other directions.
+            if closest_piece.color == attacking_side:  # If it's from the attacking_side; keep checking.
+                if closest_piece.type == bd.KNIGHT:  # If it's a Knight; attacked = True.
+                    attacked = True
+                elif closest_piece.type == bd.SOLDIER:  # If it's a Soldier; check proximity and position in its kingdom.
+                    attacked = (pos_in_direction == 0) or \
+                            (pos_in_direction == 1 and \
+                                bd.kingdoms[attacking_side][positions[pos_in_direction]])
+                else:  # If it's a Prince; check if it's adjacent.
+                    attacked = (pos_in_direction == 0)
+            if attacked:
+                break  # No need to check the other directions.
+        except IndexError:
+            pass  # No pieces found in that direction; do nothing.
 
     return attacked
 
