@@ -1,12 +1,24 @@
 # Backlog
 
+## Testing utils.py
+
+- Move testing functionality (coord1_to_3()) to separate testing module.
+- Create test for knight_moves()
+- Create test for simple_moves()
+
+## Testing game_play.py
+
+- Allow loading / saving board positions on separate folder.
+- Create tests for position_attacked().
+- Create tests for evaluate().
+
 ## Data structures
 
-- ...
+- (N/A)
 
-## Optimizations:
+## Optimizations
 
-Try optmization to game_play.position_attacked() :
+### Try optmization to 'game_play.position_attacked()'
 
 >>> from operator import itemgetter
 >>> help(itemgetter)
