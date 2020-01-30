@@ -68,7 +68,6 @@ def position_attacked(board, pos, attacking_side):
                 break  # No need to check the other directions.
         except IndexError:
             pass  # No pieces found in that direction; do nothing.
-
     return attacked
 
 
