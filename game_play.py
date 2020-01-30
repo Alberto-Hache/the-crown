@@ -23,7 +23,7 @@ def play(board):
     alpha_beta_window = [-float("inf"), float("inf")]
     while not search_end:
         move, result, game_end, end_status = mini_max(
-            board, depth=0, side=board.turn, alpha_beta_window = alpha_beta_window)
+            board, depth=0, side=board.turn, alpha_beta_window=alpha_beta_window)
         search_end = True  # No iterated search for now.
     return move, result, game_end, end_status
 
@@ -41,7 +41,6 @@ def mini_max(board, depth, side, alpha_beta_window):
             # if legal:
                 # n_moves_tried +=1
 
-    
     return move, result, game_end, end_status
 
 
