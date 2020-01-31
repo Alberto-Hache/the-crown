@@ -454,6 +454,7 @@ def calculate_knight_moves():
     )
     return knight_moves
 
+
 def calculate_kingdoms(n):
     kingdoms = np.zeros((2, n), dtype=bool)
     white_k = [8, 9, 10, 11, 12, 21, 22, 23, 32]
