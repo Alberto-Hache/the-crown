@@ -84,6 +84,10 @@ class Board:
         x1, x2, y = coord1to3[coord2]
         self.board3d[x1][x2][y] = piece1
 
+    def clear_board(self):
+        for piece in self.pieces[0] + self.pieces[1]:
+            self.remove_piece(piece.coord)
+
     def print_char(self):
         current_pos = self.n_positions - 1
         n_pos_in_row = 1

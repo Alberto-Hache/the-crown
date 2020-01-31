@@ -459,33 +459,3 @@ def calculate_kingdoms(n):
     kingdoms[0][white_k] = True
     kingdoms[1][black_k] = True
     return kingdoms
-
-
-if __name__ == "__main__":
-    print("Testing utils.py")
-
-    expected_coord1to3 = np.array([tuple for _ in range(3 ** 2)])
-    values = (
-        # 1st row (:, :, 0)
-        (0, 0, 0),
-        (0, 1, 0),
-        (1, 1, 0),
-        (1, 2, 0),
-        (2, 2, 0),
-        # 2nd row (:, :, 1)
-        (0, 1, 1),
-        (0, 2, 1),
-        (1, 2, 1),
-        # 3rd row (:, :, 2)
-        (0, 2, 2)
-    )
-    for i in range(expected_coord1to3.shape[0]):
-        expected_coord1to3[i] = values[i]
-
-    coord1to3 = calculate_coord1to3(3)
-    print("Coords. calculated for a 3-size board:")
-    print(coord1to3)
-    print("Expected:")
-    print(expected_coord1to3)
-    np.testing.assert_array_equal(coord1to3, expected_coord1to3,
-                                  err_msg='Results differ!')
