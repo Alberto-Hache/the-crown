@@ -46,16 +46,17 @@ class Board:
         self.turn = WHITE
         self.computer_side = WHITE
 
-    def include_piece(self, type, color, coord):
+    def include_piece(self, type, color, coord, tracing=False):
         # Create the piece.
-        piece=types.SimpleNamespace(type = type, color = color, coord = coord)
+        piece = types.SimpleNamespace(type=type, color=color, coord=coord, tracing=tracing)
         # Update board references.
         self.pieces[color].append(piece)
         self.board1d[coord] = piece
         x1, x2, y = coord1to3[coord]
         self.board3d[x1][x2][y] = piece
-        # Update piece counts.
-        self.piece_count[color][type] += 1
+        # Update piece counts (unless just tracing for testing purposes).
+        if not piece.tracing:
+            self.piece_count[color][type] += 1
 
     def remove_piece(self, coord):
         # Identify the piece.
@@ -66,7 +67,8 @@ class Board:
         x1, x2, y = coord1to3[coord]
         self.board3d[x1][x2][y] = None
         # Update piece counts.
-        self.piece_count[piece.color][piece.type] -= 1
+        if not piece.tracing:
+            self.piece_count[piece.color][piece.type] -= 1
 
     def make_move(self, move):
         coord1, coord2 = move
@@ -109,7 +111,10 @@ class Board:
                 if piece is None:
                     print(EMPTY + edge, end='')
                 else:
-                    print(piece_char[piece.type][piece.color] + edge, end='')
+                    if piece.tracing:  # A non-playing piece (for tracing).
+                        print(str(hex(piece.type))[2].capitalize() + edge, end='')
+                    else:  # A proper piece.
+                        print(piece_char[piece.type][piece.color] + edge, end='')
                 black_pos = not black_pos
             print(" ")
             # Draw row with horizontal edge.

@@ -34,20 +34,22 @@ def test_expected_coord1to3():
     np.testing.assert_array_equal(coord1to3, expected_coord1to3,
                                   err_msg='Results differ!')
 
+
 def test_calculate_knight_moves():
     knight_moves = utils.calculate_knight_moves()
     board = bd.Board()
 
     for position in range(bd.N_POSITIONS):
-        board.clear_board()
-        board.include_piece(bd.KNIGHT, bd.WHITE, position)
+        print("\nKnight moves from position: {}".format(position))
         moves = knight_moves[position]
-        trace=1
         for direction in moves:
+            board.clear_board()
+            board.include_piece(bd.KNIGHT, bd.WHITE, position)
+            trace = 1
             for position_2 in direction:
-                board.include_piece(str(hex(trace))[2].capitalize(), bd.WHITE, position_2)
+                board.include_piece(trace, bd.WHITE, position_2, tracing=True)
                 trace += 1
-        board.print_char()
+            board.print_char()
 
 
 if __name__ == '__main__':

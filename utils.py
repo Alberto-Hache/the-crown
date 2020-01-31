@@ -18,6 +18,7 @@ def calculate_coord1to3(n_rows):
         position += 1
     return coord1to3
 
+
 def calculate_simple_moves():
     simple_moves = (
         # row 1 (bottom)
@@ -79,6 +80,7 @@ def calculate_simple_moves():
     )
     return simple_moves
 
+
 def calculate_knight_moves():
     knight_moves = (
         # row 1 [bottom]
@@ -97,7 +99,7 @@ def calculate_knight_moves():
         [
             [1, 0],
             [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-            [11, 13],
+            [1, 13],
             [3, 15, 16, 26, 27, 35, 36, 42, 43, 47]
         ],
         # From 3:
@@ -132,7 +134,7 @@ def calculate_knight_moves():
         [
             [6, 5, 4, 3, 2, 1, 0],
             [8, 9, 10, 11, 12],
-            [18, 18, 28, 27, 35, 34, 40],
+            [19, 18, 28, 27, 35, 34, 40],
             [19, 20, 30, 31, 39]
         ],
         # From 8:
@@ -215,7 +217,7 @@ def calculate_knight_moves():
             [19, 20, 21, 22, 23],
             [17, 5, 4],
             [28, 29, 37, 38, 44],
-            [18, 7, 8],
+            [19, 7, 8],
             [28, 27, 35, 34, 40]
         ],
         # From 19:
