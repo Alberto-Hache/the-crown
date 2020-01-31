@@ -2,21 +2,17 @@ import numpy as np
 import utils
 import types
 
+# Game dimensions
 N_ROWS = 7
 N_POSITIONS = N_ROWS ** 2
 
+# Game constants
 WHITE = 0
 BLACK = 1
 EMPTY = " "
 PRINCE = 0
 SOLDIER = 1
 KNIGHT = 2
-
-# Load precalculated tables:
-coord1to3 = utils.calculate_coord1to3(N_ROWS)
-simple_moves = utils.calculate_simple_moves()
-knight_moves = utils.calculate_knight_moves()
-kingdoms = utils.calculate_kingdoms(N_POSITIONS)
 
 piece_char = {
     PRINCE: ("P", "p"),
@@ -26,9 +22,16 @@ piece_char = {
 piece_name = ("Prince", "Knight", "Soldier")
 color_name = ("White", "Black")
 
+# Load precalculated tables:
+coord1to3 = utils.calculate_coord1to3(N_ROWS)
+simple_moves = utils.calculate_simple_moves()
+knight_moves = utils.calculate_knight_moves()
+kingdoms = utils.calculate_kingdoms(N_POSITIONS)
+coord_2_algebraic = utils.calculate_coord_2_algebraic()
+
 
 class Board:
-    def __init__(self):
+    def __init__(self, board_file=None):
         self.n_rows = N_ROWS
         self.n_positions = N_ROWS ** 2
         self.crown_position = N_ROWS ** 2 - 1
@@ -46,9 +49,12 @@ class Board:
         self.turn = WHITE
         self.computer_side = WHITE
 
+
+
     def include_piece(self, type, color, coord, tracing=False):
         # Create the piece.
-        piece = types.SimpleNamespace(type=type, color=color, coord=coord, tracing=tracing)
+        piece = types.SimpleNamespace(
+            type=type, color=color, coord=coord, tracing=tracing)
         # Update board references.
         self.pieces[color].append(piece)
         self.board1d[coord] = piece
@@ -112,9 +118,11 @@ class Board:
                     print(EMPTY + edge, end='')
                 else:
                     if piece.tracing:  # A non-playing piece (for tracing).
-                        print(str(hex(piece.type))[2].capitalize() + edge, end='')
+                        print(str(hex(piece.type))[2].capitalize() + edge,
+                              end='')
                     else:  # A proper piece.
-                        print(piece_char[piece.type][piece.color] + edge, end='')
+                        print(piece_char[piece.type][piece.color] + edge,
+                              end='')
                 black_pos = not black_pos
             print(" ")
             # Draw row with horizontal edge.
@@ -124,7 +132,7 @@ class Board:
                 char_ord = ord('a')
                 print("  ", end='')
                 for i in range(self.n_rows):
-                    print("{} / ".format(chr(char_ord + i)), end = '')
+                    print("{} / ".format(chr(char_ord + i)), end='')
                 print("")
             else:  # Regular edge.
                 line = "/".rjust(n_indent) + "---."*(n_pos_in_row//2) + "---\\"

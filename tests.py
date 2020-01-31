@@ -85,7 +85,7 @@ if __name__ == '__main__':
     time_0 = time.ctime()  # Start time.
     print("{:<20}{}".format("- Started:", time_0))
 
-    # test_expected_coord1to3()
+    test_expected_coord1to3()
     # test_calculate_simple_moves()
     # test_calculate_knight_moves()
     test_calculate_kingdoms()

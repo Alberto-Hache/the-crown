@@ -1,11 +1,5 @@
 # Backlog
 
-## Testing utils.py
-
-- Move testing functionality (coord1_to_3()) to separate testing module.
-- Create test for knight_moves()
-- Create test for simple_moves()
-
 ## Testing game_play.py
 
 - Allow loading / saving board positions on separate folder.

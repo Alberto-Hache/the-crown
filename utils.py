@@ -19,10 +19,23 @@ def calculate_coord1to3(n_rows):
     return coord1to3
 
 
+def calculate_coord_2_algebraic():
+    coord_2_algebraic = (
+        "a1", "a2", "b1", "b2", "c1", "c2", "d1", "d2", "e1", "e2", "f1", "f2", "g1",
+        "a3", "a4", "b3", "b4", "c3", "c4", "d3", "d4", "e3", "e4", "f3",
+        "a5", "a6", "b5", "b6", "c5", "c6", "d5", "d6", "e5",
+        "a7", "a8", "b7", "b8", "c7", "c8", "d7",
+        "a9", "a10", "b9", "b10", "c9",
+        "a11", "a12", "b11",
+        "a13"
+    )
+    return coord_2_algebraic
+
+
 def calculate_simple_moves():
     simple_moves = (
         # row 1 (bottom)
-        [1,],  # 0
+        [1, ],  # 0
         [13, 0, 2],
         [1, 3],
         [15, 2, 4],
@@ -34,7 +47,7 @@ def calculate_simple_moves():
         [21, 8, 10],
         [9, 11],
         [23, 10, 12],
-        [11,],
+        [11, ],
         # row 2
         [14, 1],  # 13
         [24, 13, 15],  # 14
@@ -76,7 +89,7 @@ def calculate_simple_moves():
         [48, 45, 47],  # 46
         [46, 43],  # 47
         # row 1
-        [46,]  # 48; for Soldiers' use only.
+        [46, ]  # 48; for Soldiers' use only.
     )
     return simple_moves
 
@@ -91,7 +104,7 @@ def calculate_knight_moves():
         ],
         # From 1:
         [
-            [0,],
+            [0, ],
             [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
             [13, 14, 24, 25, 33, 34, 40, 41, 45, 46, 48]
         ],
@@ -161,7 +174,7 @@ def calculate_knight_moves():
         # From 11:
         [
             [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
-            [12,],
+            [12, ],
             [23, 22, 32, 31, 39, 38, 44, 43, 47, 46, 48]
         ],
         # From 12:
@@ -437,7 +450,7 @@ def calculate_knight_moves():
         [
             [45, 41, 40, 34, 33, 25, 24, 14, 13, 1, 0],
             [47, 43, 44, 38, 39, 31, 32, 22, 23, 11, 12],
-            [48,]
+            [48, ]
         ],
         # From 47:
         [
