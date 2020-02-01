@@ -1,6 +1,11 @@
+import sys
 import numpy as np
+
 import utils
 import types
+
+# Saved games location
+GAMES_PATH = "./games/"
 
 # Game dimensions
 N_ROWS = 7
@@ -19,8 +24,22 @@ piece_char = {
     SOLDIER: ("S", "s"),
     KNIGHT: ("K", "k")
 }
+char_piece = {
+    "P": (PRINCE, WHITE),
+    "K": (KNIGHT, WHITE),
+    "S": (SOLDIER, WHITE),
+    "p": (PRINCE, BLACK),
+    "k": (KNIGHT, BLACK),
+    "s": (SOLDIER, BLACK)
+}
 piece_name = ("Prince", "Knight", "Soldier")
 color_name = ("White", "Black")
+
+initial_position = (
+    "Pg1", "Kf1", "Kf3", "Se1", "Se3", "Se5",
+    "pa1", "ka3", "kb1", "sa5", "sb3", "sc1",
+    "w"
+)
 
 # Load precalculated tables:
 coord1to3 = utils.calculate_coord1to3(N_ROWS)
@@ -31,7 +50,7 @@ coord_2_algebraic = utils.calculate_coord_2_algebraic()
 
 
 class Board:
-    def __init__(self, board_file=None):
+    def __init__(self, file_name=None):
         self.n_rows = N_ROWS
         self.n_positions = N_ROWS ** 2
         self.crown_position = N_ROWS ** 2 - 1
@@ -43,13 +62,42 @@ class Board:
         self.board1d = np.full((self.n_positions), None)
         self.board3d = np.full((N_ROWS, N_ROWS, N_ROWS), None)
 
-        # Initial position.
-        self.include_piece(PRINCE, BLACK, 0)
-        self.include_piece(PRINCE, WHITE, N_ROWS * 2 - 2)
-        self.turn = WHITE
+        # Set position and sides.
+        self.load_board(file_name)
         self.computer_side = WHITE
 
+    def load_board(self, file_name):
+        if file_name is None:
+            lines = initial_position
+        else:
+            try:
+                file_name = GAMES_PATH + file_name
+                board_file = open(file_name, 'r')
+                lines = board_file.read().splitlines()
+            except OSError:
+                print("Error accessing file {}".format(file_name))
+                sys.exit(1)
 
+            end_line = False
+            for line in lines:
+                if end_line:
+                    print("Error found in file {} ;" \
+                          "lines found after end line (w|b): {}".format(
+                            file_name, line))
+                    sys.exit(1)
+                if line in ["w", "W", "b", "B"]:
+                    end_line = True
+                    self.turn = WHITE if (line in ["w", "W"]) else BLACK
+                else:
+                    try:
+                        type, color = char_piece[line[0]]
+                        coord = coord_2_algebraic.index(line[1:])
+                        self.include_piece(type, color, coord)
+                    except ValueError:
+                        print("Error found in file {} ;"\
+                              "Incorrect <piece><coord>: {}".format(
+                                  file_name, line))
+                        sys.exit(1)
 
     def include_piece(self, type, color, coord, tracing=False):
         # Create the piece.

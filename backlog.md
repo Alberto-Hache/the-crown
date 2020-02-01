@@ -2,13 +2,16 @@
 
 ## Testing game_play.py
 
-- Allow loading / saving board positions on separate folder.
+- Allow loading board positions on ./games folder.
 - Create tests for position_attacked().
 - Create tests for evaluate().
 
-## Data structures
+## Rules
 
-- (N/A)
+- game_play: add function to check if a position is legal:
+  - No princes can be taken.
+  - No soldiers in their prince's starting position.
+  - Number of princes, knights, soldiers per side.
 
 ## Optimizations
 
