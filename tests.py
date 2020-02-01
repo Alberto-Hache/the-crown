@@ -2,6 +2,7 @@ import time
 import numpy as np
 
 import board as bd
+import game_play as gp
 import utils
 
 
@@ -79,16 +80,33 @@ def test_calculate_kingdoms():
     board.print_char()
 
 
+def test_position_attacked():
+    for position in range(bd.N_POSITIONS):
+        board = bd.Board("position1.cor")  # Actual board to put pieces on.
+        display_board = bd.Board("empty.cor")  # A blank board for tracing.
+        if board.board1d[position] is None:
+            print("\nKnight attacks from position {}".format(position))
+            board.include_piece(bd.KNIGHT, bd.WHITE, position)
+            for position_2 in range(bd.N_POSITIONS):
+                if gp.position_attacked(board, position_2, bd.WHITE):
+                    display_board.include_piece(
+                        bd.TRACE, bd.WHITE, position_2, tracing=True)
+            board.print_char()
+            print("Positions attacked...")
+            display_board.print_char()
+
+
 if __name__ == '__main__':
     # Main program.
     print("Testing 'The Crown' code:")
     time_0 = time.ctime()  # Start time.
     print("{:<20}{}".format("- Started:", time_0))
 
-    test_expected_coord1to3()
+    # test_expected_coord1to3()
     # test_calculate_simple_moves()
     # test_calculate_knight_moves()
-    test_calculate_kingdoms()
+    # test_calculate_kingdoms()
+    test_position_attacked()
 
     time_end = time.ctime()  # End time.
     print("{:<20}{}".format("- Ended:", time.ctime()))

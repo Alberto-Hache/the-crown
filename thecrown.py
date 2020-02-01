@@ -7,7 +7,7 @@ if __name__ == "__main__":
     # Handle possible arguments passed.
     file_name = None if (len(sys.argv) == 1) else sys.argv[1]
 
-    print("Welcome to The Crown!")
+    print("Starting The Crown!")
     board = bd.Board(file_name)
     game_end = False
     while not game_end:

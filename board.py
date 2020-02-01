@@ -18,6 +18,7 @@ EMPTY = " "
 PRINCE = 0
 SOLDIER = 1
 KNIGHT = 2
+TRACE = -1  # A fictitious piece for debugging purpose.
 
 piece_char = {
     PRINCE: ("P", "p"),
@@ -72,34 +73,40 @@ class Board:
         else:
             try:
                 file_name = GAMES_PATH + file_name
+                print("Loading game position {} ...".format(file_name))
                 board_file = open(file_name, 'r')
                 lines = board_file.read().splitlines()
             except OSError:
                 print("Error accessing file {}".format(file_name))
                 sys.exit(1)
 
-            end_line = False
-            for line in lines:
-                if end_line:
-                    print("Error found in file {} ;" \
-                          "lines found after end line (w|b): {}".format(
+        end_line = False
+        for line in lines:
+            if end_line:
+                print("Error found in file {} ; " \
+                      "lines found after end line (w|b): {}".format(
+                        file_name, line))
+                sys.exit(1)
+            if line in ["w", "W", "b", "B"]:
+                end_line = True
+                self.turn = WHITE if (line in ["w", "W"]) else BLACK
+            else:
+                try:
+                    type, color = char_piece[line[0]]
+                    coord = coord_2_algebraic.index(line[1:])
+                    self.include_piece(type, color, coord)
+                except ValueError:
+                    print("Error found in file {} ; "
+                          "Incorrect <piece><coord>: {}".format(
                             file_name, line))
                     sys.exit(1)
-                if line in ["w", "W", "b", "B"]:
-                    end_line = True
-                    self.turn = WHITE if (line in ["w", "W"]) else BLACK
-                else:
-                    try:
-                        type, color = char_piece[line[0]]
-                        coord = coord_2_algebraic.index(line[1:])
-                        self.include_piece(type, color, coord)
-                    except ValueError:
-                        print("Error found in file {} ;"\
-                              "Incorrect <piece><coord>: {}".format(
-                                  file_name, line))
-                        sys.exit(1)
 
     def include_piece(self, type, color, coord, tracing=False):
+        # Check that it's a valid.
+        assert self.board1d[coord] is None, \
+            "Coord {} ({}) is not empty.".format(
+                coord, coord_2_algebraic[coord])
+
         # Create the piece.
         piece = types.SimpleNamespace(
             type=type, color=color, coord=coord, tracing=tracing)
@@ -131,6 +138,13 @@ class Board:
         piece2 = self.board1d[coord2]
         # Piece2 captured?
         if piece2 is not None:
+            assert piece2.color != piece1.color, \
+                "Piece {} can't move to coord {} ({}): already occupied by {}." \
+                .format(
+                    piece_char[piece1.type][piece1.color],
+                    coord2, coord_2_algebraic[coord2],
+                    piece_char[piece2.type][piece2.color]
+                )
             self.remove_piece(coord2)
         # Move piece1
         self.board1d[coord1] = None
@@ -166,7 +180,9 @@ class Board:
                     print(EMPTY + edge, end='')
                 else:
                     if piece.tracing:  # A non-playing piece (for tracing).
-                        print(str(hex(piece.type))[2].capitalize() + edge,
+                        trace_char = "*" if piece.type == TRACE \
+                            else hex(piece.type)[2].capitalize()
+                        print(trace_char + edge,
                               end='')
                     else:  # A proper piece.
                         print(piece_char[piece.type][piece.color] + edge,

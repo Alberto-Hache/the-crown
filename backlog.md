@@ -2,7 +2,6 @@
 
 ## Testing game_play.py
 
-- Allow loading board positions on ./games folder.
 - Create tests for position_attacked().
 - Create tests for evaluate().
 
