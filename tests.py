@@ -1,4 +1,5 @@
 import time
+import glob
 import numpy as np
 
 import board as bd
@@ -81,19 +82,23 @@ def test_calculate_kingdoms():
 
 
 def test_position_attacked():
-    for position in range(bd.N_POSITIONS):
-        board = bd.Board("position1.cor")  # Actual board to put pieces on.
-        display_board = bd.Board("empty.cor")  # A blank board for tracing.
-        if board.board1d[position] is None:
-            print("\nKnight attacks from position {}".format(position))
-            board.include_piece(bd.KNIGHT, bd.WHITE, position)
-            for position_2 in range(bd.N_POSITIONS):
-                if gp.position_attacked(board, position_2, bd.WHITE):
-                    display_board.include_piece(
-                        bd.TRACE, bd.WHITE, position_2, tracing=True)
-            board.print_char()
-            print("Positions attacked...")
-            display_board.print_char()
+    file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
+
+    for full_file_name in file_list:
+        file_name = full_file_name[len(bd.GAMES_PATH):]  # Remove relative path.
+        for position in range(bd.N_POSITIONS):
+            board = bd.Board(file_name)  # Actual board to put pieces on.
+            display_board = bd.Board("empty.cor")  # A blank board for tracing.
+            if board.board1d[position] is None:
+                print("\nKnight attacks from position {}".format(position))
+                board.include_piece(bd.KNIGHT, board.turn, position)
+                for position_2 in range(bd.N_POSITIONS):
+                    if gp.position_attacked(board, position_2, board.turn):
+                        display_board.include_piece(
+                            bd.TRACE, board.turn, position_2, tracing=True)
+                board.print_char()
+                print("Positions attacked...")
+                display_board.print_char()
 
 
 if __name__ == '__main__':
