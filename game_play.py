@@ -9,7 +9,7 @@ WHITE_WINS = 1
 BLACK_WINS = -1
 DRAW = 0
 
-# Types of game end status
+# Types of game node status
 ON_GOING = 0
 VICTORY_CROWNING = 1
 VICTORY_NO_PIECES_LEFT = 2
@@ -20,40 +20,46 @@ DRAW_THREE_REPETITIONS = 5
 
 def play(board):
     search_end = False
-    alpha_beta_window = [-float("inf"), float("inf")]
+    alpha, beta = [-float("inf"), float("inf")]
+    depth = 0
     while not search_end:
         move, result, game_end, end_status = mini_max(
-            board,
-            depth=0, side=board.turn, alpha_beta_window=alpha_beta_window)
+            board, depth, alpha, beta)
         search_end = True  # No iterated search for now.
     return move, result, game_end, end_status
 
 
-def mini_max(board, depth, alpha_beta_window):
-    # If depth == MAX_DEPTH.
-    #   A leave node: Evaluate board.
-    # else, Keep exploring:
-    #   alpha, beta = alpha_beta_window
-    #   moves = calculate pseudo_moves (not checked as legal).
+def mini_max(board, depth, alpha, beta):
+    # best_move = None
+    # if depth == MAX_DEPTH  # A leave node
+    #   result, game_end, end_status = evaluate(board)
+    # else:
+    #   moves = calculate pseudo_moves (not checked as legal yet)
     #   n_moves_tried = 0
-    #   while len(moves) > 0:
+    #   keep_exploring = True
+    #   while len(moves) > 0 and keep_exploring:
     #       m = pick_move(moves)
     #       new_board, legal = make_move(board, m)
     #       if legal(new_board):
     #           n_moves_tried +=1
     #           sons_move, result, game_end, end_status = mini_max(
-    #               new_board, depth + 1, [-beta, -alpha]
-    #           )
-    #           
+    #               new_board, depth + 1, -beta, -alpha)
+    #           if result > alpha:
+    #               best_move, alpha = sons_move, result
+    #           if alpha >= beta:
+    #               keep_exploring = False
+    #   if n_moves_tried == 0:
+    #       check why and set result, game_end, end_status
+    #   return best_move
 
-    move, result, game_end, end_status = (None, None), None, True, ON_GOING
+    best_move, result, game_end, end_status = (None, None), None, True, ON_GOING
 
     if depth == MAX_DEPTH:
         result, game_end, end_status = evaluate(board)
     else:
         pass
 
-    return move, result, game_end, end_status
+    return best_move, result, game_end, end_status
 
 
 def position_attacked(board, pos, attacking_side):
