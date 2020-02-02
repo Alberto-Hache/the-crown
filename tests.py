@@ -68,6 +68,21 @@ def test_calculate_simple_moves():
         board.print_char()
 
 
+def test_calculate_soldier_moves():
+    soldier_moves = utils.calculate_soldier_moves()
+    board = bd.Board()
+    for side in [bd.WHITE, bd.BLACK]:
+        for position in range(bd.N_POSITIONS):
+            moves = soldier_moves[side][position]
+            board.clear_board()
+            board.include_piece(bd.SOLDIER, side, position)
+            print("{} Soldier moves from position {}".format(
+                bd.color_name[side], position))
+            for position_2 in moves:
+                board.include_piece(bd.TRACE, side, position_2, tracing=True)
+            board.print_char()
+
+
 def test_calculate_kingdoms():
     kingdoms = utils.calculate_kingdoms(bd.N_POSITIONS)
     board = bd.Board()
@@ -85,7 +100,7 @@ def test_position_attacked():
     file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
 
     for full_file_name in file_list:
-        file_name = full_file_name[len(bd.GAMES_PATH):]  # Remove relative path.
+        file_name = full_file_name[len(bd.GAMES_PATH):]  # Remove rel. path.
         for position in range(bd.N_POSITIONS):
             board = bd.Board(file_name)  # Actual board to put pieces on.
             display_board = bd.Board("empty.cor")  # A blank board for tracing.
@@ -111,7 +126,8 @@ if __name__ == '__main__':
     # test_calculate_simple_moves()
     # test_calculate_knight_moves()
     # test_calculate_kingdoms()
-    test_position_attacked()
+    # test_position_attacked()
+    test_calculate_soldier_moves()
 
     time_end = time.ctime()  # End time.
     print("{:<20}{}".format("- Ended:", time.ctime()))

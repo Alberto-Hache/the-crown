@@ -83,7 +83,7 @@ class Board:
         end_line = False
         for line in lines:
             if end_line:
-                print("Error found in file {} ; " \
+                print("Error found in file {} ; "
                       "lines found after end line (w|b): {}".format(
                         file_name, line))
                 sys.exit(1)
@@ -139,7 +139,8 @@ class Board:
         # Piece2 captured?
         if piece2 is not None:
             assert piece2.color != piece1.color, \
-                "Piece {} can't move to coord {} ({}): already occupied by {}." \
+                "Piece {} can't move to coord {} ({}): \
+                already occupied by {}." \
                 .format(
                     piece_char[piece1.type][piece1.color],
                     coord2, coord_2_algebraic[coord2],
@@ -153,6 +154,8 @@ class Board:
         self.board1d[coord2] = piece1
         x1, x2, y = coord1to3[coord2]
         self.board3d[x1][x2][y] = piece1
+        # Change turn
+        self.turn = WHITE if self.turn == BLACK else BLACK
 
     def clear_board(self):
         for piece in self.pieces[0] + self.pieces[1]:

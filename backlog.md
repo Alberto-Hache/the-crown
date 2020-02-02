@@ -1,13 +1,17 @@
 # Backlog
 
+## Create moves for Soldier
+
+- Create and pass tests for calculate_soldier_moves().
+
 ## Testing game_play.py
 
-- Create tests for position_attacked().
-- Create tests for evaluate().
+- Create and pass tests for calculate_soldier_moves().
+- Create and pass tests for evaluate().
 
 ## Rules
 
-- game_play: add function to check if a position is legal:
+- game_play: add function to check if a position is legal? [Better check pseudo-moves once done?]
   - No princes can be taken.
   - No soldiers in their prince's starting position.
   - Number of princes, knights, soldiers per side.

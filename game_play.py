@@ -29,18 +29,29 @@ def play(board):
     return move, result, game_end, end_status
 
 
-def mini_max(board, depth, side, alpha_beta_window):
-    move, result, game_end, end_status = (None, None), None, True, ON_GOING
+def mini_max(board, depth, alpha_beta_window):
     # If depth == MAX_DEPTH.
-        # A leave node: Evaluate board.
+    #   A leave node: Evaluate board.
     # else, Keep exploring:
-        # Calculate pseudo_moves (not checked as legal).
-        # n_moves_tried = 0
-        # while len(moves) > 0:
-            # m = pick_move()
-            # new_board, legal = make_move(board, m)
-            # if legal:
-                # n_moves_tried +=1
+    #   alpha, beta = alpha_beta_window
+    #   moves = calculate pseudo_moves (not checked as legal).
+    #   n_moves_tried = 0
+    #   while len(moves) > 0:
+    #       m = pick_move(moves)
+    #       new_board, legal = make_move(board, m)
+    #       if legal(new_board):
+    #           n_moves_tried +=1
+    #           sons_move, result, game_end, end_status = mini_max(
+    #               new_board, depth + 1, [-beta, -alpha]
+    #           )
+    #           
+
+    move, result, game_end, end_status = (None, None), None, True, ON_GOING
+
+    if depth == MAX_DEPTH:
+        result, game_end, end_status = evaluate(board)
+    else:
+        pass
 
     return move, result, game_end, end_status
 
