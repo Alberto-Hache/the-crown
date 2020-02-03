@@ -116,6 +116,27 @@ def test_position_attacked():
                 display_board.print_char()
 
 
+def test_evaluate():
+    file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
+
+    for full_file_name in file_list:
+        file_name = full_file_name[len(bd.GAMES_PATH):]  # Remove rel. path.
+        board = bd.Board(file_name)  # The board to put pieces on.
+
+        print("Evaluation of position {}:".format(file_name))
+        board.print_char()
+        eval, game_end, game_status = gp.evaluate(board)
+        print("Eval = {}, Finished = {}, Status = {}".format(
+            eval, game_end,  game_status))
+
+        board.turn = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
+        print("{} to move:".format(bd.color_name[board.turn]))
+        eval, game_end, game_status = gp.evaluate(board)
+        print("Eval = {}, Finished = {}, Status = {}".format(
+            eval, game_end,  game_status))
+        print("")
+
+
 if __name__ == '__main__':
     # Main program.
     print("Testing 'The Crown' code:")
@@ -127,7 +148,8 @@ if __name__ == '__main__':
     # test_calculate_knight_moves()
     # test_calculate_kingdoms()
     # test_position_attacked()
-    test_calculate_soldier_moves()
+    # test_calculate_soldier_moves()
+    test_evaluate()
 
     time_end = time.ctime()  # End time.
     print("{:<20}{}".format("- Ended:", time.ctime()))

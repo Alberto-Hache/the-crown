@@ -23,16 +23,16 @@ def play(board):
     alpha, beta = [-float("inf"), float("inf")]
     depth = 0
     while not search_end:
-        move, result, game_end, end_status = mini_max(
+        move, result, game_end, game_status = mini_max(
             board, depth, alpha, beta)
         search_end = True  # No iterated search for now.
-    return move, result, game_end, end_status
+    return move, result, game_end, game_status
 
 
 def mini_max(board, depth, alpha, beta):
     # best_move = None
     # if depth == MAX_DEPTH  # A leave node
-    #   result, game_end, end_status = evaluate(board)
+    #   result, game_end, game_status = evaluate(board)
     # else:
     #   moves = calculate pseudo_moves (not checked as legal yet)
     #   n_moves_tried = 0
@@ -42,24 +42,24 @@ def mini_max(board, depth, alpha, beta):
     #       new_board, legal = make_move(board, m)
     #       if legal(new_board):
     #           n_moves_tried +=1
-    #           sons_move, result, game_end, end_status = mini_max(
+    #           sons_move, result, game_end, game_status = mini_max(
     #               new_board, depth + 1, -beta, -alpha)
     #           if result > alpha:
     #               best_move, alpha = sons_move, result
     #           if alpha >= beta:
     #               keep_exploring = False
     #   if n_moves_tried == 0:
-    #       check why and set result, game_end, end_status
+    #       check why and set result, game_end, game_status
     #   return best_move
 
-    best_move, result, game_end, end_status = (None, None), None, True, ON_GOING
+    best_move, result, game_end, game_status = None, None, True, ON_GOING
 
     if depth == MAX_DEPTH:
-        result, game_end, end_status = evaluate(board)
+        result, game_end, game_status = evaluate(board)
     else:
         pass
 
-    return best_move, result, game_end, end_status
+    return best_move, result, game_end, game_status
 
 
 def position_attacked(board, pos, attacking_side):
@@ -92,9 +92,21 @@ def position_attacked(board, pos, attacking_side):
 
 
 def evaluate(board):
-    # Return PLAYER_WINS/OPPONENT_WINS/DRAW, with PLAYER being
-    # the side whose turn it is to move.
-    # NOTE: multiple return points for efficiency.
+    """Evaluate a position from the playing side's perspective.
+
+    Input:
+        Board :     The game position to evaluate.
+
+    Output:
+        int :       PLAYER_WINS/OPPONENT_WINS/DRAW, with PLAYER being
+                    the side whose turn it is to move.
+        Boolean:    Whether the game has finished.
+        int:        ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
+                    DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE /
+                    DRAW_THREE_REPETITIONS
+
+    NOTE: multiple return points for efficiency.
+    """
 
     player_side = board.turn
     opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
@@ -108,9 +120,9 @@ def evaluate(board):
             return result, True, VICTORY_CROWNING
 
     # 2. Side without pieces left?
-    if board.pieces[player_side].sum() == 0:
+    if board.piece_count[player_side].sum() == 0:
         return OPPONENT_WINS, True, VICTORY_NO_PIECES_LEFT
-    elif board.pieces[opponent_side].sum() == 0:
+    elif board.piece_count[opponent_side].sum() == 0:
         return PLAYER_WINS, True, VICTORY_NO_PIECES_LEFT
 
     # 3. No Princes left?

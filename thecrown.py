@@ -13,7 +13,7 @@ if __name__ == "__main__":
     while not game_end:
         board.print_char()
         move, result, game_end, end_status = game.play(board)
-        if move[0] is not None:
+        if move is not None:
             board.make_move(move)
         else:
             print("No move found.")
