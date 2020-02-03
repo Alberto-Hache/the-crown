@@ -1,13 +1,20 @@
 # Backlog
 
-## Create moves for Soldier
-
-- Create and pass tests for calculate_soldier_moves().
-
-## Testing game_play.py
+## Moves generation
 
 - Create and pass tests for calculate_soldier_moves().
 - Create and pass tests for evaluate().
+- Create pseudo_mov_generator(board, side)
+
+## Tree search
+
+- First version of mini-max with alpha-beta prunning (depth = 2; evaluation = -1/0/1)
+- Improved evaluation function? (material + mobility...).
+- Add quiescence search.
+- Add killer-move heuristic.
+- Add hash-tables for repetitions.
+- Add heuristic move sorting?
+- Add progressive depth search (based on hash tables).
 
 ## Rules
 
@@ -15,6 +22,8 @@
   - No princes can be taken.
   - No soldiers in their prince's starting position.
   - Number of princes, knights, soldiers per side.
+
+- Detect repetition of positions?
 
 ## Optimizations
 
