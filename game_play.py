@@ -5,8 +5,8 @@ import board as bd
 MAX_DEPTH = 2
 
 # Possible game results
-WHITE_WINS = 1
-BLACK_WINS = -1
+PLAYER_WINS = 1
+OPPONENT_WINS = -1
 DRAW = 0
 
 # Types of game node status
@@ -92,30 +92,34 @@ def position_attacked(board, pos, attacking_side):
 
 
 def evaluate(board):
-    # Return WHITE_WINS/BLACK_WINS/DRAW from white's perspective.
+    # Return PLAYER_WINS/OPPONENT_WINS/DRAW, with PLAYER being
+    # the side whose turn it is to move.
+    # NOTE: multiple return points for efficiency.
+
+    player_side = board.turn
+    opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
 
     # 1. Prince on the crown_position?
     piece = board.board1d[board.crown_position]
     if piece is not None:
         if piece.type == bd.PRINCE:
-            result = WHITE_WINS if piece.color == bd.WHITE \
-                else BLACK_WINS
-            game_end, end_status = True, VICTORY_CROWNING
+            result = PLAYER_WINS if piece.color == player_side \
+                else OPPONENT_WINS
+            return result, True, VICTORY_CROWNING
 
     # 2. Side without pieces left?
-    if board.pieces[bd.WHITE].sum() == 0:
-        result, game_end = BLACK_WINS, True
-    elif board.pieces[bd.BLACK].sum() == 0:
-        result, game_end, end_status = WHITE_WINS, True, VICTORY_NO_PIECES_LEFT
+    if board.pieces[player_side].sum() == 0:
+        return OPPONENT_WINS, True, VICTORY_NO_PIECES_LEFT
+    elif board.pieces[opponent_side].sum() == 0:
+        return PLAYER_WINS, True, VICTORY_NO_PIECES_LEFT
 
     # 3. No Princes left?
-    if not game_end:
-        if board.piece_count[bd.WHITE][bd.PRINCE] == 0 and \
-                board.piece_count[bd.BLACK][bd.PRINCE] == 0:
-            result, game_end, end_status = DRAW, True, DRAW_NO_PRINCES_LEFT
+    if board.piece_count[player_side][bd.PRINCE] == 0 and \
+            board.piece_count[opponent_side][bd.PRINCE] == 0:
+        return DRAW, True, DRAW_NO_PRINCES_LEFT
 
     # 4. Stalemate?
-    pass  # Note: Would require calculating moves everytime.
+    pass  # Note: Would require calculating legal moves everytime.
     # DRAW_STALEMATE
 
     # 5. Three repetitions?
@@ -123,6 +127,4 @@ def evaluate(board):
     # DRAW_THREE_REPETITIONS
 
     # 6. Otherwise, it's not decided yet ≈ DRAW
-    result, game_end, end_status = DRAW, False, ON_GOING
-
-    return result, game_end, end_status
+    return DRAW, False, ON_GOING

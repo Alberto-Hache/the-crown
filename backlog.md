@@ -2,7 +2,6 @@
 
 ## Moves generation
 
-- Create and pass tests for calculate_soldier_moves().
 - Create and pass tests for evaluate().
 - Create pseudo_mov_generator(board, side)
 
