@@ -44,10 +44,22 @@ initial_position = (
 
 # Load precalculated tables:
 coord1to3 = utils.calculate_coord1to3(N_ROWS)
-simple_moves = utils.calculate_simple_moves()
-knight_moves = utils.calculate_knight_moves()
-kingdoms = utils.calculate_kingdoms(N_POSITIONS)
 coord_2_algebraic = utils.calculate_coord_2_algebraic()
+kingdoms = utils.calculate_kingdoms(N_POSITIONS)
+
+simple_moves = utils.calculate_simple_moves()  # For the Prince of any side.
+soldier_moves = utils.calculate_soldier_moves()  # 2 lists, one for each side.
+knight_moves = utils.calculate_knight_moves()  # For the Knight of any side.
+
+# Generate moves table for the 2 x 3 side-type combinations.
+piece_moves = (
+    # 0: PRINCE; both sides have the same moves.
+    (simple_moves, simple_moves),
+    # 1: SOLDIER; each side has DIFFERENT moves (kingdom, throne...).
+    (soldier_moves[0], soldier_moves[1]),
+    # 2: KNIGHT; both sides have the same moves.
+    (knight_moves, knight_moves)
+)
 
 
 class Board:
@@ -198,8 +210,9 @@ class Board:
                 print(" ·" + "---·"*(n_pos_in_row//2) + "---·")
                 char_ord = ord('a')
                 print("  ", end='')
-                for i in range(self.n_rows):
+                for i in range(self.n_rows - 1):
                     print("{} / ".format(chr(char_ord + i)), end='')
+                print("{}".format(chr(char_ord + i + 1)))
                 print("")
             else:  # Regular edge.
                 line = "/".rjust(n_indent) + "---."*(n_pos_in_row//2) + "---\\"

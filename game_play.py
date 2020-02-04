@@ -91,6 +91,16 @@ def position_attacked(board, pos, attacking_side):
     return attacked
 
 
+def generate_pseudomoves(board):
+    """
+    Generate a list of possible moves for the playing side.
+
+    """
+    moves = []
+    for piece in board.pieces[board.turn]:
+        p_moves = bd.piece_moves[board.turn][piece.coord]
+        
+
 def evaluate(board):
     """Evaluate a position from the playing side's perspective.
 

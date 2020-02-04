@@ -1,5 +1,5 @@
 Testing 'The Crown' code:
-- Started:          Mon Feb  3 21:31:23 2020
+- Started:          Mon Feb  3 21:37:02 2020
 Loading game position ./games/position6.cor ...
 Evaluation of position position6.cor:
                .
@@ -17,7 +17,8 @@ Evaluation of position position6.cor:
    /---.---.---.---.---.---\
 1 / \ / \ / \ / \ / \ /K\ / \ 
  ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g / 
+  a / b / c / d / e / f / g
+
 White to move.
 Eval = 1, Finished = True, Status = 1
 Black to move:
@@ -40,7 +41,8 @@ Evaluation of position position7.cor:
    /---.---.---.---.---.---\
 1 / \ / \ / \ / \ / \ /K\ / \ 
  ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g / 
+  a / b / c / d / e / f / g
+
 White to move.
 Eval = 1, Finished = True, Status = 2
 Black to move:
@@ -63,7 +65,8 @@ Evaluation of position position5.cor:
    /---.---.---.---.---.---\
 1 /p\ / \ / \ / \ / \ / \ /P\ 
  ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g / 
+  a / b / c / d / e / f / g
+
 White to move.
 Eval = 0, Finished = False, Status = 0
 Black to move:
@@ -86,7 +89,8 @@ Evaluation of position position4.cor:
    /---.---.---.---.---.---\
 1 / \ / \ / \ / \ / \ / \ /P\ 
  ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g / 
+  a / b / c / d / e / f / g
+
 Black to move.
 Eval = 0, Finished = False, Status = 0
 White to move:
@@ -109,7 +113,8 @@ Evaluation of position position1.cor:
    /---.---.---.---.---.---\
 1 / \ / \ / \ / \ /S\ / \ /P\ 
  ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g / 
+  a / b / c / d / e / f / g
+
 White to move.
 Eval = 0, Finished = False, Status = 0
 Black to move:
@@ -132,7 +137,8 @@ Evaluation of position position3.cor:
    /---.---.---.---.---.---\
 1 / \ / \ / \ / \ /S\ / \ /P\ 
  ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g / 
+  a / b / c / d / e / f / g
+
 Black to move.
 Eval = 0, Finished = False, Status = 0
 White to move:
@@ -155,7 +161,8 @@ Evaluation of position position2.cor:
    /---.---.---.---.---.---\
 1 / \ / \ / \ / \ / \ / \ /P\ 
  ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g / 
+  a / b / c / d / e / f / g
+
 White to move.
 Eval = 0, Finished = False, Status = 0
 Black to move:
@@ -178,10 +185,11 @@ Evaluation of position position8.cor:
    /---.---.---.---.---.---\
 1 / \ / \ / \ / \ / \ /K\ / \ 
  ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g / 
+  a / b / c / d / e / f / g
+
 White to move.
 Eval = 0, Finished = True, Status = 3
 Black to move:
 Eval = 0, Finished = True, Status = 3
 
-- Ended:            Mon Feb  3 21:31:23 2020
+- Ended:            Mon Feb  3 21:37:02 2020
