@@ -1,5 +1,5 @@
 Testing 'The Crown' code:
-- Started:          Mon Feb  3 21:37:02 2020
+- Started:          Tue Feb  4 19:55:27 2020
 Loading game position ./games/position6.cor ...
 Evaluation of position position6.cor:
                .
@@ -192,4 +192,4 @@ Eval = 0, Finished = True, Status = 3
 Black to move:
 Eval = 0, Finished = True, Status = 3
 
-- Ended:            Mon Feb  3 21:37:02 2020
+- Ended:            Tue Feb  4 19:55:27 2020

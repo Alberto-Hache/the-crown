@@ -25,6 +25,9 @@
 
 ## Optimizations
 
+- position_attacked() with several return() points?
+- position_attacked() with itemgetter:
+
 ### Try optmization to 'game_play.position_attacked()'
 
 >>> from operator import itemgetter

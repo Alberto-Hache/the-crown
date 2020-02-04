@@ -96,10 +96,36 @@ def generate_pseudomoves(board):
     Generate a list of possible moves for the playing side.
 
     """
+    # Initiate 'moves', a list of piece/moves: [[p1, [13, 53...]], [p2, [...]]
     moves = []
+    moves_count = 0
+    # Iterate over every piece from the moving side.
     for piece in board.pieces[board.turn]:
-        p_moves = bd.piece_moves[board.turn][piece.coord]
-        
+        new_moves = []  # Moves to find for this 'piece'.
+        # Obtain list of all its lists of moves: [[1, 2, 3...], [13, 15...]]
+        p_moves = bd.piece_moves[piece.type][piece.color][piece.coord]
+        for positions in p_moves:  # [1, 2, 3, 4,...]
+            # Get the closest piece in that direction and its distance.
+            pieces = board.board1d[positions]  # [None, None, piece_1, None...]
+            try:
+                piece_pos = np.where(pieces)[0][0]  # 2
+                closest_piece = pieces[piece_pos]  # piece_1
+
+                if closest_piece.color == piece.color:
+                    # Add moves till closest_piece [EXCLUDING it].
+                    new_moves.extend(positions[:piece_pos])
+                else:
+                    # Add moves till closest_piece [INCLUDING it].
+                    new_moves.extend(positions[:piece_pos + 1])
+            except IndexError:
+                # No pieces in that direction: add all moves.
+                new_moves.extend(positions)
+        # Update main list.
+        moves.append((piece, new_moves))
+        moves_count += len(new_moves)
+    
+    return moves, moves_count
+
 
 def evaluate(board):
     """Evaluate a position from the playing side's perspective.
@@ -150,3 +176,11 @@ def evaluate(board):
 
     # 6. Otherwise, it's not decided yet ≈ DRAW
     return DRAW, False, ON_GOING
+
+
+if __name__ == '__main__':
+    # Main program.
+    print("Testing game_play.py")
+    board = bd.Board("position9.cor")  # Actual board to put pieces on.
+    generate_pseudomoves(board)
+    
