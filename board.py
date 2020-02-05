@@ -229,3 +229,10 @@ class Board:
             else:
                 print(piece_char[piece.type][piece.color], end='')
         print("]")
+
+
+if __name__ == '__main__':
+    # Main program.
+    if len(sys.argv) > 0:
+        board = Board(sys.argv[1])
+        board.print_char()

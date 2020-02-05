@@ -137,6 +137,24 @@ def test_evaluate():
         print("")
 
 
+def test_generate_pseudomoves():
+    file_name = "position9.cor"
+    board = bd.Board(file_name)  # Actual board to put pieces on.
+    print("\nPseudo-moves for position: {}".format(file_name))
+    board.print_char()
+
+    moves = gp.generate_pseudomoves(board)
+    for piece_moves in moves:
+        p_i, moves_i = piece_moves
+        display_board = bd.Board("empty.cor")  # A blank board for tracing.
+        display_board.include_piece(p_i)
+        for move_position in moves_i:
+            display_board.include_piece(
+                bd.TRACE, p_i.color, move_position, tracing=True
+            )
+        display_board.print_char()
+
+
 if __name__ == '__main__':
     # Main program.
     print("Testing 'The Crown' code:")
@@ -149,7 +167,8 @@ if __name__ == '__main__':
     # test_calculate_kingdoms()
     # test_position_attacked()
     # test_calculate_soldier_moves()
-    test_evaluate()
+    # test_evaluate()
+    test_generate_pseudomoves()
 
     time_end = time.ctime()  # End time.
     print("{:<20}{}".format("- Ended:", time.ctime()))

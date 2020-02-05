@@ -177,10 +177,3 @@ def evaluate(board):
     # 6. Otherwise, it's not decided yet ≈ DRAW
     return DRAW, False, ON_GOING
 
-
-if __name__ == '__main__':
-    # Main program.
-    print("Testing game_play.py")
-    board = bd.Board("position9.cor")  # Actual board to put pieces on.
-    generate_pseudomoves(board)
-    
