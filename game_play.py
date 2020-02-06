@@ -101,40 +101,47 @@ def generate_pseudomoves(board):
     moves_count = 0
     # Iterate over every piece from the moving side.
     for piece in board.pieces[board.turn]:
-        new_moves = set()  # A set with the moves to find for this 'piece'.
-
-        # Moves for the KNIGHT
-        if piece.type == bd.KNIGHT:
-            # Obtain list with lists of moves: [[1, 2, 3...], [13, 15...]]
-            p_moves = bd.piece_moves[piece.type][piece.color][piece.coord]
-            for positions in p_moves:  # [1, 2, 3, 4,...]
+        # Obtain list with piece moves | lists of moves
+        p_moves = bd.piece_moves[piece.type][piece.color][piece.coord]
+        if type(p_moves[0]) == list:
+            # List of moves lists (K or S in kingdom): [[1, 2...], [13, 15...]]
+            new_moves = set()  # A set with the moves to find for this 'piece'.
+            for moves_list in p_moves:  # [1, 2, 3, 4,...]
                 # Get the closest piece in that direction and its distance.
-                pieces = board.board1d[positions]  # [None, None, piece_1, None...]
+                pieces = board.board1d[moves_list]  # [None, None, piece_1, None...]
                 try:
                     piece_pos = np.where(pieces)[0][0]  # 2
                     closest_piece = pieces[piece_pos]  # piece_1
 
                     if closest_piece.color == piece.color:
                         # Add moves till closest_piece [EXCLUDING it].
-                        new_moves = new_moves.union(positions[:piece_pos])
+                        new_moves = new_moves.union(moves_list[:piece_pos])
                     else:
                         # Add moves till closest_piece [INCLUDING it].
-                        new_moves = new_moves.union(positions[:piece_pos + 1])
+                        new_moves = new_moves.union(moves_list[:piece_pos + 1])
                 except IndexError:
                     # No pieces in that direction: add all moves.
-                    new_moves = new_moves.union(positions)
-
-        # Moves for the SOLDIER
-        elif piece.type == bd.SOLDIER:
-            pass
-        # Moves for the PRINCE
+                    new_moves = new_moves.union(moves_list)
         else:
-            pass
+            # List of moves (P or S out of kingdom): [1, 2, 3...]
+            """ Does this work?
+            new_moves = set(
+                [p.coord for p in board.board1d[p_moves] if p.color != piece.color]
+                )
+            """
+            new_moves = set(p_moves)  # Add all initially.
+            pieces = [
+                p_i for p_i in board.board1d[p_moves]  # [None, friend, foe]
+                if p_i is not None
+            ]
+            for p_i in pieces:
+                if p_i.color == piece.color:
+                    new_moves = new_moves.difference([p_i.coord])
 
         # Update main list.
         moves.append((piece, list(new_moves)))
         moves_count += len(new_moves)
-    
+
     return moves, moves_count
 
 

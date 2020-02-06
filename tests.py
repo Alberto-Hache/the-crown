@@ -191,9 +191,9 @@ if __name__ == '__main__':
     # test_calculate_knight_moves()
     # test_calculate_kingdoms()
     # test_position_attacked()
-    test_calculate_soldier_moves()
+    # test_calculate_soldier_moves()
     # test_evaluate()
-    # test_generate_pseudomoves()
+    test_generate_pseudomoves()
 
     time_end = time.ctime()  # End time.
     print("{:<20}{}".format("- Ended:", time.ctime()))
