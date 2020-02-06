@@ -77,7 +77,7 @@ class Board:
 
         # Set position and sides.
         self.load_board(file_name)
-        self.computer_side = WHITE
+        self.computer_side = self.turn
 
     def load_board(self, file_name):
         if file_name is None:
@@ -213,13 +213,12 @@ class Board:
                 for i in range(self.n_rows - 1):
                     print("{} / ".format(chr(char_ord + i)), end='')
                 print("{}".format(chr(char_ord + i + 1)))
-                print("")
             else:  # Regular edge.
                 line = "/".rjust(n_indent) + "---."*(n_pos_in_row//2) + "---\\"
                 print(line)
             current_pos -= n_pos_in_row
             n_pos_in_row += 2
-        print(color_name[self.turn] + " to move.")
+        print(color_name[self.turn] + " to move.\n")
 
     def print_1d(self):
         print("[")

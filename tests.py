@@ -76,10 +76,24 @@ def test_calculate_soldier_moves():
             moves = soldier_moves[side][position]
             board.clear_board()
             board.include_piece(bd.SOLDIER, side, position)
-            print("{} Soldier moves from position {}".format(
-                bd.color_name[side], position))
-            for position_2 in moves:
-                board.include_piece(bd.TRACE, side, position_2, tracing=True)
+            if moves == []:  # Soldier on Prince's throne.
+                n_moves = 0
+            else:
+                if type(moves[0]) == int:  # Simple list out of kingdom.
+                    for position_2 in moves:
+                        board.include_piece(
+                            bd.TRACE, side, position_2, tracing=True)
+                    n_moves = len(moves)
+                else:  # List of lists within the kingdom.
+                    moves_set = set()
+                    for moves_list in moves:
+                        moves_set = moves_set.union(moves_list)
+                    for position_2 in moves_set:
+                        board.include_piece(
+                            bd.TRACE, side, position_2, tracing=True)
+                    n_moves = len(moves_set)
+            print("{} Soldier: {} moves from position {}".format(
+                bd.color_name[side], n_moves, position))
             board.print_char()
 
 
@@ -138,21 +152,32 @@ def test_evaluate():
 
 
 def test_generate_pseudomoves():
-    file_name = "position9.cor"
-    board = bd.Board(file_name)  # Actual board to put pieces on.
-    print("\nPseudo-moves for position: {}".format(file_name))
-    board.print_char()
+    file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
 
-    moves = gp.generate_pseudomoves(board)
-    for piece_moves in moves:
-        p_i, moves_i = piece_moves
+    for full_file_name in file_list:
+        file_name = full_file_name[len(bd.GAMES_PATH):]  # Remove rel. path.
+        board = bd.Board(file_name)  # Actual board to put pieces on.
         display_board = bd.Board("empty.cor")  # A blank board for tracing.
-        display_board.include_piece(p_i)
-        for move_position in moves_i:
-            display_board.include_piece(
-                bd.TRACE, p_i.color, move_position, tracing=True
-            )
-        display_board.print_char()
+
+        for turn in [bd.WHITE, bd.BLACK]:
+            board.turn = turn
+            display_board.turn = turn
+            print("\nPseudo-moves for position: {}".format(file_name))
+            board.print_char()
+
+            moves, moves_count = gp.generate_pseudomoves(board)
+            for piece_moves in moves:
+                p_i, moves_i = piece_moves
+                display_board.include_piece(
+                    p_i.type, p_i.color, p_i.coord)
+                for move_position in moves_i:
+                    display_board.include_piece(
+                        bd.TRACE, p_i.color, move_position, tracing=True)
+                print("piece = {} {} at {}: {} moves:".format(
+                    bd.color_name[p_i.color], bd.piece_name[p_i.type],
+                    p_i.coord, moves_count))
+                display_board.print_char()
+                display_board.clear_board()
 
 
 if __name__ == '__main__':
@@ -166,9 +191,9 @@ if __name__ == '__main__':
     # test_calculate_knight_moves()
     # test_calculate_kingdoms()
     # test_position_attacked()
-    # test_calculate_soldier_moves()
+    test_calculate_soldier_moves()
     # test_evaluate()
-    test_generate_pseudomoves()
+    # test_generate_pseudomoves()
 
     time_end = time.ctime()  # End time.
     print("{:<20}{}".format("- Ended:", time.ctime()))

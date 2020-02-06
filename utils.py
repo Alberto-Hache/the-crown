@@ -95,9 +95,9 @@ def calculate_simple_moves():
     return simple_moves
 
 
-def calculate_soldier_moves():
-    # An array of shape (2, 49, n)
-    # with legal moves for a Soldier of each side from each position.
+def OLD_calculate_soldier_moves():
+    # An array of shape (2, 49, n_m) with legal moves for a Soldier
+    # of each side, from each position.
     soldier_moves = (
         # A WHITE Soldier:
         [
@@ -221,7 +221,139 @@ def calculate_soldier_moves():
     return soldier_moves
 
 
+def calculate_soldier_moves():
+    # An array of shape (2, 49, <movs>) with legal moves for a Soldier
+    # of each side, from each position, where <movs> is:
+    # a) a list for positions out of the kingdom.
+    # b) a list of lists for positions in the kingdom.
+    soldier_moves = (
+        # A WHITE Soldier:
+        [
+            # row 1 (bottom)
+            [1, ],  # 0
+            [13, 0, 2],  # 1
+            [1, 3],  # 2
+            [15, 2, 4],  # 3
+            [3, 5],  # 4
+            [17, 4, 6],  # 5
+            [5, 7],  # 6
+            [19, 6, 8],  # 7
+            [[7, 6], [7, 19], [9, 21], [9, 10]],  # 8: Moves in kingdom.
+            [[8, 7], [21, 20], [21, 22], [10, 11]],  # 9: Moves in kingdom.
+            [[9, 8], [9, 21], [11, 23], [11, 12]],  # 10: Moves in kingdom.
+            [[10, 9], [23, 22], [12]],  # 11: Moves in kingdom.
+            [],  # 12: A white Soldier can't ever be here.
+            # row 2
+            [14, 1],  # 13
+            [24, 13, 15],  # 14
+            [14, 16, 3],  # 15
+            [26, 15, 17],  # 16
+            [16, 18, 5],  # 17
+            [28, 17, 19],  # 18
+            [18, 20, 7],  # 19
+            [30, 19, 21],  # 20
+            [[20, 19], [20, 30], [22, 32],  # 21: Moves in kingdom.
+             [22, 23], [9, 8], [9, 10]],
+            [[21, 20], [21, 9], [32, 31], [23, 11]],  # 22: Moves in kingdom.
+            [[22, 21], [22, 32], [11, 10], [11, 12]],  # 23: Moves in kingdom.
+            # row 3
+            [25, 14],  # 24
+            [33, 24, 26],  # 25
+            [25, 27, 16],  # 26
+            [35, 26, 28],  # 27
+            [27, 29, 18],  # 28
+            [37, 28, 30],  # 29
+            [29, 31, 20],  # 30
+            [39, 30, 32],  # 31
+            [[31, 30], [31, 39], [22, 21], [22, 23]],  # 32: Moves in kingdom.
+            # row 4
+            [34, 25],  # 33
+            [40, 33, 35],  # 34
+            [34, 36, 27],  # 35
+            [42, 35, 37],  # 36
+            [36, 38, 29],  # 37
+            [44, 37, 39],  # 38
+            [38, 31],  # 39
+            # row 3
+            [41, 34],  # 40
+            [45, 40, 42],  # 41
+            [41, 43, 36],  # 42
+            [47, 42, 44],  # 43
+            [43, 38],  # 44
+            # row 2
+            [46, 41],  # 45
+            [48, 45, 47],  # 46
+            [46, 43],  # 47
+            # row 1
+            [46, ]  # 48; for Soldiers' use only.
+        ],
+        # A BLACK Soldier:
+        [
+            # row 1 (bottom)
+            [],  # 0: A black Soldier can't ever be here.
+            [[0], [13, 14], [2, 3]],  # 1: Moves in kingdom.
+            [[1, 0], [1, 13], [3, 15], [3, 4]],  # 2: Moves in kingdom.
+            [[15, 14], [15, 16], [2, 1], [4, 5]],  # 3: Moves in kingdom.
+            [[3, 2], [3, 15], [5, 17], [5, 6]],  # 4: Moves in kingdom.
+            [17, 4, 6],  # 5
+            [5, 7],  # 6
+            [19, 6, 8],  # 7
+            [7, 9],  # 8
+            [21, 8, 10],  # 9
+            [9, 11],  # 10
+            [23, 10, 12],  # 11
+            [11, ],  # 12
+            # row 2
+            [[14, 24], [14, 15], [1, 2], [1, 0]],  # 13: Moves in kingdom.
+            [[24, 25], [13, 1], [15, 16], [15, 3]],  # 14: Moves in kingdom.
+            [[14, 13], [14, 24], [16, 17], [16, 26],  # 15: Moves in kingdom.
+             [3, 2], [3, 4]],
+            [26, 15, 17],  # 16
+            [16, 18, 5],  # 17
+            [28, 17, 19],  # 18
+            [18, 20, 7],  # 19
+            [30, 19, 21],  # 20
+            [20, 22, 9],  # 21
+            [32, 21, 23],  # 22
+            [22, 11],  # 23
+            # row 3
+            [[25, 33], [25, 26], [14, 13], [14, 15]],  # 24: Moves in kingdom.
+            [33, 24, 26],  # 25
+            [25, 27, 16],  # 26
+            [35, 26, 28],  # 27
+            [27, 29, 18],  # 28
+            [37, 28, 30],  # 29
+            [29, 31, 20],  # 30
+            [39, 30, 32],  # 31
+            [31, 22],  # 32
+            # row 4
+            [34, 25],  # 33
+            [40, 33, 35],  # 34
+            [34, 36, 27],  # 35
+            [42, 35, 37],  # 36
+            [36, 38, 29],  # 37
+            [44, 37, 39],  # 38
+            [38, 31],  # 39
+            # row 3
+            [41, 34],  # 40
+            [45, 40, 42],  # 41
+            [41, 43, 36],  # 42
+            [47, 42, 44],  # 43
+            [43, 38],  # 44
+            # row 2
+            [46, 41],  # 45
+            [48, 45, 47],  # 46
+            [46, 43],  # 47
+            # row 1
+            [46, ]  # 48; for Soldiers' use only.
+        ]
+    )
+    return soldier_moves
+
+
 def calculate_knight_moves():
+    # An array of shape (49, n_d, n_m) with legal moves for a Knight
+    # from each position, in n_d different directions.
     knight_moves = (
         # row 1 [bottom]
         # From 0:
