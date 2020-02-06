@@ -85,7 +85,7 @@ class Board:
         else:
             try:
                 file_name = GAMES_PATH + file_name
-                print("Loading game position {} ...".format(file_name))
+                # print("Loading game position {} ...".format(file_name))
                 board_file = open(file_name, 'r')
                 lines = board_file.read().splitlines()
             except OSError:

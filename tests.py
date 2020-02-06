@@ -1,4 +1,5 @@
 import time
+import sys
 import glob
 import numpy as np
 
@@ -151,7 +152,7 @@ def test_evaluate():
         print("")
 
 
-def test_generate_pseudomoves():
+def test_generate_pseudomoves(draw=True):
     file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
 
     for full_file_name in file_list:
@@ -162,8 +163,9 @@ def test_generate_pseudomoves():
         for turn in [bd.WHITE, bd.BLACK]:
             board.turn = turn
             display_board.turn = turn
-            print("\nPseudo-moves for position: {}".format(file_name))
-            board.print_char()
+            if draw:
+                print("\nPseudo-moves for position: {}".format(file_name))
+                board.print_char()
 
             moves, moves_count = gp.generate_pseudomoves(board)
             for piece_moves in moves:
@@ -173,10 +175,11 @@ def test_generate_pseudomoves():
                 for move_position in moves_i:
                     display_board.include_piece(
                         bd.TRACE, p_i.color, move_position, tracing=True)
-                print("piece = {} {} at {}: {} moves:".format(
-                    bd.color_name[p_i.color], bd.piece_name[p_i.type],
-                    p_i.coord, moves_count))
-                display_board.print_char()
+                if draw:
+                    print("piece = {} {} at {}: {} moves:".format(
+                        bd.color_name[p_i.color], bd.piece_name[p_i.type],
+                        p_i.coord, moves_count))
+                    display_board.print_char()
                 display_board.clear_board()
 
 
@@ -193,7 +196,8 @@ if __name__ == '__main__':
     # test_position_attacked()
     # test_calculate_soldier_moves()
     # test_evaluate()
-    test_generate_pseudomoves()
+    for i in range(5000):
+        test_generate_pseudomoves(draw=False)
 
     time_end = time.ctime()  # End time.
     print("{:<20}{}".format("- Ended:", time.ctime()))

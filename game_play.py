@@ -123,16 +123,20 @@ def generate_pseudomoves(board):
                     # No pieces in that direction: add all moves.
                     new_moves = new_moves.union(moves_list)
         else:
-            # List of moves (P or S out of kingdom): [1, 2, 3...]
-            """ Does this work?
-            new_moves = set(
-                [p.coord for p in board.board1d[p_moves] if p.color != piece.color]
-                )
+            # List of moves (P, or S out of kingdom): [1, 2, 3...]
+            # Version: 2 [30 seg for 5,000 calls]
             """
+            new_moves = set(
+                [p for p in p_moves if board.board1d[p] is None
+                    or board.board1d[p].color != piece.color]
+            )
+
+            """
+            # Version: 1 [29 seg for 5,000 calls]
             new_moves = set(p_moves)  # Add all initially.
             pieces = [
                 p_i for p_i in board.board1d[p_moves]  # [None, friend, foe]
-                if p_i is not None
+                if p_i is not None                     # [friend, foe]
             ]
             for p_i in pieces:
                 if p_i.color == piece.color:
@@ -194,4 +198,3 @@ def evaluate(board):
 
     # 6. Otherwise, it's not decided yet ≈ DRAW
     return DRAW, False, ON_GOING
-
