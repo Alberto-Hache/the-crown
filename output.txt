@@ -1,3 +1,0 @@
-Testing 'The Crown' code:
-- Started:          Thu Feb  6 23:29:26 2020
-- Ended:            Thu Feb  6 23:29:55 2020

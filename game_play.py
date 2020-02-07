@@ -108,7 +108,7 @@ def generate_pseudomoves(board):
             new_moves = set()  # A set with the moves to find for this 'piece'.
             for moves_list in p_moves:  # [1, 2, 3, 4,...]
                 # Get the closest piece in that direction and its distance.
-                pieces = board.board1d[moves_list]  # [None, None, piece_1, None...]
+                pieces = board.board1d[moves_list]  # [None, None, piece_1,...]
                 try:
                     piece_pos = np.where(pieces)[0][0]  # 2
                     closest_piece = pieces[piece_pos]  # piece_1
@@ -124,23 +124,10 @@ def generate_pseudomoves(board):
                     new_moves = new_moves.union(moves_list)
         else:
             # List of moves (P, or S out of kingdom): [1, 2, 3...]
-            # Version: 2 [30 seg for 5,000 calls]
-            """
             new_moves = set(
                 [p for p in p_moves if board.board1d[p] is None
                     or board.board1d[p].color != piece.color]
             )
-
-            """
-            # Version: 1 [29 seg for 5,000 calls]
-            new_moves = set(p_moves)  # Add all initially.
-            pieces = [
-                p_i for p_i in board.board1d[p_moves]  # [None, friend, foe]
-                if p_i is not None                     # [friend, foe]
-            ]
-            for p_i in pieces:
-                if p_i.color == piece.color:
-                    new_moves = new_moves.difference([p_i.coord])
 
         # Update main list.
         moves.append((piece, list(new_moves)))

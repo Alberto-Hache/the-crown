@@ -1,6 +1,7 @@
 import time
 import sys
 import glob
+import cProfile
 import numpy as np
 
 import board as bd
@@ -158,6 +159,8 @@ def test_generate_pseudomoves(draw=True):
     for full_file_name in file_list:
         file_name = full_file_name[len(bd.GAMES_PATH):]  # Remove rel. path.
         board = bd.Board(file_name)  # Actual board to put pieces on.
+        if draw:
+            print("Loading game position {} ...".format(file_name))
         display_board = bd.Board("empty.cor")  # A blank board for tracing.
 
         for turn in [bd.WHITE, bd.BLACK]:
@@ -183,11 +186,22 @@ def test_generate_pseudomoves(draw=True):
                 display_board.clear_board()
 
 
-if __name__ == '__main__':
+def profiler():
     # Main program.
     print("Testing 'The Crown' code:")
     time_0 = time.ctime()  # Start time.
     print("{:<20}{}".format("- Started:", time_0))
+
+    for _ in range(2000):
+        test_generate_pseudomoves(draw=False)  # Avoid some I/O overhead.
+
+    time_end = time.ctime()  # End time.
+    print("{:<20}{}".format("- Ended:", time_end))
+
+
+if __name__ == '__main__':
+    # Main program.
+    print("Testing 'The Crown' code:")
 
     # test_expected_coord1to3()
     # test_calculate_simple_moves()
@@ -196,8 +210,5 @@ if __name__ == '__main__':
     # test_position_attacked()
     # test_calculate_soldier_moves()
     # test_evaluate()
-    for i in range(5000):
-        test_generate_pseudomoves(draw=False)
-
-    time_end = time.ctime()  # End time.
-    print("{:<20}{}".format("- Ended:", time.ctime()))
+    # test_generate_pseudomoves()
+    cProfile.run('profiler()', sort='tottime')
