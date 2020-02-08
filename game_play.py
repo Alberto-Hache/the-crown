@@ -1,4 +1,6 @@
 import numpy as np
+import copy
+
 import board as bd
 
 # AI search hyperparameters
@@ -61,15 +63,13 @@ def mini_max(board, depth, alpha, beta):
         # An intermediate node.
         moves, moves_count = generate_pseudomoves(board)
         if moves_count == 0:
-            # Playing side has no moves: evaluate and return.
+            # Playing side has no pseudomoves: evaluate and return.
             result, game_end, game_status = evaluate(board)
             return None, -result, game_end, game_status  # Flip result's sign.
         else:
             # Detect if position is game end?
             # Explore pseudomoves.
             n_moves_tried = 0
-
-
 
     return best_move, result, game_end, game_status
 
@@ -149,13 +149,62 @@ def generate_pseudomoves(board):
     return moves, moves_count
 
 
-def make_pseudo_move(board, piece1, coord2):
+def make_pseudo_move(board, coord1, coord2):
     """
-    Given a move, make it and return new board and result:
-    a) legal move -> new_board, True
-    b) the playing Prince would be left on check -> [new_board], False
-    c) the playing Soldier would move on the throne of ist still present Prince.
+    Given a *legal* position, try to make a pseudomove.
+    Detect if it would be ilegal first.
+    If it's legal, handle special moves: Soldier promotion, Prince crowning.
+
+    Input
+        board: Board, coord1: int, coord2: int
+    Output
+        new_board: Board, is_legal: Boolean, result: int, game_end: Boolean,
+        game_status: int*
+        * (ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
+        DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE / DRAW_THREE_REPETITIONS)
+
+    Cases managed:
+    a) Detection of ilegal moves, once done, according to is_legal().
+
+    b) legal moves:
+        b.1) Playing Prince reaches the crown.
+            -> new_board, is_legal=True,
+               result=PLAYER_WINS, game_end=True, game_status=VICTORY_CROWNING
+
+        b.2) Capture of last opponent's piece.
+            -> new_board, is_legal=True,
+               result=PLAYER_WINS, game_end=True, game_status=VICTORY_NO_PIECES_LEFT
+
+        b.3) Normal move, normal capture (no last opponent's piece).
+            -> new_board, is_legal=True,
+               result=None, game_end=False, game_status=ON_GOING
+
     """
+
+    # Create new board on which to try the move.
+    new_board = copy.deepcopy(board)
+    new_board.make_move(coord1, coord2)  # Turns have switched now!
+
+    piece_moved = new_board.board1d[coord2]  # The piece just moved.
+    side_moved = board.turn  # The side who made the move.
+
+    # Check if it's NOT a legal position.
+    if not is_legal(new_board):
+        return new_board, False, None, None, None
+
+    # Check if a Prince's crowning.
+    if (coord2 == new_board.crown_position[side_moved]) and \
+       (piece_moved.type == bd.PRINCE):
+        # A Prince was legally moved onto the crown!
+        return new_board, True, PLAYER_WINS, True, VICTORY_CROWNING
+
+    # Check if it was the capture of the last piece.
+    if new_board.piece_count[new_board.turn].sum == 0:
+        return new_board, True, PLAYER_WINS, True, VICTORY_NO_PIECES_LEFT
+
+    # Otherwise, it was a normal move.
+    return new_board, True, None, False, ON_GOING
+
 
 def evaluate(board):
     """Evaluate a position from the playing side's perspective.
@@ -212,23 +261,24 @@ def is_legal(board):
     """
     Detect if a given position is legal.
     Ilegal cases checked:
-    a) The moving side could take other side's Prince.
-    b) A Soldier on its Prince's starting position while still present.
+    a) More than one Prince on either side.
+    b) The moving side could take other side's Prince.
     NO CHECK MADE ON: number of pieces on board (must check at load time).
     """
     turn = board.turn
     no_turn = bd.WHITE if turn == bd.BLACK else bd.BLACK
-    other_prince = board.prince[no_turn]
 
+    # Check first if the number of Princes is legal.
+    if board.piece_count[bd.PRINCE][bd.WHITE] > 1 or \
+       board.piece_count[bd.PRINCE][bd.BLACK] > 1:
+        return False
+
+    # Check now if the moving side could take other side's Prince
+    other_prince = board.prince[no_turn]
     if other_prince is not None:
         # Non-playing side has a Prince.
         if position_attacked(board, other_prince.coord, turn):
             # It's in check! -> Ilegal.
             return False
-        else:
-            # Check for non-playing Soldiers on its throne.
-            piece = board.prince_position[no_turn]
-            if piece is not None:
-                return (piece.color == turn or piece.type != bd.SOLDIER)
 
     return True

@@ -151,9 +151,9 @@ class Board:
         if piece.type == PRINCE:
             self.prince[piece.color] = None
 
-    def make_move(self, piece1, coord2):
-        # Obtain full info: piece1@coord1 -> [piece2 @]coord2
-        coord1 = piece1.coord
+    def make_move(self, coord1, coord2):
+        # Obtain Pieces.
+        piece1 = self.board1d[coord1]
         piece2 = self.board1d[coord2]
         # Piece2 captured?
         if piece2 is not None:
@@ -166,14 +166,19 @@ class Board:
                     piece_char[piece2.type][piece2.color]
                 )
             self.remove_piece(coord2)
-        # Move piece1
+        # Move piece1.
         self.board1d[coord1] = None
         x1, x2, y = coord1to3[coord1]
         self.board3d[x1][x2][y] = None
         self.board1d[coord2] = piece1
         x1, x2, y = coord1to3[coord2]
         self.board3d[x1][x2][y] = piece1
-        # Change turn
+        # Manage possible Soldier's promotion.
+        if coord2 == self.prince_position[piece1.color] and \
+           piece1.type == SOLDIER:
+            self.remove_piece(coord2)
+            self.include_piece(PRINCE, board.turn, coord2)
+        # Change turns
         self.turn = WHITE if self.turn == BLACK else BLACK
 
     def clear_board(self):

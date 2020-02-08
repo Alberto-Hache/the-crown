@@ -6,8 +6,8 @@
 - Detect and handle checkmate -> Prince out + opponent's turn again.
 - Detect other ends: no pieces left, no Princes left, stalemate, ... (more?)
 - game_play: add function to check if a position is legal
-  - No princes can be taken.
-  - No soldiers in their prince's starting position.
+  - No pPrinces can be taken.
+  - No soldiers in their Prince's starting position.
   - DON'T CHECK: Number of princes, knights, soldiers per side.
 
 - Extend make_move():
