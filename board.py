@@ -71,6 +71,7 @@ class Board:
 
         self.pieces = [[], []]  # Pieces on the board from 0=WHITE, 1=BLACK.
         self.piece_count = np.zeros((2, 3))  # 2 sides x 3 piece types.
+        self.prince = [None, None]
 
         self.board1d = np.full((self.n_positions), None)
         self.board3d = np.full((N_ROWS, N_ROWS, N_ROWS), None)
@@ -114,7 +115,7 @@ class Board:
                     sys.exit(1)
 
     def include_piece(self, type, color, coord, tracing=False):
-        # Check that it's a valid.
+        # Check that it's empty.
         assert self.board1d[coord] is None, \
             "Coord {} ({}) is not empty.".format(
                 coord, coord_2_algebraic[coord])
@@ -128,8 +129,12 @@ class Board:
         x1, x2, y = coord1to3[coord]
         self.board3d[x1][x2][y] = piece
         # Update piece counts (unless just tracing for testing purposes).
+        # TODO: Check if the number of legal pieces is exceeded [1P, 2K, 3S]
         if not piece.tracing:
             self.piece_count[color][type] += 1
+        # If it's a Prince, update Princes' list.
+        if type == PRINCE:
+            self.prince[color] = piece
 
     def remove_piece(self, coord):
         # Identify the piece.
@@ -142,11 +147,13 @@ class Board:
         # Update piece counts.
         if not piece.tracing:
             self.piece_count[piece.color][piece.type] -= 1
+        # If it's a Prince, update Princes' list.
+        if piece.type == PRINCE:
+            self.prince[piece.color] = None
 
-    def make_move(self, move):
-        coord1, coord2 = move
-        # Identify the piece(s).
-        piece1 = self.board1d[coord1]
+    def make_move(self, piece1, coord2):
+        # Obtain full info: piece1@coord1 -> [piece2 @]coord2
+        coord1 = piece1.coord
         piece2 = self.board1d[coord2]
         # Piece2 captured?
         if piece2 is not None:

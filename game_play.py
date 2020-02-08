@@ -36,28 +36,40 @@ def mini_max(board, depth, alpha, beta):
     # else:
     #   moves = calculate pseudo_moves (not checked as legal yet)
     #   n_moves_tried = 0
-    #   keep_exploring = True
-    #   while len(moves) > 0 and keep_exploring:
+    #   while len(moves) > 0:
     #       m = pick_move(moves)
     #       new_board, legal = make_move(board, m)
     #       if legal(new_board):
     #           n_moves_tried +=1
-    #           sons_move, result, game_end, game_status = mini_max(
+    #           childs_move, result, game_end, game_status = mini_max(
     #               new_board, depth + 1, -beta, -alpha)
     #           if result > alpha:
-    #               best_move, alpha = sons_move, result
-    #           if alpha >= beta:
-    #               keep_exploring = False
+    #               best_move, alpha = childs_move, result
+    #               if alpha >= beta:
+    #                   return(...)
     #   if n_moves_tried == 0:
-    #       check why and set result, game_end, game_status
+    #       check why and set result, game_end, game_status:
+    #           Stalemate, check-mate, no-pieces-left
     #   return best_move
 
     best_move, result, game_end, game_status = None, None, True, ON_GOING
 
     if depth == MAX_DEPTH:
+        # A leave node.
         result, game_end, game_status = evaluate(board)
     else:
-        pass
+        # An intermediate node.
+        moves, moves_count = generate_pseudomoves(board)
+        if moves_count == 0:
+            # Playing side has no moves: evaluate and return.
+            result, game_end, game_status = evaluate(board)
+            return None, -result, game_end, game_status  # Flip result's sign.
+        else:
+            # Detect if position is game end?
+            # Explore pseudomoves.
+            n_moves_tried = 0
+
+
 
     return best_move, result, game_end, game_status
 
@@ -93,10 +105,11 @@ def position_attacked(board, pos, attacking_side):
 
 def generate_pseudomoves(board):
     """
-    Generate a list of possible moves for the playing side.
-
+    Generate a list of non-legally checked moves for the playing side.
+    It returns:
+        list of lists: [[piece_1, [13, 53...]], [piece_2, [...]]
+        lnteger:        The total number of pseudo_moves. 
     """
-    # Initiate 'moves', a list of piece/moves: [[p1, [13, 53...]], [p2, [...]]
     moves = []
     moves_count = 0
     # Iterate over every piece from the moving side.
@@ -136,13 +149,21 @@ def generate_pseudomoves(board):
     return moves, moves_count
 
 
+def make_pseudo_move(board, piece1, coord2):
+    """
+    Given a move, make it and return new board and result:
+    a) legal move -> new_board, True
+    b) the playing Prince would be left on check -> [new_board], False
+    c) the playing Soldier would move on the throne of ist still present Prince.
+    """
+
 def evaluate(board):
     """Evaluate a position from the playing side's perspective.
 
     Input:
         Board :     The game position to evaluate.
 
-    Output:
+    Output:         result, game_end, game_status
         int :       PLAYER_WINS/OPPONENT_WINS/DRAW, with PLAYER being
                     the side whose turn it is to move.
         Boolean:    Whether the game has finished.
@@ -180,8 +201,34 @@ def evaluate(board):
     # DRAW_STALEMATE
 
     # 5. Three repetitions?
-    pass  # Note: will require a record of all past positions.
+    pass  # Note: Would require a record of all past positions.
     # DRAW_THREE_REPETITIONS
 
     # 6. Otherwise, it's not decided yet ≈ DRAW
     return DRAW, False, ON_GOING
+
+
+def is_legal(board):
+    """
+    Detect if a given position is legal.
+    Ilegal cases checked:
+    a) The moving side could take other side's Prince.
+    b) A Soldier on its Prince's starting position while still present.
+    NO CHECK MADE ON: number of pieces on board (must check at load time).
+    """
+    turn = board.turn
+    no_turn = bd.WHITE if turn == bd.BLACK else bd.BLACK
+    other_prince = board.prince[no_turn]
+
+    if other_prince is not None:
+        # Non-playing side has a Prince.
+        if position_attacked(board, other_prince.coord, turn):
+            # It's in check! -> Ilegal.
+            return False
+        else:
+            # Check for non-playing Soldiers on its throne.
+            piece = board.prince_position[no_turn]
+            if piece is not None:
+                return (piece.color == turn or piece.type != bd.SOLDIER)
+
+    return True
