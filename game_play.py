@@ -185,7 +185,7 @@ def make_pseudo_move(board, coord1, coord2):
         return new_board, True, PLAYER_WINS, True, VICTORY_CROWNING
 
     # Check if it was the capture of the last piece.
-    if new_board.piece_count[new_board.turn].sum == 0:
+    if new_board.piece_count[new_board.turn].sum() == 0:
         return new_board, True, PLAYER_WINS, True, VICTORY_NO_PIECES_LEFT
 
     # Otherwise, it was a normal move.

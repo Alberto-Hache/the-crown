@@ -76,16 +76,16 @@ def test_make_pseudo_move(draw=True):
     # Definition of test cases to run:
     test_cases = [
         [
+            "test_make_pseudo_move_03.cor",
+            ["a7b5", "c5b6", "f1g1", "c5c4", "f1f2"]
+        ],
+        [
             "test_make_pseudo_move_01.cor",
             ["c8b7", "c8c3", "c8a8", "e3e2"]
         ],
         [
             "test_make_pseudo_move_02.cor",
             ["b2e1", "a5a4", "a5a6", "b5b4", "b5a6"]
-        ],
-        [
-            "test_make_pseudo_move_03.cor",
-            ["a7b5", "c5b6", "f1g1", "c5c4", "f1f2"]
         ]
     ]
 

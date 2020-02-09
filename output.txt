@@ -1,4 +1,94 @@
 Testing 'The Crown' code:
+Loading game position test_make_pseudo_move_03.cor ...
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 /K\ / \ / \ / \ 
+       /---.---.---.---\
+    5 / \ /s\ /P\ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \ / \ / \ / \ / \ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ / \ /S\ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+make_pseudo_move(a7b5)
+Result: 
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 / \ /K\ /P\ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \ / \ / \ / \ / \ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ / \ /S\ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+is_legal = True, result = 1, game_end = True, game_status = 2
+make_pseudo_move(c5b6)
+Result: 
+[BOARD NOT PRINTED]: c5b6 is an illegal move.
+is_legal = False, result = None, game_end = None, game_status = None
+make_pseudo_move(f1g1)
+Result: 
+[BOARD NOT PRINTED]: f1g1 is an illegal move.
+is_legal = False, result = None, game_end = None, game_status = None
+make_pseudo_move(c5c4)
+Result: 
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 /K\ / \ / \ / \ 
+       /---.---.---.---\
+    5 / \ /s\ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \ / \P/ \ / \ / \ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ / \ /S\ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+is_legal = True, result = None, game_end = False, game_status = 0
+make_pseudo_move(f1f2)
+Result: 
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 /K\ / \ / \ / \ 
+       /---.---.---.---\
+    5 / \ /s\ /P\ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \ / \ / \ / \ / \ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ / \ / \S/ \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+is_legal = True, result = None, game_end = False, game_status = 0
 Loading game position test_make_pseudo_move_01.cor ...
                .
            13 / \ 
@@ -139,95 +229,5 @@ Result:
  ·---·---·---·---·---·---·---·
   a / b / c / d / e / f / g
 White to move.
-
-is_legal = True, result = None, game_end = False, game_status = 0
-Loading game position test_make_pseudo_move_03.cor ...
-               .
-           13 / \ 
-             /---\
-         11 / \ / \ 
-           /---.---\
-        9 / \ / \ / \ 
-         /---.---.---\
-      7 /K\ / \ / \ / \ 
-       /---.---.---.---\
-    5 / \ /s\ /P\ / \ / \ 
-     /---.---.---.---.---\
-  3 / \ / \ / \ / \ / \ / \ 
-   /---.---.---.---.---.---\
-1 / \ / \ / \ / \ / \ /S\ / \ 
- ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g
-White to move.
-
-make_pseudo_move(a7b5)
-Result: 
-               .
-           13 / \ 
-             /---\
-         11 / \ / \ 
-           /---.---\
-        9 / \ / \ / \ 
-         /---.---.---\
-      7 / \ / \ / \ / \ 
-       /---.---.---.---\
-    5 / \ /K\ /P\ / \ / \ 
-     /---.---.---.---.---\
-  3 / \ / \ / \ / \ / \ / \ 
-   /---.---.---.---.---.---\
-1 / \ / \ / \ / \ / \ /S\ / \ 
- ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g
-Black to move.
-
-is_legal = True, result = None, game_end = False, game_status = 0
-make_pseudo_move(c5b6)
-Result: 
-[BOARD NOT PRINTED]: c5b6 is an illegal move.
-is_legal = False, result = None, game_end = None, game_status = None
-make_pseudo_move(f1g1)
-Result: 
-[BOARD NOT PRINTED]: f1g1 is an illegal move.
-is_legal = False, result = None, game_end = None, game_status = None
-make_pseudo_move(c5c4)
-Result: 
-               .
-           13 / \ 
-             /---\
-         11 / \ / \ 
-           /---.---\
-        9 / \ / \ / \ 
-         /---.---.---\
-      7 /K\ / \ / \ / \ 
-       /---.---.---.---\
-    5 / \ /s\ / \ / \ / \ 
-     /---.---.---.---.---\
-  3 / \ / \ / \P/ \ / \ / \ 
-   /---.---.---.---.---.---\
-1 / \ / \ / \ / \ / \ /S\ / \ 
- ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g
-Black to move.
-
-is_legal = True, result = None, game_end = False, game_status = 0
-make_pseudo_move(f1f2)
-Result: 
-               .
-           13 / \ 
-             /---\
-         11 / \ / \ 
-           /---.---\
-        9 / \ / \ / \ 
-         /---.---.---\
-      7 /K\ / \ / \ / \ 
-       /---.---.---.---\
-    5 / \ /s\ /P\ / \ / \ 
-     /---.---.---.---.---\
-  3 / \ / \ / \ / \ / \ / \ 
-   /---.---.---.---.---.---\
-1 / \ / \ / \ / \ / \ / \S/ \ 
- ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g
-Black to move.
 
 is_legal = True, result = None, game_end = False, game_status = 0
