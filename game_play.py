@@ -152,7 +152,7 @@ def generate_pseudomoves(board):
 def make_pseudo_move(board, coord1, coord2):
     """
     Given a *legal* position, try to make a pseudomove.
-    Detect if it would be ilegal first.
+    Detect if the move would be ilegal first.
     If it's legal, detect some end of game conditions:
     - Prince crowning
     - Opponent is left with no pieces
@@ -162,8 +162,9 @@ def make_pseudo_move(board, coord1, coord2):
     Output
         new_board: Board, is_legal: Boolean, result: int, game_end: Boolean,
         game_status: int*
-        * (ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
-        DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE / DRAW_THREE_REPETITIONS)
+        * Checked:   ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
+        * Unchecked: DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE /
+                     DRAW_THREE_REPETITIONS
     """
 
     # Create new board on which to try the move.
@@ -178,7 +179,7 @@ def make_pseudo_move(board, coord1, coord2):
         return new_board, False, None, None, None
 
     # Check if a Prince's crowning.
-    if (coord2 == new_board.crown_position[side_moved]) and \
+    if (coord2 == new_board.crown_position) and \
        (piece_moved.type == bd.PRINCE):
         # A Prince was legally moved onto the crown!
         return new_board, True, PLAYER_WINS, True, VICTORY_CROWNING

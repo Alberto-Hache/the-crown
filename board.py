@@ -170,6 +170,8 @@ class Board:
         self.board1d[coord1] = None
         x1, x2, y = coord1to3[coord1]
         self.board3d[x1][x2][y] = None
+
+        piece1.coord = coord2
         self.board1d[coord2] = piece1
         x1, x2, y = coord1to3[coord2]
         self.board3d[x1][x2][y] = piece1
@@ -177,7 +179,7 @@ class Board:
         if coord2 == self.prince_position[piece1.color] and \
            piece1.type == SOLDIER:
             self.remove_piece(coord2)
-            self.include_piece(PRINCE, board.turn, coord2)
+            self.include_piece(PRINCE, self.turn, coord2)
         # Change turns
         self.turn = WHITE if self.turn == BLACK else BLACK
 

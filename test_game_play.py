@@ -26,27 +26,6 @@ def test_position_attacked():
                 display_board.print_char()
 
 
-def test_evaluate():
-    file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
-
-    for full_file_name in file_list:
-        file_name = full_file_name[len(bd.GAMES_PATH):]  # Remove rel. path.
-        board = bd.Board(file_name)  # The board to put pieces on.
-
-        print("Evaluation of position {}:".format(file_name))
-        board.print_char()
-        eval, game_end, game_status = gp.evaluate(board)
-        print("Eval = {}, Finished = {}, Status = {}".format(
-            eval, game_end,  game_status))
-
-        board.turn = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
-        print("{} to move:".format(bd.color_name[board.turn]))
-        eval, game_end, game_status = gp.evaluate(board)
-        print("Eval = {}, Finished = {}, Status = {}".format(
-            eval, game_end,  game_status))
-        print("")
-
-
 def test_generate_pseudomoves(draw=True):
     file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
 
@@ -93,6 +72,70 @@ def profiler_generate_pseudomoves():
     print("{:<20}{}".format("- Ended:", time_end))
 
 
+def test_make_pseudo_move(draw=True):
+    # Definition of test cases to run:
+    test_cases = [
+        [
+            "test_make_pseudo_move_01.cor",
+            ["c8b7", "c8c3", "c8a8", "e3e2"]
+        ],
+        [
+            "test_make_pseudo_move_02.cor",
+            ["b2e1", "a5a4", "a5a6", "b5b4", "b5a6"]
+        ],
+        [
+            "test_make_pseudo_move_03.cor",
+            ["a7b5", "c5b6", "f1g1", "c5c4", "f1f2"]
+        ]
+    ]
+
+    # Go through all test cases
+    for test_case in test_cases:
+        file_name, moves_list = test_case
+        board = bd.Board(file_name)
+        if draw:
+            print("Loading game position {} ...".format(file_name))
+            board.print_char()
+        for move_txt in moves_list:
+            coord1 = bd.coord_2_algebraic.index(move_txt[:2])
+            coord2 = bd.coord_2_algebraic.index(move_txt[2:4])
+            new_board, is_legal, result, game_end, game_status = \
+                gp.make_pseudo_move(board, coord1, coord2)
+            if draw:
+                print("make_pseudo_move({})".format(move_txt))
+                print("Result: ")
+                if is_legal:
+                    new_board.print_char()
+                else:
+                    print("[BOARD NOT PRINTED]: {} is an illegal move.".format(
+                        move_txt))
+                print("is_legal = {}, result = {}, game_end = {}, "
+                      "game_status = {}".format(
+                          is_legal, result, game_end, game_status
+                      ))
+
+
+def test_evaluate():
+    file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
+
+    for full_file_name in file_list:
+        file_name = full_file_name[len(bd.GAMES_PATH):]  # Remove rel. path.
+        board = bd.Board(file_name)  # The board to put pieces on.
+
+        print("Evaluation of position {}:".format(file_name))
+        board.print_char()
+        eval, game_end, game_status = gp.evaluate(board)
+        print("Eval = {}, Finished = {}, Status = {}".format(
+            eval, game_end,  game_status))
+
+        board.turn = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
+        print("{} to move:".format(bd.color_name[board.turn]))
+        eval, game_end, game_status = gp.evaluate(board)
+        print("Eval = {}, Finished = {}, Status = {}".format(
+            eval, game_end,  game_status))
+        print("")
+
+
 if __name__ == '__main__':
     # Main program.
     print("Testing 'The Crown' code:")
@@ -100,4 +143,5 @@ if __name__ == '__main__':
     # test_position_attacked()
     # test_evaluate()
     # test_generate_pseudomoves()
-    cProfile.run('profiler_generate_pseudomoves()', sort='tottime')
+    # cProfile.run('profiler_generate_pseudomoves()', sort='tottime')
+    test_make_pseudo_move()
