@@ -110,12 +110,35 @@ def test_calculate_kingdoms():
     board.print_char()
 
 
+def test_algebraic_move_2_coords():
+    correct_test_cases = [
+        "a1a12", "b1b2", "a12a13", "b9b10", "G1f1"
+    ]
+    incorrect_test_cases = [
+        "ab12", "ab1a2", "c1", "d1", "c1 d1"
+    ]
+
+    for case in correct_test_cases:
+        coord1, coord2, is_correct = utils.algebraic_move_2_coords(case)
+        assert is_correct, "Error found while testing move: {}".format(case)
+        print("Test passed: correct move {} : from {} to {}".format(
+            case, coord1, coord2
+        ))
+
+    for case in incorrect_test_cases:
+        coord1, coord2, is_correct = utils.algebraic_move_2_coords(case)
+        assert not is_correct, \
+            "Error found while testing move: {}".format(case)
+        print("Test passed: incorrect move {}".format(case))
+
+
 if __name__ == '__main__':
     # Main program.
     print("Testing 'The Crown' code:")
 
     # test_expected_coord1to3()
-    test_calculate_knight_moves()
+    # test_calculate_knight_moves()
     # test_calculate_simple_moves()
     # test_calculate_soldier_moves()
     # test_calculate_kingdoms()
+    test_algebraic_move_2_coords()

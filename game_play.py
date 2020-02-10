@@ -255,8 +255,8 @@ def is_legal(board):
     no_turn = bd.WHITE if turn == bd.BLACK else bd.BLACK
 
     # Check first if the number of Princes is legal.
-    if board.piece_count[bd.PRINCE][bd.WHITE] > 1 or \
-       board.piece_count[bd.PRINCE][bd.BLACK] > 1:
+    if board.piece_count[bd.WHITE][bd.PRINCE] > 1 or \
+       board.piece_count[bd.BLACK][bd.PRINCE] > 1:
         return False
 
     # Check now if the moving side could take other side's Prince

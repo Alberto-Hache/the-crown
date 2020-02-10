@@ -4,7 +4,7 @@ import cProfile
 
 import game_play as gp
 import board as bd
-
+import utils
 
 def test_position_attacked():
     file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
@@ -76,29 +76,53 @@ def test_make_pseudo_move(draw=True):
     # Definition of test cases to run:
     test_cases = [
         [
-            "test_make_pseudo_move_03.cor",
-            ["a7b5", "c5b6", "f1g1", "c5c4", "f1f2"]
-        ],
-        [
             "test_make_pseudo_move_01.cor",
             ["c8b7", "c8c3", "c8a8", "e3e2"]
         ],
         [
             "test_make_pseudo_move_02.cor",
             ["b2e1", "a5a4", "a5a6", "b5b4", "b5a6"]
+        ],
+        [
+            "test_make_pseudo_move_03.cor",
+            ["a7b5", "c5b6", "f1g1", "c5c4", "f1f2"]
+        ],
+        [
+            "test_make_pseudo_move_04.cor",
+            ["b1a1"]
+        ],
+        [
+            "test_make_pseudo_move_05.cor",
+            ["a3a1"]
+        ],
+        [
+            "test_make_pseudo_move_06.cor",
+            ["a3a1"]
+        ],
+        [
+            "test_make_pseudo_move_07.cor",
+            ["a3a1", "a12a13"]
         ]
     ]
 
-    # Go through all test cases
+    # Go through all test cases, each on one board.
     for test_case in test_cases:
         file_name, moves_list = test_case
         board = bd.Board(file_name)
         if draw:
+            print("--------------------------------------------------------")
             print("Loading game position {} ...".format(file_name))
             board.print_char()
+        # Go through all moves in the test case.
         for move_txt in moves_list:
-            coord1 = bd.coord_2_algebraic.index(move_txt[:2])
-            coord2 = bd.coord_2_algebraic.index(move_txt[2:4])
+            # Parse move.
+            coord1_str, coord2_str, is_correct = \
+                utils.algebraic_move_2_coords(move_txt)
+            assert is_correct, "Error parsing move {}".format(move_txt)
+            coord1 = bd.coord_2_algebraic.index(coord1_str)
+            coord2 = bd.coord_2_algebraic.index(coord2_str)
+
+            # Make the move and check results.
             new_board, is_legal, result, game_end, game_status = \
                 gp.make_pseudo_move(board, coord1, coord2)
             if draw:

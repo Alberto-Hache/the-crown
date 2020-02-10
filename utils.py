@@ -1,5 +1,7 @@
 # Auxiliary tables for the board.
 
+import re  # Regular expressions.
+
 import numpy as np
 
 
@@ -31,6 +33,31 @@ def calculate_coord_2_algebraic():
         "a13"
     )
     return coord_2_algebraic
+
+
+def algebraic_move_2_coords(move_txt):
+
+    # First, get rid of possible capital letters.
+    move_txt = str.lower(move_txt)
+
+    # Define regular expression for moves in algebraic coords.
+    # Patterns expected: "a1a2", "a12a13", etc.
+    r = re.compile("([a-g]{1})([0-9]+)([a-g]{1})([0-9]+)")
+
+    bits = r.match(move_txt)  # Try to match the move.
+
+    # Check if the move received fits in.
+    if bits is not None:
+        # It worked: associate the 4 groupus properly: "a1", "a2"
+        is_correct = True
+        coord1 = bits.group(1) + bits.group(2)
+        coord2 = bits.group(3) + bits.group(4)
+    else:
+        # Wrong format.
+        is_correct = False
+        coord1, coord2 = "", ""
+
+    return coord1, coord2, is_correct
 
 
 def calculate_simple_moves():
