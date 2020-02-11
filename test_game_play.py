@@ -6,6 +6,7 @@ import game_play as gp
 import board as bd
 import utils
 
+
 def test_position_attacked():
     file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
 

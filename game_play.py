@@ -108,7 +108,7 @@ def generate_pseudomoves(board):
     Generate a list of non-legally checked moves for the playing side.
     It returns:
         list of lists: [[piece_1, [13, 53...]], [piece_2, [...]]
-        lnteger:        The total number of pseudo_moves. 
+        lnteger:        The total number of pseudo_moves.
     """
     moves = []
     moves_count = 0
