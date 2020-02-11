@@ -86,7 +86,6 @@ class Board:
         else:
             try:
                 file_name = GAMES_PATH + file_name
-                # print("Loading game position {} ...".format(file_name))
                 board_file = open(file_name, 'r')
                 lines = board_file.read().splitlines()
             except OSError:
@@ -187,52 +186,53 @@ class Board:
         for piece in self.pieces[0] + self.pieces[1]:
             self.remove_piece(piece.coord)
 
-    def print_char(self):
+    def print_char(self, out_file=None):
         current_pos = self.n_positions - 1
         n_pos_in_row = 1
         n_indent = 2*self.n_rows + 2
         # Draw the top.
         line = ".".rjust(n_indent)
-        print(line)
+        print(line, file=out_file)
         # Draw the rows.
         for row in range(self.n_rows, 0, -1):  # rows from 7 to 1.
             n_indent -= 1
             black_pos = True  # Start in black position.
             line = ("{} /".format(row*2 - 1)).rjust(n_indent)
-            print(line, end='')
+            print(line, end='', file=out_file)
             # Draw row with pieces.
             for pos in range(current_pos - n_pos_in_row + 1,
                              current_pos + 1, +1):
                 piece = self.board1d[pos]
                 edge = "\\" if black_pos else "/"
                 if piece is None:
-                    print(EMPTY + edge, end='')
+                    print(EMPTY + edge, end='', file=out_file)
                 else:
                     if piece.tracing:  # A non-playing piece (for tracing).
                         trace_char = "*" if piece.type == TRACE \
                             else hex(piece.type)[2].capitalize()
                         print(trace_char + edge,
-                              end='')
+                              end='', file=out_file)
                     else:  # A proper piece.
                         print(piece_char[piece.type][piece.color] + edge,
-                              end='')
+                              end='', file=out_file)
                 black_pos = not black_pos
-            print(" ")
+            print(" ", file=out_file)
             # Draw row with horizontal edge.
             n_indent -= 1
             if row == 1:  # Bottom edge.
-                print(" ·" + "---·"*(n_pos_in_row//2) + "---·")
+                print(" ·" + "---·"*(n_pos_in_row//2) + "---·", file=out_file)
                 char_ord = ord('a')
-                print("  ", end='')
+                print("  ", end='', file=out_file)
                 for i in range(self.n_rows - 1):
-                    print("{} / ".format(chr(char_ord + i)), end='')
-                print("{}".format(chr(char_ord + i + 1)))
+                    print("{} / ".format(chr(char_ord + i)),
+                          end='', file=out_file)
+                print("{}".format(chr(char_ord + i + 1)), file=out_file)
             else:  # Regular edge.
                 line = "/".rjust(n_indent) + "---."*(n_pos_in_row//2) + "---\\"
-                print(line)
+                print(line, file=out_file)
             current_pos -= n_pos_in_row
             n_pos_in_row += 2
-        print(color_name[self.turn] + " to move.\n")
+        print(color_name[self.turn] + " to move.\n", file=out_file)
 
     def print_1d(self):
         print("[")
