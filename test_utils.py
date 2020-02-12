@@ -134,10 +134,9 @@ def test_algebraic_move_2_coords():
 
 if __name__ == '__main__':
     # Main program.
-    print("Testing 'The Crown' code:")
 
     # test_expected_coord1to3()
-    test_calculate_knight_moves()
+    # test_calculate_knight_moves()
     # test_calculate_simple_moves()
     # test_calculate_soldier_moves()
     # test_calculate_kingdoms()
