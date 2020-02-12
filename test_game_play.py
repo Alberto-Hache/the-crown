@@ -2,7 +2,7 @@ import time
 import glob
 import cProfile
 
-import game_play as gp
+import game_play as gp 
 import board as bd
 import utils
 
