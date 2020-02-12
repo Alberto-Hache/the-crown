@@ -88,6 +88,7 @@ class Board:
                 file_name = GAMES_PATH + file_name
                 board_file = open(file_name, 'r')
                 lines = board_file.read().splitlines()
+                board_file.close()
             except OSError:
                 print("Error accessing file {}".format(file_name))
                 sys.exit(1)

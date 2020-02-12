@@ -1,5 +1,3 @@
-import time
-import sys
 import glob
 import unittest
 import filecmp
@@ -145,7 +143,7 @@ class Test_utils(unittest.TestCase):
             "ab12", "ab1a2", "c1", "d1", "c1 d1"
         ]
 
-        # Run test cases for CORRECT moves.
+        # Run test cases for correct moves.
         for case in correct_test_cases:
             coord1, coord2, is_correct = utils.algebraic_move_2_coords(case)
             self.assertTrue(is_correct,

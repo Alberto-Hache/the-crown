@@ -2,7 +2,7 @@ import time
 import glob
 import cProfile
 
-import game_play as gp 
+import game_play as gp
 import board as bd
 import utils
 
@@ -163,10 +163,9 @@ def test_evaluate():
 
 if __name__ == '__main__':
     # Main program.
-    print("Testing 'The Crown' code:")
 
-    # test_position_attacked()
+    test_position_attacked()
     # test_evaluate()
     # test_generate_pseudomoves()
     # cProfile.run('profiler_generate_pseudomoves()', sort='tottime')
-    test_make_pseudo_move()
+    # test_make_pseudo_move()
