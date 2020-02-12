@@ -1,5 +1,5 @@
-# Program's local or auxiliary files
-# ... (none at this point)
+# Useless temporary files
+kk/
 
 # Visual Studio Code
 .vscode

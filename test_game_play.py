@@ -164,8 +164,8 @@ def test_evaluate():
 if __name__ == '__main__':
     # Main program.
 
-    test_position_attacked()
-    # test_evaluate()
+    # test_position_attacked()
     # test_generate_pseudomoves()
-    # cProfile.run('profiler_generate_pseudomoves()', sort='tottime')
     # test_make_pseudo_move()
+    # test_evaluate()
+    # cProfile.run('profiler_generate_pseudomoves()', sort='tottime')
