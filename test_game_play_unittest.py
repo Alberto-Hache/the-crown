@@ -82,75 +82,146 @@ class Test_game_play(unittest.TestCase):
     def test_make_pseudo_move(self):
         # Definition of test cases to run:
         # - File to load.
-        # - moves to try.
-        # - expected return from make_pseudo_move().
+        # - move to try...
+        # - expected return from make_pseudo_move():
+        #   is_legal, result, game_end, game_status
+        """
+            Types of game node status:
+            ON_GOING = 0
+            VICTORY_CROWNING = 1
+            VICTORY_NO_PIECES_LEFT = 2
+            DRAW_NO_PRINCES_LEFT = 3
+            DRAW_STALEMATE = 4
+            DRAW_THREE_REPETITIONS = 5
+        """
+
         test_cases = [
+            # BOARD to test: test_make_pseudo_move_01
             [
                 "test_make_pseudo_move_01.cor",
-                ["c8b7", "c8c3", "c8a8", "e3e2"],
+                "c8b7", True, None, False, 0
+            ],
+            [
+                "test_make_pseudo_move_01.cor",
+                "c8c3", True, None, False, 0
+            ],
+            [
+                "test_make_pseudo_move_01.cor",
+                "c8a8", True, None, False, 0
+            ],
+            [
+                "test_make_pseudo_move_01.cor",
+                "e3e2", False, None, None, None
+            ],
+            # BOARD to test: test_make_pseudo_move_02.cor
+            [
+                "test_make_pseudo_move_02.cor",
+                "b2e1", False, None, None, None
             ],
             [
                 "test_make_pseudo_move_02.cor",
-                ["b2e1", "a5a4", "a5a6", "b5b4", "b5a6"]
+                "a5a4", False, None, None, None
+            ],
+            [
+                "test_make_pseudo_move_02.cor",
+                "a5a6", False, None, None, None
+            ],
+            [
+                "test_make_pseudo_move_02.cor",
+                "b5b4", False, None, None, None
+            ],
+            [
+                "test_make_pseudo_move_02.cor",
+                "b5a6", True, None, False, 0
+            ],
+            # BOARD to test: test_make_pseudo_move_03.cor
+            [
+                "test_make_pseudo_move_03.cor",
+                "a7b5", True, 1, True, 2
             ],
             [
                 "test_make_pseudo_move_03.cor",
-                ["a7b5", "c5b6", "f1g1", "c5c4", "f1f2"]
+                "c5b6", False, None, None, None
             ],
+            [
+                "test_make_pseudo_move_03.cor",
+                "f1g1", False, None, None, None
+            ],
+            [
+                "test_make_pseudo_move_03.cor",
+                "c5c4", True, None, False, 0
+            ],
+            [
+                "test_make_pseudo_move_03.cor",
+                "f1f2", True, None, False, 0
+            ],
+            # BOARD to test: test_make_pseudo_move_04.cor
             [
                 "test_make_pseudo_move_04.cor",
-                ["b1a1"]
+                "b1a1", True, None, False, 0
             ],
+            # BOARD to test: test_make_pseudo_move_05.cor
             [
                 "test_make_pseudo_move_05.cor",
-                ["a3a1"]
+                "a3a1", True, None, False, 0
             ],
+            # BOARD to test: test_make_pseudo_move_06.cor
             [
                 "test_make_pseudo_move_06.cor",
-                ["a3a1"]
+                "a3a1", False, None, None, None
+            ],
+            # BOARD to test: test_make_pseudo_move_07.cor
+            [
+                "test_make_pseudo_move_07.cor",
+                "a3a1", False, None, None, None
             ],
             [
                 "test_make_pseudo_move_07.cor",
-                ["a3a1", "a12a13"]
+                "a12a13", True, 1, True, 1
+            ],
+            # BOARD to test: test_make_pseudo_move_11.cor
+            [
+                "test_make_pseudo_move_11.cor",
+                "a12a13", False, None, None, None
+            ],
+            [
+                "test_make_pseudo_move_11.cor",
+                "a3a1", False, None, None, None
+            ],
+            [
+                "test_make_pseudo_move_11.cor",
+                "a12b11", True, None, False, 0
+            ],
+            [
+                "test_make_pseudo_move_11.cor",
+                "b9a10", True, None, False, 0
             ]
         ]
 
         # Go through all test cases, each on one board.
         with open("output.txt", "w") as f:
             for test_case in test_cases:
-                file_name, moves_list = test_case
+                file_name, test_move, res1, res2, res3, res4 = test_case
                 board = bd.Board(file_name)
-                print("--------------------------------------------------------", file=f)
-                print("Loading game position {} ...".format(file_name), file=f)
-                board.print_char(out_file=f)
-                # Go through all moves in the test case.
-                for move_txt in moves_list:
-                    # Parse move.
-                    coord1_str, coord2_str, is_correct = \
-                        utils.algebraic_move_2_coords(move_txt)
-                    assert is_correct, "Error parsing move {}".format(move_txt)
-                    coord1 = bd.coord_2_algebraic.index(coord1_str)
-                    coord2 = bd.coord_2_algebraic.index(coord2_str)
+                # Parse move.
+                coord1_str, coord2_str, is_correct = \
+                    utils.algebraic_move_2_coords(test_move)
+                assert is_correct, "Error parsing move {}".format(test_move)
+                coord1 = bd.coord_2_algebraic.index(coord1_str)
+                coord2 = bd.coord_2_algebraic.index(coord2_str)
 
-                    # Make the move and check results.
-                    new_board, is_legal, result, game_end, game_status = \
-                        gp.make_pseudo_move(board, coord1, coord2)
-                    print("make_pseudo_move({})".format(move_txt), file=f)
-                    print("Result: ", file=f)
-                    if is_legal:
-                        new_board.print_char(out_file=f)
-                    else:
-                        print("[BOARD NOT PRINTED]: {} is an illegal move.".
-                              format(move_txt),
-                              file=f)
-                    print("is_legal = {}, result = {}, game_end = {}, "
-                          "game_status = {}".
-                          format(is_legal, result, game_end, game_status),
-                          file=f)
+                # Make the move and check results (ignoring 'new_board')
+                _, is_legal, result, game_end, game_status = \
+                    gp.make_pseudo_move(board, coord1, coord2)
 
-        self.assertTrue(filecmp.cmp(
-            "output.txt",
-            "tests/output_make_pseudo_move.txt"))
+        self.assertTrue(
+            (res1, res2, res3, res4) == (
+                is_legal, result, game_end, game_status),
+            "Expected: {}, {}, {}, {}\n"
+            "Received: {}, {}, {}, {}".format(
+                res1, res2, res3, res4,
+                is_legal, result, game_end, game_status
+            ))
 
     def test_evaluate(self):
         file_list = glob.glob(bd.GAMES_PATH + "position*.cor")

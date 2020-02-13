@@ -161,7 +161,7 @@ def make_pseudo_move(board, coord1, coord2):
         board: Board, coord1: int, coord2: int
     Output
         new_board: Board, is_legal: Boolean, result: int, game_end: Boolean,
-        game_status: int*
+        game_status: int:
         * Checked:   ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
         * Unchecked: DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE /
                      DRAW_THREE_REPETITIONS
