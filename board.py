@@ -152,35 +152,50 @@ class Board:
             self.prince[piece.color] = None
 
     def make_move(self, coord1, coord2):
-        # Obtain Pieces.
-        piece1 = self.board1d[coord1]
-        piece2 = self.board1d[coord2]
-        # Piece2 captured?
-        if piece2 is not None:
-            assert piece2.color != piece1.color, \
-                "Piece {} can't move to coord {} ({}): \
-                already occupied by {}." \
-                .format(
-                    piece_char[piece1.type][piece1.color],
-                    coord2, coord_2_algebraic[coord2],
-                    piece_char[piece2.type][piece2.color]
-                )
-            self.remove_piece(coord2)
-        # Move piece1.
-        self.board1d[coord1] = None
-        x1, x2, y = coord1to3[coord1]
-        self.board3d[x1][x2][y] = None
+        """
+        Execute all board updates required for a move from coord1 to coord2.
 
-        piece1.coord = coord2
-        self.board1d[coord2] = piece1
-        x1, x2, y = coord1to3[coord2]
-        self.board3d[x1][x2][y] = piece1
-        # Manage possible Soldier's promotion.
-        if coord2 == self.prince_position[piece1.color] and \
-           piece1.type == SOLDIER:
-            self.remove_piece(coord2)
-            self.include_piece(PRINCE, self.turn, coord2)
-        # Change turns
+        NOTE: if coord2 is None, assumption is that a checkmated Prince
+              is in coord1.
+        """
+        # Obtain moving piece.
+        piece1 = self.board1d[coord1]
+        if coord2 is not None:
+            # A normal move from coord1 to coord2.
+            piece2 = self.board1d[coord2]
+            # Piece2 captured?
+            if piece2 is not None:
+                assert piece2.color != piece1.color, \
+                    "Piece {} can't move to coord {} ({}): \
+                    already occupied by {}." \
+                    .format(
+                        piece_char[piece1.type][piece1.color],
+                        coord2, coord_2_algebraic[coord2],
+                        piece_char[piece2.type][piece2.color]
+                    )
+                self.remove_piece(coord2)
+            # Move piece1.
+            self.board1d[coord1] = None
+            x1, x2, y = coord1to3[coord1]
+            self.board3d[x1][x2][y] = None
+
+            piece1.coord = coord2
+            self.board1d[coord2] = piece1
+            x1, x2, y = coord1to3[coord2]
+            self.board3d[x1][x2][y] = piece1
+            # Manage possible Soldier's promotion.
+            if coord2 == self.prince_position[piece1.color] and \
+               piece1.type == SOLDIER:
+                # A Soldier is promoted to Prince.
+                self.remove_piece(coord2)
+                self.include_piece(PRINCE, self.turn, coord2)
+        else:
+            # A checkmated Prince in coord1 must leave.
+            assert piece1.type == PRINCE, \
+                "ERROR: a piece of type {} can't move to 'None'.".\
+                format(piece_name[piece1.type])
+            self.remove_piece(coord1)
+        # Change turns.
         self.turn = WHITE if self.turn == BLACK else BLACK
 
     def clear_board(self):

@@ -7,8 +7,8 @@ import board as bd
 MAX_DEPTH = 2
 
 # Possible game results
-PLAYER_WINS = 1
-OPPONENT_WINS = -1
+PLAYER_WINS = float(10000)  # Winning score; to be reduced by node depth.
+OPPONENT_WINS = -PLAYER_WINS  # Losing score; to be increased by node depth.
 DRAW = 0
 
 # Types of game node status
@@ -32,46 +32,100 @@ def play(board):
 
 
 def mini_max(board, depth, alpha, beta):
-    # best_move = None
-    # if depth == MAX_DEPTH  # A leave node
-    #   result, game_end, game_status = evaluate(board)
-    # else:
-    #   moves = calculate pseudo_moves (not checked as legal yet)
-    #   n_moves_tried = 0
-    #   while len(moves) > 0:
-    #       m = pick_move(moves)
-    #       new_board, legal = make_move(board, m)
-    #       if legal(new_board):
-    #           n_moves_tried +=1
-    #           childs_move, result, game_end, game_status = mini_max(
-    #               new_board, depth + 1, -beta, -alpha)
-    #           if result > alpha:
-    #               best_move, alpha = childs_move, result
-    #               if alpha >= beta:
-    #                   return(...)
-    #   if n_moves_tried == 0:
-    #       check why and set result, game_end, game_status:
-    #           Stalemate, check-mate, no-pieces-left
-    #   return best_move
+    """
+    Given a *legal* position in the game-tree, find and evaluate the best move.
 
-    best_move, result, game_end, game_status = None, None, True, ON_GOING
+    Input:
+        board:          Board - the position to play on.
+        depth:          int - the depth of the node in the game tree.
+        alpha, beta:    float, float - with alpha < beta
+                        The window within which result is expected to fall. 
+                        'alpha' is the value to maximize and return.
+                        Search can be prunned when alpha >= beta.
 
-    if depth == MAX_DEPTH:
-        # A leave node.
-        result, game_end, game_status = evaluate(board)
+    Output:
+        best_move:      A list [coord1, coord2], or None.
+        result:         float - evaluation of the node from the moving side's
+                        perspective (+ is good).
+        game_end:       Boolen - whether the game was ended in this node.
+        game_status:    int
+                        Conditions detected:
+                        ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT /
+                        DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE
+
+                        Conditions not checked:
+                        DRAW_THREE_REPETITIONS
+    """
+
+    # Firstly, check for some end conditions:
+    #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
+    #   Otherwise, assume ON_GOING
+    best_move, result, game_end, game_status = evaluate(
+        board, depth, shallow=True)
+
+    if game_end or depth == MAX_DEPTH:
+        # End of game.
+        return best_move, result, game_end, game_status
+
     else:
-        # An intermediate node.
+        # Generate existing pseudomoves.
         moves, moves_count = generate_pseudomoves(board)
-        if moves_count == 0:
-            # Playing side has no pseudomoves: evaluate and return.
-            result, game_end, game_status = evaluate(board)
-            return None, -result, game_end, game_status  # Flip result's sign.
-        else:
-            # Detect if position is game end?
-            # Explore pseudomoves.
-            n_moves_tried = 0
+        assert(moves_count > 0),\
+            "ERROR: No pseudomoves found despite game is not ended "\
+            "and MAX_DEPTH has not been reached."
+        # Explore pseudomoves.
+        best_move = None
+        n_legal_moves_tried = 0
+        for piece_moves in moves:  # [[piece_1, [13, 53...]], [piece_2, [...]]
+            piece, pseudomoves_list = piece_moves  # piece_1, [13, 53...]
+            coord1 = piece.coord
+            for coord2 in pseudomoves_list:  # 13
+                # Try pseudomove 'i' on board.
+                new_board_i, is_legal_i, result_i, game_end_i, game_status_i =\
+                    make_pseudomove(board, coord1, coord2, depth)
+                if is_legal_i:
+                    # Manage the legal move.
+                    n_legal_moves_tried += 1
+                    if not game_end_i:
+                        # We need to recursively search this move deeper.
+                        best_move_i, result_i, game_end_i, game_status_i = \
+                            mini_max(new_board_i, depth + 1, -beta, -alpha)
+                    if result_i > alpha:
+                        # Update chosen move with this better move for player,
+                        # flipping sign of result_i to current player's view.
+                        best_move, alpha, game_end, game_status = \
+                            best_move_i, -float(result_i), \
+                            game_end_i, game_status_i
+                    if alpha >= beta:
+                        # Interrupt search of rest of pseudomoves.
+                        return best_move, alpha, game_end, game_status
 
-    return best_move, result, game_end, game_status
+        # Check exploration results.
+        if n_legal_moves_tried > 0:
+            # A legal best move was found: return results.
+            return best_move, alpha, game_end, game_status
+        else:
+            # No legal moves were found: check for Prince in check.
+            player_side = board.turn
+            opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
+            player_prince = board.prince[player_side]
+            assert (player_prince is not None),\
+                "ERROR: no legal moves found for {} side, which has {} "\
+                "pieces but no Prince.".format(
+                    bd.color_name[player_side],
+                    np.sum(board.piece_count[player_side])
+                )
+            if position_attacked(board, player_prince.coord, opponent_side):
+                # The player is checkmated, its Prince leaves and yields turn.
+                new_board_i, is_legal_i, result_i, game_end_i, game_status_i =\
+                     make_pseudomove(board, player_prince.coord, None, depth)                
+                # And the new board must be assessed.
+                best_move, alpha, game_end, game_status = \
+                    mini_max(new_board_i, depth + 1, -beta, -alpha)
+                return best_move, alpha, game_end, game_status
+            else:
+                # The player is stalemated.
+                return None, DRAW, True, DRAW_STALEMATE
 
 
 def position_attacked(board, pos, attacking_side):
@@ -106,9 +160,13 @@ def position_attacked(board, pos, attacking_side):
 def generate_pseudomoves(board):
     """
     Generate a list of non-legally checked moves for the playing side.
-    It returns:
-        list of lists: [[piece_1, [13, 53...]], [piece_2, [...]]
-        lnteger:        The total number of pseudo_moves.
+
+    Input:
+        board:      Board - The game position to generate moves on.
+
+    Output:
+        moves:      list of lists - [[piece_1, [13, 53...]], [piece_2, [...]]
+        moves_count:integer - the total number of pseudomoves.
     """
     moves = []
     moves_count = 0
@@ -149,7 +207,7 @@ def generate_pseudomoves(board):
     return moves, moves_count
 
 
-def make_pseudo_move(board, coord1, coord2):
+def make_pseudomove(board, coord1, coord2, depth):
     """
     Given a *legal* position, try to make a pseudomove.
     Detect if the move would be ilegal first.
@@ -157,22 +215,35 @@ def make_pseudo_move(board, coord1, coord2):
     - Prince crowning
     - Opponent is left with no pieces
 
-    Input
-        board: Board, coord1: int, coord2: int
-    Output
-        new_board: Board, is_legal: Boolean, result: int, game_end: Boolean,
-        game_status: int:
-        * Checked:   ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
-        * Unchecked: DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE /
-                     DRAW_THREE_REPETITIONS
+    Input:
+        board:      Board - the position to make the move on.
+        coord1:     int - initial position of pseudomove.
+        coord2:     int - final position of pseudomove,
+                    or None for a checkmated Prince leaving.
+        depth:      int - node depth before the pseudomove.
+
+    Output:
+        new_board:  Board - a new instance on which pseudomove was made.
+        is_legal:   Boolean - whether it was a legal move.
+        result:     float - an early evaluation of winner moves,
+                    from the moving side's perspective (+ is good)
+                    estimated as (PLAYER_WINS - depth).
+        game_end:   Boolean - whether the pseudomove ends the game.
+        game_status:int
+                    Conditions checked:
+                    ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
+
+                    Conditions not checked:
+                    DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE /
+                    DRAW_THREE_REPETITIONS
     """
 
+    # Register type of moving piece before changes.
+    piece_type = board.board1d[coord1].type
     # Create new board on which to try the move.
     new_board = copy.deepcopy(board)
-    new_board.make_move(coord1, coord2)  # Turns have switched now!
-
-    piece_moved = new_board.board1d[coord2]  # The piece just moved.
-    side_moved = board.turn  # The side who made the move.
+    new_board.make_move(coord1, coord2)  # Turns have switched here!
+    depth += 1  # Updated after making the move.
 
     # Check if it's NOT a legal position.
     if not is_legal(new_board):
@@ -180,30 +251,41 @@ def make_pseudo_move(board, coord1, coord2):
 
     # Check if a Prince's crowning.
     if (coord2 == new_board.crown_position) and \
-       (piece_moved.type == bd.PRINCE):
+       (piece_type == bd.PRINCE):
         # A Prince was legally moved onto the crown!
-        return new_board, True, PLAYER_WINS, True, VICTORY_CROWNING
+        return new_board, True, PLAYER_WINS - depth, True, VICTORY_CROWNING
 
     # Check if it was the capture of the last piece.
     if new_board.piece_count[new_board.turn].sum() == 0:
-        return new_board, True, PLAYER_WINS, True, VICTORY_NO_PIECES_LEFT
+        return new_board, True, PLAYER_WINS - depth, True, VICTORY_NO_PIECES_LEFT
 
     # Otherwise, it was a normal move.
     return new_board, True, None, False, ON_GOING
 
 
-def evaluate(board):
-    """Evaluate a position from the playing side's perspective.
+def evaluate(board, depth, shallow=True):
+    """
+    Evaluate a position from the playing side's perspective.
 
     Input:
-        Board :     The game position to evaluate.
+        board:      Board - The game position to evaluate.
+        depth:      int - Depth of node in the search tree.
+        shallow:    boolean - Whether quiescence search is needed.
 
-    Output:         result, game_end, game_status
-        int :       PLAYER_WINS/OPPONENT_WINS/DRAW, with PLAYER being
-                    the side whose turn it is to move.
-        Boolean:    Whether the game has finished.
-        int:        ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
-                    DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE /
+    Output:
+        best_move:  A list [coord1, coord2], or None.
+        result:     float - in the range (OPPONENT_WINS...DRAW...PLAYER_WINS).
+                    with PLAYER being the side whose turn it is to move.
+                    End positions are estimated as (PLAYER_WINS - depth)
+                    or (OPPONENT_WINS + depth) to prefer shorter wins.
+        game_end:   Boolean - Whether the game has finished.
+        game_status:int
+                    Conditions checked:
+                    ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
+                    DRAW_NO_PRINCES_LEFT
+
+                    Conditions not checked:
+                    DRAW_STALEMATE /
                     DRAW_THREE_REPETITIONS
 
     NOTE: multiple return points for efficiency.
@@ -216,20 +298,20 @@ def evaluate(board):
     piece = board.board1d[board.crown_position]
     if piece is not None:
         if piece.type == bd.PRINCE:
-            result = PLAYER_WINS if piece.color == player_side \
-                else OPPONENT_WINS
-            return result, True, VICTORY_CROWNING
+            result = PLAYER_WINS - depth if piece.color == player_side \
+                else OPPONENT_WINS + depth
+            return None, result, True, VICTORY_CROWNING
 
     # 2. Side without pieces left?
     if board.piece_count[player_side].sum() == 0:
-        return OPPONENT_WINS, True, VICTORY_NO_PIECES_LEFT
+        return None, OPPONENT_WINS + depth, True, VICTORY_NO_PIECES_LEFT
     elif board.piece_count[opponent_side].sum() == 0:
-        return PLAYER_WINS, True, VICTORY_NO_PIECES_LEFT
+        return None, PLAYER_WINS - depth, True, VICTORY_NO_PIECES_LEFT
 
     # 3. No Princes left?
     if board.piece_count[player_side][bd.PRINCE] == 0 and \
             board.piece_count[opponent_side][bd.PRINCE] == 0:
-        return DRAW, True, DRAW_NO_PRINCES_LEFT
+        return None, DRAW, True, DRAW_NO_PRINCES_LEFT
 
     # 4. Stalemate?
     pass  # Note: Would require calculating legal moves everytime.
@@ -239,8 +321,20 @@ def evaluate(board):
     pass  # Note: Would require a record of all past positions.
     # DRAW_THREE_REPETITIONS
 
-    # 6. Otherwise, it's not decided yet ≈ DRAW
-    return DRAW, False, ON_GOING
+    # 6. Otherwise, it's not decided yet.
+    # Check if a shallow evaluation is enough.
+    if shallow:
+        # Assume result ≈ DRAW
+        return None, DRAW, False, ON_GOING
+    else:
+        # A quiescence search is needed to try to improve static eval.
+        current_result = DRAW  # Node evaluation without quiescence.
+        # TODO: include a proper quiescence search below.
+        move, quiescence_result = None, -np.Infinity  # Placeholder.
+        if quiescence_result > current_result:
+            return move, quiescence_result, False, ON_GOING
+        else:
+            return None, current_result, False, ON_GOING
 
 
 def is_legal(board):

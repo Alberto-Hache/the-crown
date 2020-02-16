@@ -35,27 +35,40 @@ class Test_utils(unittest.TestCase):
         np.testing.assert_array_equal(
             coord1to3, expected_coord1to3, err_msg='Results differ!')
 
-    def test_calculate_knight_moves(self):
-        knight_moves = utils.calculate_knight_moves()
-        board = bd.Board()
-        with open("output.txt", "w") as f:
-            for position in range(bd.N_POSITIONS):
-                print("\nKnight moves from position: {}"
-                      .format(position), file=f)
-                moves = knight_moves[position]
-                for direction in moves:
-                    board.clear_board()
-                    board.include_piece(bd.KNIGHT, bd.WHITE, position)
-                    trace = 1
-                    for position_2 in direction:
-                        board.include_piece(trace, bd.WHITE, position_2,
-                                            tracing=True)
-                        trace += 1
-                    board.print_char(out_file=f)
+    def test_algebraic_move_2_coords(self):
+        # Define tests and expected results.
+        correct_test_cases = [
+            ["a1a12", "a1", "a12"],
+            ["b1b2", "b1", "b2"],
+            ["a12a13", "a12", "a13"],
+            ["b9b10", "b9", "b10"],
+            ["G1f1", "g1", "f1"],
+            ["a1++", "a1", "++"],
+            ["b12++", "b12", "++"]
+        ]
+        incorrect_test_cases = [
+            "ab12", "ab1a2", "c1", "d1", "c1 d1", "++", "a1+", "a1+++"
+        ]
 
-        self.assertTrue(filecmp.cmp(
-            "output.txt",
-            "tests/output_calculate_knight_moves.txt"))
+        # Run test cases for correct moves.
+        for case in correct_test_cases:
+            coord1, coord2, is_correct = utils.algebraic_move_2_coords(case[0])
+            self.assertEqual(case[1], coord1,
+                             "Error found while testing correct move: {}"
+                             .format(case[0]))
+            self.assertEqual(case[2], coord2,
+                             "Error found while testing correct move: {}"
+                             .format(case[0]))
+            self.assertTrue(is_correct,
+                            "Error found while testing correct move: {}"
+                            .format(case[0]))
+
+        # Run test cases for INCORRECT moves.
+        for case in incorrect_test_cases:
+            _, _, is_correct = utils.algebraic_move_2_coords(case)
+            self.assertFalse(is_correct,
+                             "Error found while testing incorrect move: {}"
+                             .format(case[0]))
 
     def test_calculate_simple_moves(self):
         simple_moves = utils.calculate_simple_moves()
@@ -115,6 +128,28 @@ class Test_utils(unittest.TestCase):
             "output.txt",
             "tests/output_calculate_soldier_moves.txt"))
 
+    def test_calculate_knight_moves(self):
+        knight_moves = utils.calculate_knight_moves()
+        board = bd.Board()
+        with open("output.txt", "w") as f:
+            for position in range(bd.N_POSITIONS):
+                print("\nKnight moves from position: {}"
+                      .format(position), file=f)
+                moves = knight_moves[position]
+                for direction in moves:
+                    board.clear_board()
+                    board.include_piece(bd.KNIGHT, bd.WHITE, position)
+                    trace = 1
+                    for position_2 in direction:
+                        board.include_piece(trace, bd.WHITE, position_2,
+                                            tracing=True)
+                        trace += 1
+                    board.print_char(out_file=f)
+
+        self.assertTrue(filecmp.cmp(
+            "output.txt",
+            "tests/output_calculate_knight_moves.txt"))
+
     def test_calculate_kingdoms(self):
         kingdoms = utils.calculate_kingdoms(bd.N_POSITIONS)
         board = bd.Board()
@@ -133,30 +168,6 @@ class Test_utils(unittest.TestCase):
         self.assertTrue(filecmp.cmp(
             "output.txt",
             "tests/output_calculate_kingdoms.txt"))
-
-    def test_algebraic_move_2_coords(self):
-        # Define tests and expected results.
-        correct_test_cases = [
-            "a1a12", "b1b2", "a12a13", "b9b10", "G1f1"
-        ]
-        incorrect_test_cases = [
-            "ab12", "ab1a2", "c1", "d1", "c1 d1"
-        ]
-
-        # Run test cases for correct moves.
-        for case in correct_test_cases:
-            coord1, coord2, is_correct = utils.algebraic_move_2_coords(case)
-            self.assertTrue(is_correct,
-                            "Error found while testing move: {}"
-                            .format(case))
-
-        # Run test cases for INCORRECT moves.
-        for case in incorrect_test_cases:
-            coord1, coord2, is_correct = utils.algebraic_move_2_coords(case)
-            self.assertFalse(is_correct,
-                             "Error found while testing move: {}"
-                             .format(case))
-
 
 if __name__ == '__main__':
     unittest.main()

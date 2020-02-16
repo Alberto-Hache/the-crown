@@ -42,16 +42,17 @@ def algebraic_move_2_coords(move_txt):
 
     # Define regular expression for moves in algebraic coords.
     # Patterns expected: "a1a2", "a12a13", etc.
-    r = re.compile("([a-g]{1})([0-9]+)([a-g]{1})([0-9]+)")
+    # Also "a1++" to denote checkmate for a Prince in "a1".
+    r = re.compile("(([a-g]{1})([0-9]+))(([a-g]{1})([0-9]+)|(\+{2}$))")
 
     bits = r.match(move_txt)  # Try to match the move.
 
     # Check if the move received fits in.
     if bits is not None:
-        # It worked: associate the 4 groupus properly: "a1", "a2"
+        # It worked: associate the right groups: "a1", "a2"
         is_correct = True
-        coord1 = bits.group(1) + bits.group(2)
-        coord2 = bits.group(3) + bits.group(4)
+        coord1 = bits.group(1)
+        coord2 = bits.group(4)
     else:
         # Wrong format.
         is_correct = False

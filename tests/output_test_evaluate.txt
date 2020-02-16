@@ -17,9 +17,10 @@ Evaluation of position position6.cor:
   a / b / c / d / e / f / g
 White to move.
 
-Eval = 1, Finished = True, Status = 1
+Move = None, Eval = 1, Finished = True, Status = 1
+
 Black to move:
-Eval = -1, Finished = True, Status = 1
+Move = None, Eval = -1, Finished = True, Status = 1
 
 Evaluation of position position7.cor:
                .
@@ -40,9 +41,10 @@ Evaluation of position position7.cor:
   a / b / c / d / e / f / g
 White to move.
 
-Eval = 1, Finished = True, Status = 2
+Move = None, Eval = 1, Finished = True, Status = 2
+
 Black to move:
-Eval = -1, Finished = True, Status = 2
+Move = None, Eval = -1, Finished = True, Status = 2
 
 Evaluation of position position5.cor:
                .
@@ -63,9 +65,10 @@ Evaluation of position position5.cor:
   a / b / c / d / e / f / g
 White to move.
 
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
+
 Black to move:
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
 
 Evaluation of position position4.cor:
                .
@@ -86,9 +89,10 @@ Evaluation of position position4.cor:
   a / b / c / d / e / f / g
 Black to move.
 
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
+
 White to move:
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
 
 Evaluation of position position1.cor:
                .
@@ -109,9 +113,10 @@ Evaluation of position position1.cor:
   a / b / c / d / e / f / g
 White to move.
 
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
+
 Black to move:
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
 
 Evaluation of position position3.cor:
                .
@@ -132,9 +137,10 @@ Evaluation of position position3.cor:
   a / b / c / d / e / f / g
 Black to move.
 
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
+
 White to move:
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
 
 Evaluation of position position2.cor:
                .
@@ -155,9 +161,10 @@ Evaluation of position position2.cor:
   a / b / c / d / e / f / g
 White to move.
 
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
+
 Black to move:
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
 
 Evaluation of position position9.cor:
                .
@@ -178,9 +185,10 @@ Evaluation of position position9.cor:
   a / b / c / d / e / f / g
 White to move.
 
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
+
 Black to move:
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
 
 Evaluation of position position8.cor:
                .
@@ -201,9 +209,10 @@ Evaluation of position position8.cor:
   a / b / c / d / e / f / g
 White to move.
 
-Eval = 0, Finished = True, Status = 3
+Move = None, Eval = 0, Finished = True, Status = 3
+
 Black to move:
-Eval = 0, Finished = True, Status = 3
+Move = None, Eval = 0, Finished = True, Status = 3
 
 Evaluation of position position10.cor:
                .
@@ -224,7 +233,8 @@ Evaluation of position position10.cor:
   a / b / c / d / e / f / g
 White to move.
 
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
+
 Black to move:
-Eval = 0, Finished = False, Status = 0
+Move = None, Eval = 0, Finished = False, Status = 0
 
