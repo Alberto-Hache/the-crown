@@ -19,19 +19,28 @@ DRAW_NO_PRINCES_LEFT = 3
 DRAW_STALEMATE = 4
 DRAW_THREE_REPETITIONS = 5
 
+game_status_txt = (
+    "Game on-going",
+    "Victory: Prince crowned",
+    "Victory: no pieces left",
+    "Draw: no Princes left",
+    "Draw: stalemate",
+    "Draw: three repetitions"
+)
+
 
 def play(board):
     search_end = False
     alpha, beta = [-float("inf"), float("inf")]
     depth = 0
     while not search_end:
-        move, result, game_end, game_status = mini_max(
+        move, result, game_end, game_status = minimax(
             board, depth, alpha, beta)
         search_end = True  # No iterated search for now.
     return move, result, game_end, game_status
 
 
-def mini_max(board, depth, alpha, beta):
+def minimax(board, depth, alpha, beta):
     """
     Given a *legal* position in the game-tree, find and evaluate the best move.
 
@@ -80,22 +89,26 @@ def mini_max(board, depth, alpha, beta):
             piece, pseudomoves_list = piece_moves  # piece_1, [13, 53...]
             coord1 = piece.coord
             for coord2 in pseudomoves_list:  # 13
-                # Try pseudomove 'i' on board.
+                # Try pseudomove 'i' on board; it may/may not give a result_i.
                 new_board_i, is_legal_i, result_i, game_end_i, game_status_i =\
                     make_pseudomove(board, coord1, coord2, depth)
                 if is_legal_i:
                     # Manage the legal move.
                     n_legal_moves_tried += 1
-                    if not game_end_i:
+                    if game_end_i:
+                        # The pseudomove led to a final position,
+                        # no need for recursive search.
+                        best_move_i = [coord1, coord2]
+                    else:
                         # We need to recursively search this move deeper.
                         best_move_i, result_i, game_end_i, game_status_i = \
-                            mini_max(new_board_i, depth + 1, -beta, -alpha)
+                            minimax(new_board_i, depth + 1, -beta, -alpha)
+                        result_i = -float(result_i)
                     if result_i > alpha:
                         # Update chosen move with this better move for player,
                         # flipping sign of result_i to current player's view.
                         best_move, alpha, game_end, game_status = \
-                            best_move_i, -float(result_i), \
-                            game_end_i, game_status_i
+                            best_move_i, result_i, game_end_i, game_status_i
                     if alpha >= beta:
                         # Interrupt search of rest of pseudomoves.
                         return best_move, alpha, game_end, game_status
@@ -121,7 +134,7 @@ def mini_max(board, depth, alpha, beta):
                      make_pseudomove(board, player_prince.coord, None, depth)                
                 # And the new board must be assessed.
                 best_move, alpha, game_end, game_status = \
-                    mini_max(new_board_i, depth + 1, -beta, -alpha)
+                    minimax(new_board_i, depth + 1, -beta, -alpha)
                 return best_move, alpha, game_end, game_status
             else:
                 # The player is stalemated.

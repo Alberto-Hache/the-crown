@@ -14,49 +14,39 @@ class Test_game_play(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_mini_max(self):
+    def test_minimax(self):
         # Definition of test cases to run:
         # - File to load.
         # - move to try...
         # - expected return from mini_max():
         #   best_move, result, game_end, game_status
-        """
-            Types of game node status:
-            ON_GOING = 0
-            VICTORY_CROWNING = 1
-            VICTORY_NO_PIECES_LEFT = 2
-            DRAW_NO_PRINCES_LEFT = 3
-            DRAW_STALEMATE = 4
-            DRAW_THREE_REPETITIONS = 5
-        """
-
-        test_cases = [
-            # BOARD to test: test_make_pseudomove_01
-            [
-                "position7.cor",
-                True
-            ]
-        ]
 
         # Go through all test cases, each on one board.
-        for test_case in test_cases:
-            file_name, _ = test_case
-            board = bd.Board(file_name)
+        file_list = glob.glob(bd.GAMES_PATH + "test_minimax*.cor")
+        file_list.sort()
 
-        for side in [bd.WHITE, bd.BLACK]:
-            board.turn = side
-            best_move, result, game_end, game_status = \
-                gp.mini_max(board, 0, -np.Infinity, np.Infinity)
-            if best_move is None:
-                move_txt = "None"
-            else:
-                move_txt = "{}->{}".format(best_move[0], best_move[1])
-            print("Move: {}, result: {}, game_end: {}, game_status: {}".
-                  format(move_txt, result, game_end, game_status))
+        with open("output.txt", "w") as f:
+            for full_file_name in file_list:
+                file_name = full_file_name[len(bd.GAMES_PATH):]  # Remove rel. path.
+                board = bd.Board(file_name)  # The board to put pieces on.
 
+                print("\nAnalysis of position {}:".format(file_name), file=f)
+                board.print_char(out_file=f)
+
+                # Call to mini_max.
+                best_move, result, game_end, game_status = gp.minimax(
+                    board, 0, -np.Infinity, np.Infinity)
+                # Display results
+                move_txt = "None" if best_move is None else \
+                    "{} -> {}".format(best_move[0].coord, best_move[1])
+                print("Move = {}, Eval = {}, Finished = {}, Status = {}".format(
+                    move_txt, result, game_end,  game_status), file=f)
+
+                print("", file=f)
 
     def test_position_attacked(self):
         file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
+        file_list.sort()
 
         with open("output.txt", "w") as f:
             for full_file_name in file_list:
@@ -85,6 +75,7 @@ class Test_game_play(unittest.TestCase):
 
     def test_generate_pseudomoves(self):
         file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
+        file_list.sort()
 
         with open("output.txt", "w") as f:
             for full_file_name in file_list:
@@ -286,6 +277,7 @@ class Test_game_play(unittest.TestCase):
 
     def test_evaluate(self):
         file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
+        file_list.sort()
 
         with open("output.txt", "w") as f:
             for full_file_name in file_list:
