@@ -3,8 +3,22 @@ import copy
 
 import board as bd
 
-# AI search hyperparameters
+# AI hyperparameters
+
+# Tree search
 MAX_DEPTH = 4
+
+# Evaluation
+piece_weights = np.array([
+    [  # From White's point of view (Prince, Soldier, Knight).
+        [100, 1, 10],
+        [-100, -1, -10]
+    ],
+    [  # From Black's point of view (Prince, Soldier, Knight).
+        [-100, -1, -10],
+        [100, 1, 10]
+    ]
+])
 
 # Possible game results
 PLAYER_WINS = float(10000)  # Winning score; to be reduced by node depth.
@@ -341,8 +355,11 @@ def evaluate(board, depth, shallow=True):
     # 6. Otherwise, it's not decided yet.
     # Check if a shallow evaluation is enough.
     if shallow:
-        # Assume result ≈ DRAW
-        return None, DRAW, False, ON_GOING
+        # Basic material evaluation.
+        result = np.multiply(
+            board.piece_count,
+            piece_weights[player_side]).sum()
+        return None, result, False, ON_GOING
     else:
         # A quiescence search is needed to try to improve static eval.
         current_result = DRAW  # Node evaluation without quiescence.

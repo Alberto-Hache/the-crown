@@ -194,5 +194,5 @@ Analysis of position test_minimax_09.cor:
   a / b / c / d / e / f / g
 Black to move.
 
-Move: a10a11 [0.0] Finished: False, Status: Game on-going
+Move: a10a11 [2.0] Finished: False, Status: Game on-going
 

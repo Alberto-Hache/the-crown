@@ -2,29 +2,26 @@
 
 ## Tree search (v1)
 
-- Detect and handle checkmate -> Prince out + opponent's turn again.
-- Detect other ends: no pieces left, no Princes left, stalemate, ... (more?)
 - Improved evaluation function:
-  - foster earlier ends
-  - Add small noise to leave nodes evaluation for diverse game
   - Positional evaluation: [for v2]
     - material
     - mobility
     - Prince's safety
     - ...
-- First version of mini-max with alpha-beta prunning (depth = 2; evaluation = -1/0/1).
+  - Add small noise to leave nodes evaluation for diverse game
 
 ## Tree search (v2)
 
 - Profiling of v1: bottlenecks?
-- Extend make pseudo-move() to pre-evaluate move?
+- Pre-evaluation of moves (extend make pseudo-move()?).
 - Add quiescence search.
   - Piece captures
   - Checks and replies to checks
   - Soldier promotions
   - Prince Crowning
   - Prince moves upwards?
-  - (no move)
+  - Soldier moves to throne (in absence of Prince)?
+  - (no move) assumed to guarantee the static evaluation
 - Add killer-move heuristic
   - single move
   - Extend to two moves?
