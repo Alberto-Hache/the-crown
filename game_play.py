@@ -4,7 +4,7 @@ import copy
 import board as bd
 
 # AI search hyperparameters
-MAX_DEPTH = 2
+MAX_DEPTH = 4
 
 # Possible game results
 PLAYER_WINS = float(10000)  # Winning score; to be reduced by node depth.
@@ -21,11 +21,11 @@ DRAW_THREE_REPETITIONS = 5
 
 game_status_txt = (
     "Game on-going",
-    "Victory: Prince crowned",
-    "Victory: no pieces left",
-    "Draw: no Princes left",
-    "Draw: stalemate",
-    "Draw: three repetitions"
+    "Victory (Prince crowned)",
+    "Victory (no pieces left)",
+    "Draw (no Princes left)",
+    "Draw, (stalemate)",
+    "Draw, (three repetitions)"
 )
 
 

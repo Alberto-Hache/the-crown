@@ -39,8 +39,10 @@ class Test_game_play(unittest.TestCase):
                     board, 0, -np.Infinity, np.Infinity)
                 # Display results
                 move_txt = "None" if best_move is None else \
-                    "{}->{}".format(best_move[0], best_move[1])
-                print("Move: {}, Eval: {}, Finished: {}, Status: {}".format(
+                    "{}{}".format(
+                        bd.coord_2_algebraic[best_move[0]],
+                        bd.coord_2_algebraic[best_move[1]])
+                print("Move: {} [{}] Finished: {}, Status: {}".format(
                     move_txt, result, game_end,
                     gp.game_status_txt[game_status]), file=f)
 
