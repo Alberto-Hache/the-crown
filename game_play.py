@@ -69,12 +69,12 @@ def minimax(board, depth, alpha, beta):
     # Firstly, check for some end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
     #   Otherwise, assume ON_GOING
-    best_move, result, game_end, game_status = evaluate(
+    childs_move, result, game_end, game_status = evaluate(
         board, depth, shallow=True)
 
     if game_end or depth == MAX_DEPTH:
-        # End of game.
-        return best_move, result, game_end, game_status
+        # End of game: no move is returned.
+        return None, result, game_end, game_status
 
     else:
         # Generate existing pseudomoves.
@@ -89,34 +89,33 @@ def minimax(board, depth, alpha, beta):
             piece, pseudomoves_list = piece_moves  # piece_1, [13, 53...]
             coord1 = piece.coord
             for coord2 in pseudomoves_list:  # 13
-                # Try pseudomove 'i' on board; it may/may not give a result_i.
+                # Try pseudomove 'i' on board;
+                # if it leads to a game end, we can use result_i.
                 new_board_i, is_legal_i, result_i, game_end_i, game_status_i =\
                     make_pseudomove(board, coord1, coord2, depth)
                 if is_legal_i:
                     # Manage the legal move.
                     n_legal_moves_tried += 1
                     if game_end_i:
-                        # The pseudomove led to a final position,
-                        # no need for recursive search.
-                        best_move_i = [coord1, coord2]
+                        # The pseudomove led to a final position.
+                        # No search required, we know 'result_i'.
+                        pass  # TODO: review / kill this code branch?
                     else:
                         # We need to recursively search this move deeper.
-                        best_move_i, result_i, game_end_i, game_status_i = \
+                        childs_move, result_i, game_end_i, game_status_i = \
                             minimax(new_board_i, depth + 1, -beta, -alpha)
-                        result_i = -float(result_i)
+                        result_i = -float(result_i)  # Switch to player's view.
                     if result_i > alpha:
-                        # Update chosen move with this better move for player,
-                        # flipping sign of result_i to current player's view.
-                        best_move, alpha, game_end, game_status = \
-                            best_move_i, result_i, game_end_i, game_status_i
+                        # Update move choice with this better one for player.
+                        best_move, alpha = [coord1, coord2], result_i
                     if alpha >= beta:
                         # Interrupt search of rest of pseudomoves.
-                        return best_move, alpha, game_end, game_status
+                        return best_move, alpha, False, ON_GOING
 
         # Check exploration results.
         if n_legal_moves_tried > 0:
             # A legal best move was found: return results.
-            return best_move, alpha, game_end, game_status
+            return best_move, alpha, False, ON_GOING
         else:
             # No legal moves were found: check for Prince in check.
             player_side = board.turn
@@ -130,12 +129,14 @@ def minimax(board, depth, alpha, beta):
                 )
             if position_attacked(board, player_prince.coord, opponent_side):
                 # The player is checkmated, its Prince leaves and yields turn.
+                best_move = [player_prince.coord, None]
                 new_board_i, is_legal_i, result_i, game_end_i, game_status_i =\
-                     make_pseudomove(board, player_prince.coord, None, depth)                
+                    make_pseudomove(board, player_prince.coord, None, depth)
                 # And the new board must be assessed.
-                best_move, alpha, game_end, game_status = \
+                childs_move, result_i, game_end_i, game_status_i = \
                     minimax(new_board_i, depth + 1, -beta, -alpha)
-                return best_move, alpha, game_end, game_status
+                alpha = -float(result_i)  # Switch to player's view.
+                return best_move, alpha, False, ON_GOING
             else:
                 # The player is stalemated.
                 return None, DRAW, True, DRAW_STALEMATE
@@ -266,11 +267,13 @@ def make_pseudomove(board, coord1, coord2, depth):
     if (coord2 == new_board.crown_position) and \
        (piece_type == bd.PRINCE):
         # A Prince was legally moved onto the crown!
-        return new_board, True, PLAYER_WINS - depth, True, VICTORY_CROWNING
+        return new_board, True, PLAYER_WINS - depth,\
+            True, VICTORY_CROWNING
 
     # Check if it was the capture of the last piece.
     if new_board.piece_count[new_board.turn].sum() == 0:
-        return new_board, True, PLAYER_WINS - depth, True, VICTORY_NO_PIECES_LEFT
+        return new_board, True, PLAYER_WINS - depth,\
+            True, VICTORY_NO_PIECES_LEFT
 
     # Otherwise, it was a normal move.
     return new_board, True, None, False, ON_GOING
@@ -286,7 +289,8 @@ def evaluate(board, depth, shallow=True):
         shallow:    boolean - Whether quiescence search is needed.
 
     Output:
-        best_move:  A list [coord1, coord2], or None.
+        best_move:  A list [coord1, coord2], or None, with child's best move
+                    in case a quiecence searh is run.
         result:     float - in the range (OPPONENT_WINS...DRAW...PLAYER_WINS).
                     with PLAYER being the side whose turn it is to move.
                     End positions are estimated as (PLAYER_WINS - depth)
@@ -343,9 +347,9 @@ def evaluate(board, depth, shallow=True):
         # A quiescence search is needed to try to improve static eval.
         current_result = DRAW  # Node evaluation without quiescence.
         # TODO: include a proper quiescence search below.
-        move, quiescence_result = None, -np.Infinity  # Placeholder.
+        childs_move, quiescence_result = None, -np.Infinity  # Placeholder.
         if quiescence_result > current_result:
-            return move, quiescence_result, False, ON_GOING
+            return childs_move, quiescence_result, False, ON_GOING
         else:
             return None, current_result, False, ON_GOING
 

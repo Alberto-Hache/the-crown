@@ -1,40 +1,52 @@
 # Backlog
 
-## Tree search
+## Tree search (v1)
 
-- Detect end of game by Prince's crowning.
 - Detect and handle checkmate -> Prince out + opponent's turn again.
 - Detect other ends: no pieces left, no Princes left, stalemate, ... (more?)
-- game_play: add function to check if a position is legal
-  - No pPrinces can be taken.
-  - No soldiers in their Prince's starting position.
-  - DON'T CHECK: Number of princes, knights, soldiers per side.
-
-- Extend make_move():
-  - to detect if the move is legal (Prince safe or absent; no Soldier on the throne of its still present Prince).
-  - pre-evaluate move?
+- Improved evaluation function:
+  - foster earlier ends
+  - Add small noise to leave nodes evaluation for diverse game
+  - Positional evaluation: [for v2]
+    - material
+    - mobility
+    - Prince's safety
+    - ...
 - First version of mini-max with alpha-beta prunning (depth = 2; evaluation = -1/0/1).
-- Profiling of first version: bottlenecks?
-- Improved evaluation function? (material + mobility...).
+
+## Tree search (v2)
+
+- Profiling of v1: bottlenecks?
+- Extend make pseudo-move() to pre-evaluate move?
 - Add quiescence search.
-- Add killer-move heuristic [single move].
-- Extend kille-move heuristic to two moves?
+  - Piece captures
+  - Checks and replies to checks
+  - Soldier promotions
+  - Prince Crowning
+  - Prince moves upwards?
+  - (no move)
+- Add killer-move heuristic
+  - single move
+  - Extend to two moves?
 - Add hash-tables for repetitions.
 - Add heuristic move sorting?
 - Add progressive depth search (based on hash tables).
 
-## Rules
+## Rules (v1)
 
 - Load position: check if it's legal.
   - No princes can be taken.
   - No soldiers in their prince's starting position.
   - Number of princes, knights, soldiers per side.
 
-- Detect repetition of positions?
+## Rules (v2)
 
-## Optimizations
+- Detect repetition of positions.
+
+## Optimizations (v2)
 
 - position_attacked() with several return() points?
+- generate_pseudo_moves based on 'beams' - 'shadows'.
 - position_attacked() with itemgetter:
 
 ### Try optmization to 'game_play.position_attacked()'

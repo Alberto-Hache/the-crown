@@ -27,7 +27,8 @@ class Test_game_play(unittest.TestCase):
 
         with open("output.txt", "w") as f:
             for full_file_name in file_list:
-                file_name = full_file_name[len(bd.GAMES_PATH):]  # Remove rel. path.
+                # Remove rel. path.
+                file_name = full_file_name[len(bd.GAMES_PATH):]
                 board = bd.Board(file_name)  # The board to put pieces on.
 
                 print("\nAnalysis of position {}:".format(file_name), file=f)
@@ -38,9 +39,10 @@ class Test_game_play(unittest.TestCase):
                     board, 0, -np.Infinity, np.Infinity)
                 # Display results
                 move_txt = "None" if best_move is None else \
-                    "{} -> {}".format(best_move[0].coord, best_move[1])
-                print("Move = {}, Eval = {}, Finished = {}, Status = {}".format(
-                    move_txt, result, game_end,  game_status), file=f)
+                    "{}->{}".format(best_move[0], best_move[1])
+                print("Move: {}, Eval: {}, Finished: {}, Status: {}".format(
+                    move_txt, result, game_end,
+                    gp.game_status_txt[game_status]), file=f)
 
                 print("", file=f)
 
@@ -51,20 +53,23 @@ class Test_game_play(unittest.TestCase):
         with open("output.txt", "w") as f:
             for full_file_name in file_list:
                 # Loop over all board states stored.
-                file_name = full_file_name[len(bd.GAMES_PATH):]  # Remove rel. path.
+                # Remove rel. path.
+                file_name = full_file_name[len(bd.GAMES_PATH):]
                 for position in range(bd.N_POSITIONS):
                     # Loop over each position on that board.
-                    board = bd.Board(file_name)  # Actual board to put pieces on.
-                    display_board = bd.Board("empty.cor")  # A blank board for tracing.
+                    board = bd.Board(file_name)  # Board to put pieces on.
+                    display_board = bd.Board("empty.cor")  # Tracing board.
                     if board.board1d[position] is None:
                         # Test function from that free position.
                         print("\nKnight attacks from position {}"
                               .format(position), file=f)
                         board.include_piece(bd.KNIGHT, board.turn, position)
                         for position_2 in range(bd.N_POSITIONS):
-                            if gp.position_attacked(board, position_2, board.turn):
+                            if gp.position_attacked(
+                                board, position_2, board.turn):
                                 display_board.include_piece(
-                                    bd.TRACE, board.turn, position_2, tracing=True)
+                                    bd.TRACE, board.turn, position_2,
+                                    tracing=True)
                         board.print_char(out_file=f)
                         print("Positions attacked...", file=f)
                         display_board.print_char(out_file=f)
@@ -80,16 +85,18 @@ class Test_game_play(unittest.TestCase):
         with open("output.txt", "w") as f:
             for full_file_name in file_list:
                 # Loop over all board states stored.
-                file_name = full_file_name[len(bd.GAMES_PATH):]  # Remove rel. path.
+                # Remove rel. path.
+                file_name = full_file_name[len(bd.GAMES_PATH):]
                 board = bd.Board(file_name)  # Actual board to put pieces on.
                 print("Loading game position {} ...".format(file_name), file=f)
-                display_board = bd.Board("empty.cor")  # A blank board for tracing.
+                display_board = bd.Board("empty.cor")  # Tracing board.
 
                 for turn in [bd.WHITE, bd.BLACK]:
                     # Try board for both side.
                     board.turn = turn
                     display_board.turn = turn
-                    print("\nPseudo-moves for position: {}".format(file_name), file=f)
+                    print("\nPseudo-moves for position: {}".
+                          format(file_name), file=f)
                     board.print_char(out_file=f)
                     # Generate pseudomoves to test.
                     moves, moves_count = gp.generate_pseudomoves(board)
