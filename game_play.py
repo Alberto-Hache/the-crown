@@ -3,12 +3,10 @@ import copy
 
 import board as bd
 
-# AI hyperparameters
-
-# Tree search
+# Tree search.
 MAX_DEPTH = 4
 
-# Evaluation
+# Evaluation of positions.
 piece_weights = np.array([
     [  # From White's point of view (Prince, Soldier, Knight).
         [100, 1, 10],
