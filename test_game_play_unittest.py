@@ -42,14 +42,14 @@ class Test_game_play(unittest.TestCase):
                     "{}{}".format(
                         bd.coord_2_algebraic[best_move[0]],
                         bd.coord_2_algebraic[best_move[1]])
-                print("Move: {} [{}] Finished: {}, Status: {}".format(
+                print("Move: {} ({}) Finished: {}, Status: {}".format(
                     move_txt, result, game_end,
                     gp.game_status_txt[game_status]), file=f)
 
                 print("", file=f)
 
     def test_position_attacked(self):
-        file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
+        file_list = glob.glob(bd.GAMES_PATH + "position1.cor")
         file_list.sort()
 
         with open("output.txt", "w") as f:
@@ -120,6 +120,30 @@ class Test_game_play(unittest.TestCase):
         self.assertTrue(filecmp.cmp(
             "output.txt",
             "tests/output_generate_pseudomoves.txt"))
+
+    def test_count_knight_pseudomoves(self):
+        file_list = glob.glob(bd.GAMES_PATH + "position1.cor")
+        file_list.sort()
+
+        with open("output.txt", "w") as f:
+            for full_file_name in file_list:
+                # Loop over all board states stored.
+                # Remove rel. path.
+                file_name = full_file_name[len(bd.GAMES_PATH):]
+                board = bd.Board(file_name)  # Board to put pieces on.
+                print("Testing of position {}:".format(file_name), file=f)
+                board.print_char(out_file=f)
+
+                for position in range(bd.N_POSITIONS):
+                    # Loop over each position on that board.
+                    if board.board1d[position] is None:
+                        # Test function from that free position.
+                        moves_count = gp.count_knight_pseudomoves(
+                            board, position, board.turn)
+                        print("Knight mobility from position {}: {}"
+                              .format(position, moves_count), file=f)
+
+        self.assertTrue(True)
 
     def test_make_pseudomove(self):
         # Definition of test cases to run:

@@ -209,7 +209,6 @@ def generate_pseudomoves(board):
                 try:
                     piece_pos = np.where(pieces)[0][0]  # 2
                     closest_piece = pieces[piece_pos]  # piece_1
-
                     if closest_piece.color == piece.color:
                         # Add moves till closest_piece [EXCLUDING it].
                         new_moves = new_moves.union(moves_list[:piece_pos])
@@ -231,6 +230,85 @@ def generate_pseudomoves(board):
         moves_count += len(new_moves)
 
     return moves, moves_count
+
+
+def count_knight_pseudomoves(board, position, color):
+    """
+    Count non-legally checked moves for a Knight of a given color
+    from a position.
+
+    Input:
+        board:      Board - The game position to generate moves on.
+        position:   int - The 1D coordinate.
+        color:      int - the side of the piece
+
+    Output:
+        moves_count:integer - the total number of pseudomoves.
+    """
+    moves = []
+    moves_count = 0
+    # Obtain list with lists of moves
+    p_moves = bd.piece_moves[bd.KNIGHT][color][position]
+    # List of moves lists: [[1, 2...], [13, 15...]]
+    new_moves = set()  # A set with the moves to find for this 'piece'.
+    for moves_list in p_moves:  # [1, 2, 3, 4,...]
+        # Get the closest piece in that direction and its distance.
+        pieces = board.board1d[moves_list]  # [None, None, piece_1,...]
+        try:
+            piece_pos = np.where(pieces)[0][0]  # 2
+            closest_piece = pieces[piece_pos]  # piece_1
+            if closest_piece.color == piece.color:
+                # Add moves till closest_piece [EXCLUDING it].
+                new_moves = new_moves.union(moves_list[:piece_pos])
+            else:
+                # Add moves till closest_piece [INCLUDING it].
+                new_moves = new_moves.union(moves_list[:piece_pos + 1])
+        except IndexError:
+            # No pieces in that direction: add all moves.
+            new_moves = new_moves.union(moves_list)
+
+    # Update main list.
+    moves.append((piece, list(new_moves)))
+    moves_count += len(new_moves)
+
+    return moves, moves_count
+
+
+def OLD_count_knight_pseudomoves(board, position, color):
+    """
+    Count non-legally checked moves for a Knight of a given color
+    from a position.
+
+    Input:
+        board:      Board - The game position to generate moves on.
+        position:   int - The 1D coordinate.
+        color:      int - the side of the piece
+
+    Output:
+        moves_count:integer - the total number of pseudomoves.
+    """
+    moves_count = 0
+    # Obtain list with Knight moves
+    p_moves = bd.piece_moves[bd.KNIGHT][color][position]
+    # List of moves lists (K or S in kingdom): [[1, 2...], [13, 15...]]
+    for moves_list in p_moves:  # [1, 2, 3, 4,...]
+        # Get the closest piece in that direction and its distance.
+        pieces = board.board1d[moves_list]  # [None, None, piece_1,...]
+        try:
+            piece_pos = np.where(pieces)[0][0]  # 2
+            closest_piece = pieces[piece_pos]  # piece_1
+
+            if closest_piece.color == color:
+                # Add moves till closest_piece [EXCLUDING it].
+                moves_count += piece_pos
+            else:
+                # Add moves till closest_piece [INCLUDING it].
+                moves_count += piece_pos + 1
+        except IndexError:
+            # No pieces in that direction: add all moves.
+            moves_count += len(moves_list)
+
+    return moves_count
 
 
 def make_pseudomove(board, coord1, coord2, depth):
