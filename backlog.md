@@ -4,16 +4,16 @@
 
 - Improved evaluation function:
   - Positional evaluation: [for v2]
-    - material
-    - mobility
-    - Prince's safety
-    - ...
+    - material - DONE
+    - Knight mobility
+    - Prince distance to crown
+    - Prince's safety?
   - Add small noise to leave nodes evaluation for diverse game
 
 ## Tree search (v2)
 
 - Profiling of v1: bottlenecks?
-- Pre-evaluation of moves (extend make pseudo-move()?).
+- Pre-evaluation of moves (extend make pseudo-move()?) for  move sorting?
 - Add quiescence search.
   - Piece captures
   - Checks and replies to checks
@@ -22,11 +22,10 @@
   - Prince moves upwards?
   - Soldier moves to throne (in absence of Prince)?
   - (no move) assumed to guarantee the static evaluation
-- Add killer-move heuristic
-  - single move
-  - Extend to two moves?
 - Add hash-tables for repetitions.
-- Add heuristic move sorting?
+- Add killer-move heuristic
+  - A single move
+  - Extend to two moves?
 - Add progressive depth search (based on hash tables).
 
 ## Rules (v1)
