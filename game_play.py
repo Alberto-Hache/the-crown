@@ -1,11 +1,23 @@
 import numpy as np
 import copy
+import sys
 
 import board as bd
 
-# Tree search.
-MAX_DEPTH = 4
+# Tree search parameters:
+DEFAULT_SEARCH_PARAMS = {
+    "max_depth":            4,
+    "max_quiescence_depth": 8,
+    "randomness":           0
+}
 
+# Types of evaluation.
+EV_REGLAMENTARY = 0     # Only returns PLAYER_WINS / OPPONENT_WINS / DRAW.
+EV_MATERIAL = 1         # If game not ended, it evaluates material balance.
+EV_POSITIONAL = 2       # If game not ended, it evaluates both material
+                        # and positional factors.
+
+########################################################################
 # Evaluation of positions.
 piece_weights = np.array([
     [  # From White's point of view (Prince, Soldier, Knight).
@@ -18,6 +30,12 @@ piece_weights = np.array([
     ]
 ])
 
+# Pieces mobility:
+# max mobility of a Knight = 23 moves, so 2 Knights max = 46 moves.
+# 46 moves * 0.1 = 4.6 ≈ 1/2 Knight
+KNIGHT_MOVE = 0.1
+
+########################################################################
 # Possible game results
 PLAYER_WINS = float(10000)  # Winning score; to be reduced by node depth.
 OPPONENT_WINS = -PLAYER_WINS  # Losing score; to be increased by node depth.
@@ -47,12 +65,12 @@ def play(board):
     depth = 0
     while not search_end:
         move, result, game_end, game_status = minimax(
-            board, depth, alpha, beta)
+            board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS)
         search_end = True  # No iterated search for now.
     return move, result, game_end, game_status
 
 
-def minimax(board, depth, alpha, beta):
+def minimax(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
     """
     Given a *legal* position in the game-tree, find and evaluate the best move.
 
@@ -62,7 +80,9 @@ def minimax(board, depth, alpha, beta):
         alpha, beta:    float, float - with alpha < beta
                         The window within which result is expected to fall. 
                         'alpha' is the value to maximize and return.
-                        Search can be prunned when alpha >= beta.
+                        Search is prunned when alpha >= beta.
+        params:         A dictionary with the search settings to follow:
+                        max_depth, quiescence,randomness, (more to come).
 
     Output:
         best_move:      A list [coord1, coord2], or None.
@@ -78,35 +98,175 @@ def minimax(board, depth, alpha, beta):
                         DRAW_THREE_REPETITIONS
     """
 
-    # Firstly, check for some end conditions:
+    # 0. If at max_depth, quiescence search takes care.
+    if depth == params["max_depth"]:
+        return quiesce(board, depth, alpha, beta, params)
+
+    # 1. Check for some end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
     #   Otherwise, assume ON_GOING
-    childs_move, result, game_end, game_status = evaluate(
-        board, depth, shallow=True)
-
-    if game_end or depth == MAX_DEPTH:
+    childs_move, result, game_end, game_status = evaluate_end(board, depth)
+    if game_end:
         # End of game: no move is returned.
-        return None, result, game_end, game_status
+        return None, result, game_end, game_status  # TODO: Return beta?
 
-    else:
-        # Generate existing pseudomoves.
-        moves, moves_count = generate_pseudomoves(board)
-        assert(moves_count > 0),\
-            "ERROR: No pseudomoves found despite game is not ended "\
-            "and MAX_DEPTH has not been reached."
-        # Explore pseudomoves.
+    # 2. Generate and explore existing pseudomoves.
+    moves, moves_count = generate_pseudomoves(board)
+    assert(moves_count > 0),\
+        "ERROR: No pseudomoves found despite game is not ended "\
+        "and MAX_DEPTH has not been reached."
+    best_move = None
+    n_legal_moves_tried = 0
+    for piece_moves in moves:  # [[piece_1, [13, 53...]], [piece_2, [...]]
+        piece, pseudomoves_list = piece_moves  # piece_1, [13, 53...]
+        coord1 = piece.coord
+        for coord2 in pseudomoves_list:  # 13
+            # Try pseudomove 'i' on board;
+            # if it leads to a game end, we can use result_i.
+            new_board_i, is_legal_i, is_dynamic_i, \
+                result_i, game_end_i, game_status_i =\
+                make_pseudomove(
+                    board, coord1, coord2, depth, params
+                )
+            if is_legal_i:
+                # Manage the legal move.
+                n_legal_moves_tried += 1
+                if game_end_i:
+                    # The pseudomove led to a final position.
+                    # No search required, we know 'result_i'.
+                    pass  # TODO: review / kill this code branch?
+                else:
+                    # We need to recursively search this move deeper.
+                    childs_move, result_i, game_end_i, game_status_i = \
+                        minimax(new_board_i, depth + 1, -beta, -alpha)
+                    result_i = -float(result_i)  # Switch to player's view.
+                if result_i >= beta:
+                    # Ignore rest of pseudomoves [fail hard beta cutoff].
+                    return [coord1, coord2], beta, False, ON_GOING
+                if result_i > alpha:
+                    # Update move choice with this better one for player.
+                    best_move, alpha = [coord1, coord2], result_i
+
+    # Check exploration results.
+    if n_legal_moves_tried > 0:
+        # A legal best move was found: return results.
+        return best_move, alpha, False, ON_GOING
+
+    # 3. No legal moves were found: check for player's Prince check.
+    player_side = board.turn
+    opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
+    player_prince = board.prince[player_side]
+    assert (player_prince is not None),\
+        "ERROR: no legal moves found for {} side, which has {} "\
+        "pieces but no Prince.".format(
+            bd.color_name[player_side],
+            np.sum(board.piece_count[player_side])
+        )
+
+    if position_attacked(board, player_prince.coord, opponent_side):
+        # The player is checkmated, its Prince leaves and yields turn.
+        best_move = [player_prince.coord, None]
+        new_board_i, is_legal_i, is_dynamic_i, \
+            result_i, game_end_i, game_status_i =\
+            make_pseudomove(
+                board, player_prince.coord, None, depth, params
+            )
+        # And the new board must be assessed.
+        childs_move, result_i, game_end_i, game_status_i = \
+            minimax(new_board_i, depth + 1, -beta, -alpha)
+        alpha = -float(result_i)  # Switch to player's view.
+        return best_move, alpha, False, ON_GOING
+
+    # The player is stalemated.
+    return None, DRAW, True, DRAW_STALEMATE
+
+
+def quiesce(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
+    """
+    Evaluate a *legal* position exploring only DYNAMIC moves (or none).
+    This is used instead of minimax() once MAX_DEPTH has been reached.
+
+    Input:
+        board:          Board - the position to play on.
+        depth:          int - the depth of the node in the game tree.
+        alpha, beta:    float, float - with alpha < beta
+                        The window within which result is expected to fall. 
+                        'alpha' is the value to maximize and return.
+                        Search is prunned when alpha >= beta.
+        params:         A dictionary with the search settings to follow:
+                        max_depth, quiescence,randomness, (more to come).
+
+    Output:
+        best_move:      A list [coord1, coord2], or None.
+        result:         float - evaluation of the node from the moving side's
+                        perspective (+ is good).
+        game_end:       Boolen - whether the game was ended in this node.
+        game_status:    int
+                        Conditions detected:
+                        ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT /
+                        DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE
+
+                        Conditions not checked:
+                        DRAW_THREE_REPETITIONS
+    """
+
+    # 1. Check for some end conditions:
+    #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
+    #   Otherwise, assume ON_GOING
+    childs_move, result, game_end, game_status = evaluate_end(board, depth)
+    if game_end:
+        # End of game: no move is returned.
+        return None, result, game_end, game_status  # TODO: Return beta?
+
+    # 2. Perform static evaluation (null move) IF it is legal.
+    player_side = board.turn
+    opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
+    board.turn = opponent_side  # Flip turns temporarily.
+
+    if is_legal(board):
+        # Null move is possible.
+        player_in_check = False
+        material = np.multiply(board.piece_count, piece_weights[player_side]).sum()
+        positional = 0  # TODO: assess mobility + crown's distance + ...
+
+        result_i = material + positional
         best_move = None
-        n_legal_moves_tried = 0
-        for piece_moves in moves:  # [[piece_1, [13, 53...]], [piece_2, [...]]
-            piece, pseudomoves_list = piece_moves  # piece_1, [13, 53...]
-            coord1 = piece.coord
-            for coord2 in pseudomoves_list:  # 13
-                # Try pseudomove 'i' on board;
-                # if it leads to a game end, we can use result_i.
-                new_board_i, is_legal_i, result_i, game_end_i, game_status_i =\
-                    make_pseudomove(board, coord1, coord2, depth)
-                if is_legal_i:
-                    # Manage the legal move.
+
+        if result_i >= beta:
+            return None, beta, False, ON_GOING  # [fail hard beta cutoff]
+        if result_i > alpha:
+            # Update move choice with this better one for player.
+            alpha = result_i
+    else:
+        # The player is in check.
+        player_in_check = True
+
+    board.turn = player_side  # Restablish original turn.
+
+    # 3. Run a recursive quiescence search.
+    # 3.1. Generate and explore dynamic pseudomoves.
+    moves, moves_count = generate_pseudomoves(board)
+    assert(moves_count > 0),\
+        "ERROR: No pseudomoves found despite game is not ended."
+    best_move = None
+    n_legal_moves_tried = 0
+    n_legal_moves_found = 0
+    for piece_moves in moves:  # [[piece_1, [13, 53...]], [piece_2, [...]]
+        piece, pseudomoves_list = piece_moves  # piece_1, [13, 53...]
+        coord1 = piece.coord
+        for coord2 in pseudomoves_list:  # 13
+            # Try pseudomove 'i' on board;
+            # if it leads to a game end, we can use result_i.
+            new_board_i, is_legal_i, is_dynamic_i, \
+                result_i, game_end_i, game_status_i = \
+                make_pseudomove(
+                    board, coord1, coord2, depth, params,
+                    check_dynamic=True)
+            # Check if it's legal.
+            if is_legal_i:
+                n_legal_moves_found += 1
+                # Check if it's a dynamic move or check evasion.
+                if is_dynamic_i or player_in_check:
                     n_legal_moves_tried += 1
                     if game_end_i:
                         # The pseudomove led to a final position.
@@ -115,43 +275,112 @@ def minimax(board, depth, alpha, beta):
                     else:
                         # We need to recursively search this move deeper.
                         childs_move, result_i, game_end_i, game_status_i = \
-                            minimax(new_board_i, depth + 1, -beta, -alpha)
+                            quiesce(new_board_i, depth + 1, -beta, -alpha)
                         result_i = -float(result_i)  # Switch to player's view.
+                    if result_i >= beta:
+                        # Ignore rest of pseudomoves [fail hard beta cutoff].
+                        return [coord1, coord2], beta, False, ON_GOING
                     if result_i > alpha:
                         # Update move choice with this better one for player.
                         best_move, alpha = [coord1, coord2], result_i
-                    if alpha >= beta:
-                        # Interrupt search of rest of pseudomoves.
-                        return best_move, alpha, False, ON_GOING
 
-        # Check exploration results.
-        if n_legal_moves_tried > 0:
-            # A legal best move was found: return results.
-            return best_move, alpha, False, ON_GOING
-        else:
-            # No legal moves were found: check for Prince in check.
-            player_side = board.turn
-            opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
-            player_prince = board.prince[player_side]
-            assert (player_prince is not None),\
-                "ERROR: no legal moves found for {} side, which has {} "\
-                "pieces but no Prince.".format(
-                    bd.color_name[player_side],
-                    np.sum(board.piece_count[player_side])
-                )
-            if position_attacked(board, player_prince.coord, opponent_side):
-                # The player is checkmated, its Prince leaves and yields turn.
-                best_move = [player_prince.coord, None]
-                new_board_i, is_legal_i, result_i, game_end_i, game_status_i =\
-                    make_pseudomove(board, player_prince.coord, None, depth)
-                # And the new board must be assessed.
-                childs_move, result_i, game_end_i, game_status_i = \
-                    minimax(new_board_i, depth + 1, -beta, -alpha)
-                alpha = -float(result_i)  # Switch to player's view.
-                return best_move, alpha, False, ON_GOING
-            else:
-                # The player is stalemated.
-                return None, DRAW, True, DRAW_STALEMATE
+    # 3.2. Check exploration results.
+    if n_legal_moves_tried > 0:
+        # A legal best move was found: return results.
+        return best_move, alpha, False, ON_GOING
+
+    # 3.3. No legal moves were played: check for player's Prince check.
+    player_prince = board.prince[player_side]
+    assert (player_prince is not None),\
+        "ERROR: no legal moves found for {} side, which has {} "\
+        "pieces but no Prince.".format(
+            bd.color_name[player_side],
+            np.sum(board.piece_count[player_side])
+        )
+
+    if player_in_check:
+        # The player is checkmated, its Prince leaves and yields turn.
+        best_move = [player_prince.coord, None]
+        new_board_i, is_legal_i, result_i, \
+            result_i, game_end_i, game_status_i =\
+            make_pseudomove(
+                board, player_prince.coord, None, depth, params,
+                check_dynamic=True
+            )
+        # And the new board must be assessed.
+        childs_move, result_i, game_end_i, game_status_i = \
+            quiesce(new_board_i, depth + 1, -beta, -alpha)
+        alpha = -float(result_i)  # Switch to player's view.
+        return best_move, alpha, False, ON_GOING
+
+    if n_legal_moves_found == 0:
+        # The player is stalemated.
+        return None, DRAW, True, DRAW_STALEMATE
+    else:
+        # The player has only non-dynamic moves.
+        return None, alpha, False, ON_GOING
+
+
+def evaluate_end(board, depth):
+    """
+    Detect and evaluate clear end positions from playing side's perspective.
+
+    Input:
+        board:      Board - The game position to evaluate.
+        depth:      int - Depth of node in the search tree.
+
+    Output:
+        best_move:  A list [coord1, coord2], or None, with child's best move
+                    in case a quiecence searh is run.
+        result:     int - OPPONENT_WINS / DRAW / PLAYER_WINS,
+                    with PLAYER being the side whose turn it is to move.
+                    End positions are estimated as (PLAYER_WINS - depth)
+                    or (OPPONENT_WINS + depth) to prefer shorter wins.
+        game_end:   Boolean - Whether the game has finished.
+        game_status:int
+                    Conditions checked:
+                    ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
+                    DRAW_NO_PRINCES_LEFT
+
+                    Conditions not checked:
+                    DRAW_STALEMATE /
+                    DRAW_THREE_REPETITIONS
+
+    NOTE: multiple return points for efficiency.
+    """
+
+    player_side = board.turn
+    opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
+
+    # 1. Prince on the crown_position?
+    piece = board.board1d[board.crown_position]
+    if piece is not None:
+        if piece.type == bd.PRINCE:
+            result = PLAYER_WINS - depth if piece.color == player_side \
+                else OPPONENT_WINS + depth
+            return None, result, True, VICTORY_CROWNING
+
+    # 2. Side without pieces left?
+    if board.piece_count[player_side].sum() == 0:
+        return None, OPPONENT_WINS + depth, True, VICTORY_NO_PIECES_LEFT
+    elif board.piece_count[opponent_side].sum() == 0:
+        return None, PLAYER_WINS - depth, True, VICTORY_NO_PIECES_LEFT
+
+    # 3. No Princes left?
+    if board.piece_count[player_side][bd.PRINCE] == 0 and \
+            board.piece_count[opponent_side][bd.PRINCE] == 0:
+        return None, DRAW, True, DRAW_NO_PRINCES_LEFT
+
+    # 4. Stalemate?
+    pass  # TODO: Currently it's only detected in non-leave nodes.
+    # DRAW_STALEMATE
+
+    # 5. Three repetitions?
+    pass  # TODO: Will require a record of all past positions.
+    # DRAW_THREE_REPETITIONS
+
+    # 6. Otherwise, it's not decided yet.
+    return None, None, False, ON_GOING
 
 
 def position_attacked(board, pos, attacking_side):
@@ -232,6 +461,47 @@ def generate_pseudomoves(board):
     return moves, moves_count
 
 
+def knights_mobility(board, color):
+    """
+    Count non-legally checked moves for ALL Knights of a given color.
+
+    Input:
+        board:      Board - The game position to generate moves on.
+        color:      int - the side of the piece
+
+    Output:
+        moves_count:integer - the total number of pseudomoves.
+    """
+    # Obtain list of Knights for player with the 'color'.
+    knight_list = [p for p in board.pieces[color] if p.type == bd.KNIGHT]
+    moves_count = 0
+
+    # Loop over all Knights.
+    for knight in knight_list:
+        # Obtain list with lists of moves.
+        p_moves = bd.piece_moves[bd.KNIGHT][color][knight.coord]
+        # List of moves lists: [[1, 2...], [13, 15...]]
+        moves = set()  # A set with the moves to find for this 'piece'.
+        for moves_list in p_moves:  # [1, 2, 3, 4,...]
+            # Get the closest piece in that direction and its distance.
+            pieces = board.board1d[moves_list]  # [None, None, piece_1,...]
+            try:
+                piece_pos = np.where(pieces)[0][0]  # 2
+                closest_piece = pieces[piece_pos]  # piece_1
+                if closest_piece.color == color:
+                    # Add moves till closest_piece [EXCLUDING it].
+                    moves = moves.union(moves_list[:piece_pos])
+                else:
+                    # Add moves till closest_piece [INCLUDING it].
+                    moves = moves.union(moves_list[:piece_pos + 1])
+            except IndexError:
+                # No pieces in that direction: add all moves.
+                moves = moves.union(moves_list)
+        moves_count += len(moves)
+
+    return moves_count
+
+
 def count_knight_pseudomoves(board, position, color):
     """
     Count non-legally checked moves for a Knight of a given color
@@ -245,93 +515,70 @@ def count_knight_pseudomoves(board, position, color):
     Output:
         moves_count:integer - the total number of pseudomoves.
     """
-    moves = []
-    moves_count = 0
     # Obtain list with lists of moves
     p_moves = bd.piece_moves[bd.KNIGHT][color][position]
     # List of moves lists: [[1, 2...], [13, 15...]]
-    new_moves = set()  # A set with the moves to find for this 'piece'.
+    moves = set()  # A set with the moves to find for this 'piece'.
     for moves_list in p_moves:  # [1, 2, 3, 4,...]
         # Get the closest piece in that direction and its distance.
         pieces = board.board1d[moves_list]  # [None, None, piece_1,...]
         try:
             piece_pos = np.where(pieces)[0][0]  # 2
             closest_piece = pieces[piece_pos]  # piece_1
-            if closest_piece.color == piece.color:
-                # Add moves till closest_piece [EXCLUDING it].
-                new_moves = new_moves.union(moves_list[:piece_pos])
-            else:
-                # Add moves till closest_piece [INCLUDING it].
-                new_moves = new_moves.union(moves_list[:piece_pos + 1])
-        except IndexError:
-            # No pieces in that direction: add all moves.
-            new_moves = new_moves.union(moves_list)
-
-    # Update main list.
-    moves.append((piece, list(new_moves)))
-    moves_count += len(new_moves)
-
-    return moves, moves_count
-
-
-def OLD_count_knight_pseudomoves(board, position, color):
-    """
-    Count non-legally checked moves for a Knight of a given color
-    from a position.
-
-    Input:
-        board:      Board - The game position to generate moves on.
-        position:   int - The 1D coordinate.
-        color:      int - the side of the piece
-
-    Output:
-        moves_count:integer - the total number of pseudomoves.
-    """
-    moves_count = 0
-    # Obtain list with Knight moves
-    p_moves = bd.piece_moves[bd.KNIGHT][color][position]
-    # List of moves lists (K or S in kingdom): [[1, 2...], [13, 15...]]
-    for moves_list in p_moves:  # [1, 2, 3, 4,...]
-        # Get the closest piece in that direction and its distance.
-        pieces = board.board1d[moves_list]  # [None, None, piece_1,...]
-        try:
-            piece_pos = np.where(pieces)[0][0]  # 2
-            closest_piece = pieces[piece_pos]  # piece_1
-
             if closest_piece.color == color:
                 # Add moves till closest_piece [EXCLUDING it].
-                moves_count += piece_pos
+                moves = moves.union(moves_list[:piece_pos])
             else:
                 # Add moves till closest_piece [INCLUDING it].
-                moves_count += piece_pos + 1
+                moves = moves.union(moves_list[:piece_pos + 1])
         except IndexError:
             # No pieces in that direction: add all moves.
-            moves_count += len(moves_list)
+            moves = moves.union(moves_list)
 
-    return moves_count
+    return len(moves)
 
 
-def make_pseudomove(board, coord1, coord2, depth):
+def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
     """
     Given a *legal* position, try to make a pseudomove.
     Detect if the move would be ilegal first.
     If it's legal, detect some end of game conditions:
     - Prince crowning
     - Opponent is left with no pieces
+    If requires, detect if it's a dynamic move.
 
     Input:
-        board:      Board - the position to make the move on.
-        coord1:     int - initial position of pseudomove.
-        coord2:     int - final position of pseudomove,
-                    or None for a checkmated Prince leaving.
-        depth:      int - node depth before the pseudomove.
+        board:          Board - the position to make the move on.
+        coord1:         int - initial position of pseudomove.
+        coord2:         int - final position of pseudomove,
+                        or None for a checkmated Prince leaving.
+        depth:          int - node depth before the pseudomove.
+        params:         A dictionary with the search settings to follow:
+                        max_depth, quiescence,randomness, (more to come).
+        check_dynamic:  Boolean - whether dynamism of move must be
+                        assessed.
 
     Output:
         new_board:  Board - a new instance on which pseudomove was made.
         is_legal:   Boolean - whether it was a legal move.
+        is_dynamic: Boolean - whether it was a dynamic move.
+                    Conditions checked:
+                    - Piece captures
+                    - Checkmated Prince leaves
+                    - Prince Crowning
+                    - Soldier promotions
+                    - Check evasion (no null move)
+                    - Checks [downto 'max_quiescence_depth']
+
+                    Conditions not checked:  TODO: check in some cases.
+                    - Prince moves upwards?
+                    - Soldier moves to throne (in absence of Prince)?
+
         result:     float - an early evaluation of winner moves,
                     from the moving side's perspective (+ is good)
-                    estimated as (PLAYER_WINS - depth).
+                    estimated as (PLAYER_WINS - depth),
+                    ONLY in these conditions:
+                    VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
         game_end:   Boolean - whether the pseudomove ends the game.
         game_status:int
                     Conditions checked:
@@ -342,109 +589,67 @@ def make_pseudomove(board, coord1, coord2, depth):
                     DRAW_THREE_REPETITIONS
     """
 
+    if check_dynamic:
+        # Initialize vars. for later dynamism check before board changes.
+        moving_side = board.turn
+        opponent_side = bd.WHITE if moving_side == bd.BLACK else bd.BLACK
+        player_prince = board.prince[moving_side]
+        if player_prince is not None:
+            player_in_check = position_attacked(
+                board, player_prince.coord, opponent_side
+            )
+        else:
+            player_in_check = False
+
     # Register type of moving piece before changes.
     piece_type = board.board1d[coord1].type
-    # Create new board on which to try the move.
+    # Create new board on which to try the move, getting pieces removed.
     new_board = copy.deepcopy(board)
-    new_board.make_move(coord1, coord2)  # Turns have switched here!
+    captured_piece, leaving_piece = \
+        new_board.make_move(coord1, coord2)  # Turns have switched here!
     depth += 1  # Updated after making the move.
 
-    # Check if it's NOT a legal position.
+    # Check if the move produced an illegal position.
     if not is_legal(new_board):
-        return new_board, False, None, None, None
+        return new_board, False, None, None, None, None
 
-    # Check if a Prince's crowning.
+    # Check if a Prince is crowning.
     if (coord2 == new_board.crown_position) and \
        (piece_type == bd.PRINCE):
         # A Prince was legally moved onto the crown!
-        return new_board, True, PLAYER_WINS - depth,\
+        return new_board, True, True, PLAYER_WINS - depth,\
             True, VICTORY_CROWNING
 
     # Check if it was the capture of the last piece.
     if new_board.piece_count[new_board.turn].sum() == 0:
-        return new_board, True, PLAYER_WINS - depth,\
+        return new_board, True, True, PLAYER_WINS - depth,\
             True, VICTORY_NO_PIECES_LEFT
 
-    # Otherwise, it was a normal move.
-    return new_board, True, None, False, ON_GOING
-
-
-def evaluate(board, depth, shallow=True):
-    """
-    Evaluate a position from the playing side's perspective.
-
-    Input:
-        board:      Board - The game position to evaluate.
-        depth:      int - Depth of node in the search tree.
-        shallow:    boolean - Whether quiescence search is needed.
-
-    Output:
-        best_move:  A list [coord1, coord2], or None, with child's best move
-                    in case a quiecence searh is run.
-        result:     float - in the range (OPPONENT_WINS...DRAW...PLAYER_WINS).
-                    with PLAYER being the side whose turn it is to move.
-                    End positions are estimated as (PLAYER_WINS - depth)
-                    or (OPPONENT_WINS + depth) to prefer shorter wins.
-        game_end:   Boolean - Whether the game has finished.
-        game_status:int
-                    Conditions checked:
-                    ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
-                    DRAW_NO_PRINCES_LEFT
-
-                    Conditions not checked:
-                    DRAW_STALEMATE /
-                    DRAW_THREE_REPETITIONS
-
-    NOTE: multiple return points for efficiency.
-    """
-
-    player_side = board.turn
-    opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
-
-    # 1. Prince on the crown_position?
-    piece = board.board1d[board.crown_position]
-    if piece is not None:
-        if piece.type == bd.PRINCE:
-            result = PLAYER_WINS - depth if piece.color == player_side \
-                else OPPONENT_WINS + depth
-            return None, result, True, VICTORY_CROWNING
-
-    # 2. Side without pieces left?
-    if board.piece_count[player_side].sum() == 0:
-        return None, OPPONENT_WINS + depth, True, VICTORY_NO_PIECES_LEFT
-    elif board.piece_count[opponent_side].sum() == 0:
-        return None, PLAYER_WINS - depth, True, VICTORY_NO_PIECES_LEFT
-
-    # 3. No Princes left?
-    if board.piece_count[player_side][bd.PRINCE] == 0 and \
-            board.piece_count[opponent_side][bd.PRINCE] == 0:
-        return None, DRAW, True, DRAW_NO_PRINCES_LEFT
-
-    # 4. Stalemate?
-    pass  # Note: Would require calculating legal moves everytime.
-    # DRAW_STALEMATE
-
-    # 5. Three repetitions?
-    pass  # Note: Would require a record of all past positions.
-    # DRAW_THREE_REPETITIONS
-
-    # 6. Otherwise, it's not decided yet.
-    # Check if a shallow evaluation is enough.
-    if shallow:
-        # Basic material evaluation.
-        result = np.multiply(
-            board.piece_count,
-            piece_weights[player_side]).sum()
-        return None, result, False, ON_GOING
-    else:
-        # A quiescence search is needed to try to improve static eval.
-        current_result = DRAW  # Node evaluation without quiescence.
-        # TODO: include a proper quiescence search below.
-        childs_move, quiescence_result = None, -np.Infinity  # Placeholder.
-        if quiescence_result > current_result:
-            return childs_move, quiescence_result, False, ON_GOING
+    # Optionally, check dynamic conditions of the move.
+    is_dynamic = False
+    if check_dynamic:
+        # Checked: Piece captures, mated Prince leaves, Soldier promotion,
+        # Check, Check evasion.
+        # NOT checked:  Prince -> up, Soldier -> throne
+        if captured_piece is not None or leaving_piece is not None:
+            # Piece captured / mated Prince leaving / Soldier promotion.
+            is_dynamic = True
         else:
-            return None, current_result, False, ON_GOING
+            # Check on 'new_board' if it produced a check to the opponent.
+            opponent_prince = new_board.prince[new_board.turn]
+            if opponent_prince is not None and \
+               not depth > params["max_quiescence_depth"]:
+                is_dynamic = position_attacked(
+                    new_board, opponent_prince.coord, moving_side
+                )
+            if not is_dynamic and player_in_check:
+                # Check if the move produced a check evasion.
+                is_dynamic = not position_attacked(
+                    new_board, player_prince.coord, moving_side
+                )
+
+    # Report as a legal move, the dynamism of the move and other conditions.
+    return new_board, True, is_dynamic, None, False, ON_GOING
 
 
 def is_legal(board):
@@ -453,7 +658,7 @@ def is_legal(board):
     Ilegal cases checked:
     a) More than one Prince on either side.
     b) The moving side could take other side's Prince.
-    NO CHECK MADE ON: number of pieces on board (must check at load time).
+    NO CHECK ON: number of other pieces on board (must check at load time).
     """
     turn = board.turn
     no_turn = bd.WHITE if turn == bd.BLACK else bd.BLACK
@@ -468,7 +673,35 @@ def is_legal(board):
     if other_prince is not None:
         # Non-playing side has a Prince.
         if position_attacked(board, other_prince.coord, turn):
-            # It's in check! -> Ilegal.
+            # It's in check! -> Illegal.
             return False
 
     return True
+
+
+if __name__ == '__main__':
+    # Main program.
+    if len(sys.argv) > 0:
+        file_name = sys.argv[1]
+        board = bd.Board(file_name)
+        board.print_char()
+        print("\nPlaying position: {}".format(file_name))
+        board.print_char()
+
+        # Call to mini_max.
+        best_move, result, game_end, game_status = minimax(
+            board, 0, -np.Infinity, np.Infinity,
+            params=DEFAULT_SEARCH_PARAMS)
+
+        # Display results.
+        move_txt = "None" if best_move is None else \
+            "{}{}".format(
+                bd.coord_2_algebraic[best_move[0]],
+                bd.coord_2_algebraic[best_move[1]])
+        print("Move:       {} ({}) Finished: {}, Status: {}".format(
+            move_txt, result, game_end,
+            game_status_txt[game_status]))
+        print("Raw output: {}, {}, {}, {}".format(
+            best_move, result, game_end, game_status
+        ))
+        print("")

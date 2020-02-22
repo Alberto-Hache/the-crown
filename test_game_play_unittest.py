@@ -21,14 +21,69 @@ class Test_game_play(unittest.TestCase):
         # - expected return from mini_max():
         #   best_move, result, game_end, game_status
 
+        TEST_SEARCH_PARAMS_4 = {
+            "max_depth":    4,
+            "randomness":   0
+        }
+
         # Go through all test cases, each on one board.
-        file_list = glob.glob(bd.GAMES_PATH + "test_minimax*.cor")
-        file_list.sort()
+        test_cases = (
+            (
+                "test_minimax_01.cor",  # Position to play.
+                TEST_SEARCH_PARAMS_4,     # Search parameters.
+                None, 10000, True, 1    # Move, result, end, status.
+            ),
+            (
+                "test_minimax_02.cor",
+                TEST_SEARCH_PARAMS_4,
+                None, -10000, True, 2
+            ),
+            (
+                "test_minimax_03.cor",
+                TEST_SEARCH_PARAMS_4,
+                None, 0, True, 4
+            ),
+            (
+                "test_minimax_04.cor",
+                TEST_SEARCH_PARAMS_4,
+                None, 0, True, 3
+            ),
+            (
+                "test_minimax_05.cor",
+                TEST_SEARCH_PARAMS_4,
+                None, -10000, True, 2
+            ),
+            (
+                "test_minimax_06.cor",
+                TEST_SEARCH_PARAMS_4,
+                [46, 48], 9999.0, False, 0
+            ),
+            (
+                "test_minimax_07.cor",
+                TEST_SEARCH_PARAMS_4,
+                [19, 40], 9999.0, False, 0
+            ),
+            (
+                "test_minimax_08.cor",
+                TEST_SEARCH_PARAMS_4,
+                [32, 46], 9998.0, False, 0
+            ),
+            (
+                "test_minimax_09.cor",
+                TEST_SEARCH_PARAMS_4,
+                [41, 45], 2.0, False, 0
+            ),
+            (
+                "test_minimax_10.cor",
+                TEST_SEARCH_PARAMS_4,
+                [26, 27], -10.0, False, 0
+            )
+        )
 
         with open("output.txt", "w") as f:
-            for full_file_name in file_list:
-                # Remove rel. path.
-                file_name = full_file_name[len(bd.GAMES_PATH):]
+            for test in test_cases:
+                file_name, params, \
+                    exp_move, exp_result, exp_end, exp_status = test
                 board = bd.Board(file_name)  # The board to put pieces on.
 
                 print("\nAnalysis of position {}:".format(file_name), file=f)
@@ -36,17 +91,131 @@ class Test_game_play(unittest.TestCase):
 
                 # Call to mini_max.
                 best_move, result, game_end, game_status = gp.minimax(
-                    board, 0, -np.Infinity, np.Infinity)
-                # Display results
+                    board, 0, -np.Infinity, np.Infinity,
+                    params=params)
+
+                # Display results.
                 move_txt = "None" if best_move is None else \
                     "{}{}".format(
                         bd.coord_2_algebraic[best_move[0]],
                         bd.coord_2_algebraic[best_move[1]])
-                print("Move: {} ({}) Finished: {}, Status: {}".format(
+                print("Move:       {} ({}) Finished: {}, Status: {}".format(
                     move_txt, result, game_end,
                     gp.game_status_txt[game_status]), file=f)
-
+                print("Raw output: {}, {}, {}, {}".format(
+                    best_move, result, game_end, game_status,
+                    file=f
+                ))
                 print("", file=f)
+
+                # And check vs. expected.
+                self.assertEqual(
+                    (best_move, result, game_end, game_status),
+                    (exp_move, exp_result, exp_end, exp_status),
+                    "Position: {}".format(file_name)
+                )
+
+    def test_quiesce(self):
+        # Definition of test cases to run:
+        # - File to load.
+        # - move to try...
+        # - expected return from mini_max():
+        #   best_move, result, game_end, game_status
+
+        TEST_SEARCH_PARAMS_4 = {
+            "max_depth":            4,
+            "max_quiescence_depth": 10,
+            "randomness":           0
+        }
+
+        # Go through all test cases, each on one board.
+        test_cases = (
+            (
+                "test_minimax_01.cor",  # Position to play.
+                TEST_SEARCH_PARAMS_4,   # Search parameters.
+                None, 9996, True, 1    # Move, result, end, status.
+            ),
+            (
+                "test_minimax_02.cor",
+                TEST_SEARCH_PARAMS_4,
+                None, -9996, True, 2
+            ),
+            (
+                "test_minimax_03.cor",
+                TEST_SEARCH_PARAMS_4,
+                None, 0, True, 4
+            ),
+            (
+                "test_minimax_04.cor",
+                TEST_SEARCH_PARAMS_4,
+                None, 0, True, 3
+            ),
+            (
+                "test_minimax_05.cor",
+                TEST_SEARCH_PARAMS_4,
+                None, -9996, True, 2
+            ),
+            (
+                "test_minimax_06.cor",
+                TEST_SEARCH_PARAMS_4,
+                [46, 48], 9995.0, False, 0
+            ),
+            (
+                "test_minimax_07.cor",
+                TEST_SEARCH_PARAMS_4,
+                [19, 40], 9995.0, False, 0
+            ),
+            (
+                "test_minimax_08.cor",
+                TEST_SEARCH_PARAMS_4,
+                [32, 46], 9994.0, False, 0
+            ),
+            (
+                "test_minimax_10.cor",
+                TEST_SEARCH_PARAMS_4,
+                [26, 27], -10.0, False, 0
+            ),
+            (
+                "test_minimax_09.cor",
+                TEST_SEARCH_PARAMS_4,
+                [41, 45], 2.0, False, 0
+            )
+        )
+
+        with open("output.txt", "w") as f:
+            for test in test_cases:
+                file_name, params, \
+                    exp_move, exp_result, exp_end, exp_status = test
+                board = bd.Board(file_name)  # The board to put pieces on.
+
+                print("\nAnalysis of position {}:".format(file_name), file=f)
+                board.print_char(out_file=f)
+
+                # Call to quiesce() with depth 'max_depth".
+                best_move, result, game_end, game_status = gp.quiesce(
+                    board, params["max_depth"], -np.Infinity, np.Infinity,
+                    params=params)
+
+                # Display results.
+                move_txt = "None" if best_move is None else \
+                    "{}{}".format(
+                        bd.coord_2_algebraic[best_move[0]],
+                        bd.coord_2_algebraic[best_move[1]])
+                print("Move:       {} ({}) Finished: {}, Status: {}".format(
+                    move_txt, result, game_end,
+                    gp.game_status_txt[game_status]),
+                    file=f)
+                print("Raw output: {}, {}, {}, {}".format(
+                    best_move, result, game_end, game_status),
+                    file=f)
+                print("", file=f)
+
+                # And check vs. expected.
+                self.assertEqual(
+                    (best_move, result, game_end, game_status),
+                    (exp_move, exp_result, exp_end, exp_status),
+                    "Position: {}".format(file_name)
+                )
 
     def test_position_attacked(self):
         file_list = glob.glob(bd.GAMES_PATH + "position1.cor")
@@ -121,36 +290,70 @@ class Test_game_play(unittest.TestCase):
             "output.txt",
             "tests/output_generate_pseudomoves.txt"))
 
-    def test_count_knight_pseudomoves(self):
-        file_list = glob.glob(bd.GAMES_PATH + "position1.cor")
+    def test_knights_mobility(self):
+        # file_list = glob.glob(bd.GAMES_PATH + "position1.cor")
+        file_list = [
+            "strategy_01.cor",
+            "strategy_02.cor"
+            ]
         file_list.sort()
 
         with open("output.txt", "w") as f:
-            for full_file_name in file_list:
-                # Loop over all board states stored.
+            # Loop over all board states stored.
+            for file_name in file_list:
                 # Remove rel. path.
-                file_name = full_file_name[len(bd.GAMES_PATH):]
+                # file_name = full_file_name[len(bd.GAMES_PATH):]
                 board = bd.Board(file_name)  # Board to put pieces on.
                 print("Testing of position {}:".format(file_name), file=f)
                 board.print_char(out_file=f)
 
+                # Test function.
+                moves_count_white = gp.knights_mobility(board, bd.WHITE)
+                moves_count_black = gp.knights_mobility(board, bd.BLACK)
+                print("Knights mobility [WHITE]: {}".\
+                      format(moves_count_white), file=f)
+                print("Knights mobility [BLACK]: {}".\
+                      format(moves_count_black), file=f)
+
+        self.assertTrue(filecmp.cmp(
+            "output.txt", "tests/output_knights_mobility.txt"))
+
+    def test_count_knight_pseudomoves(self):
+        # file_list = glob.glob(bd.GAMES_PATH + "position1.cor")
+        file_list = ["position1.cor", "empty.cor"]
+        file_list.sort()
+
+        with open("output.txt", "w") as f:
+            # Loop over all board states stored.
+            for file_name in file_list:
+                # Remove rel. path.
+                # file_name = full_file_name[len(bd.GAMES_PATH):]
+                board = bd.Board(file_name)  # Board to put pieces on.
+                print("Testing of position {}:".format(file_name), file=f)
+                board.print_char(out_file=f)
+
+                # Loop over each position on that board.
                 for position in range(bd.N_POSITIONS):
-                    # Loop over each position on that board.
                     if board.board1d[position] is None:
                         # Test function from that free position.
                         moves_count = gp.count_knight_pseudomoves(
                             board, position, board.turn)
                         print("Knight mobility from position {}: {}"
-                              .format(position, moves_count), file=f)
+                              .format(bd.coord_2_algebraic[position],
+                                      moves_count),
+                              file=f)
 
-        self.assertTrue(True)
+        self.assertTrue(filecmp.cmp(
+            "output.txt",
+            "tests/output_count_knight_pseudomoves.txt"))
 
     def test_make_pseudomove(self):
         # Definition of test cases to run:
         # - File to load.
         # - move to try...
         # - expected return from make_pseudomove():
-        #   is_legal, result, game_end, game_status
+        #   new_board [IGNORED], is_legal, is_dynamic,
+        #   result, game_end, game_status
         """
             Types of game node status:
             ON_GOING = 0
@@ -321,7 +524,7 @@ class Test_game_play(unittest.TestCase):
                 board.print_char(out_file=f)
 
                 # Evaluate from original moving side.
-                best_move, eval, game_end, game_status = gp.evaluate(
+                best_move, eval, game_end, game_status = gp.evaluate_end(
                     board, depth=0, shallow=True)
                 move_txt = "None" if best_move is None else \
                     "{} -> {}".format(best_move[0].coord, best_move[1])
@@ -332,7 +535,7 @@ class Test_game_play(unittest.TestCase):
                 board.turn = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
                 print("\n{} to move:".format(bd.color_name[board.turn]), file=f)
 
-                best_move, eval, game_end, game_status = gp.evaluate(
+                best_move, eval, game_end, game_status = gp.evaluate_end(
                     board, depth=0, shallow=True)
                 move_txt = "None" if best_move is None else \
                     "{} -> {}".format(best_move[0].coord, best_move[1])

@@ -1,4 +1,28 @@
-Testing of position position1.cor:
+
+Analysis of position test_minimax_01.cor:
+               .
+           13 /p\ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ /s\ / \ 
+         /---.---.---\
+      7 / \ / \ / \P/ \ 
+       /---.---.---.---\
+    5 / \ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 /s\ / \ / \ / \ / \ /S\ 
+   /---.---.---.---.---.---\
+1 /S\ / \ / \ / \ /K\ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+Move:       None (9996.0) Finished: True, Status: Victory (Prince crowned)
+Raw output: None, 9996.0, True, 1
+
+
+Analysis of position test_minimax_02.cor:
                .
            13 / \ 
              /---\
@@ -6,102 +30,178 @@ Testing of position position1.cor:
            /---.---\
         9 / \ / \ / \ 
          /---.---.---\
-      7 / \ / \ / \ / \ 
+      7 / \ / \ / \P/ \ 
        /---.---.---.---\
     5 / \ / \ / \ / \ / \ 
      /---.---.---.---.---\
-  3 /p\ /s\ / \ / \ /S\ / \ 
+  3 / \ / \ / \ / \ / \ /S\ 
    /---.---.---.---.---.---\
-1 / \ / \ / \ / \ /S\ / \ /P\ 
+1 /S\ / \ / \ / \ /K\ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+Move:       None (-9996.0) Finished: True, Status: Victory (no pieces left)
+Raw output: None, -9996.0, True, 2
+
+
+Analysis of position test_minimax_03.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 /p\ / \ / \P/ \ 
+       /---.---.---.---\
+    5 / \ / \ /K\ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \ / \ / \ / \ /S\ 
+   /---.---.---.---.---.---\
+1 /S\ / \ / \ / \ / \ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+Move:       None (0) Finished: True, Status: Draw, (stalemate)
+Raw output: None, 0, True, 4
+
+
+Analysis of position test_minimax_04.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ /k\ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 / \ / \ /K\ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \ / \ / \ / \ /S\ 
+   /---.---.---.---.---.---\
+1 /S\ / \ / \ / \ / \ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+Move:       None (0) Finished: True, Status: Draw (no Princes left)
+Raw output: None, 0, True, 3
+
+
+Analysis of position test_minimax_05.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ /k\ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 /p\ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \ / \ / \ / \ / \ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ / \ / \ / \ 
  ·---·---·---·---·---·---·---·
   a / b / c / d / e / f / g
 White to move.
 
+Move:       None (-9996.0) Finished: True, Status: Victory (no pieces left)
+Raw output: None, -9996.0, True, 2
 
-Knight mobility from position 0: 9
 
-Knight mobility from position 1: 8
+Analysis of position test_minimax_06.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \P/K\ 
+           /---.---\
+        9 / \ / \s/ \ 
+         /---.---.---\
+      7 / \ / \ /S\ / \ 
+       /---.---.---.---\
+    5 /p\ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ /s\s/ \ / \ / \ / \ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ / \ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
 
-Knight mobility from position 2: 11
+Move:       a12a13 (9995.0) Finished: False, Status: Game on-going
+Raw output: [46, 48], 9995.0, False, 0
 
-Knight mobility from position 3: 9
 
-Knight mobility from position 4: 17
+Analysis of position test_minimax_07.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 /s\ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 / \ / \ / \ / \P/ \ 
+     /---.---.---.---.---\
+  3 / \ / \ / \ /K\ / \ / \ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ /S\ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
 
-Knight mobility from position 5: 19
+Move:       d3a9 (9995.0) Finished: False, Status: Game on-going
+Raw output: [19, 40], 9995.0, False, 0
 
-Knight mobility from position 6: 19
 
-Knight mobility from position 7: 19
+Analysis of position test_minimax_08.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 /p\ / \ / \ / \ 
+       /---.---.---.---\
+    5 / \ / \ / \S/ \ /K\ 
+     /---.---.---.---.---\
+  3 / \ / \ / \ / \ / \ /P\ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ / \ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
 
-Knight mobility from position 9: 2
+Move:       e5a12 (9994.0) Finished: False, Status: Game on-going
+Raw output: [32, 46], 9994.0, False, 0
 
-Knight mobility from position 10: 5
 
-Knight mobility from position 11: 13
+Analysis of position test_minimax_10.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 /p\ / \ / \P/ \ 
+       /---.---.---.---\
+    5 / \ /s\ /K\ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \ / \ / \ / \ /S\ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ / \ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
 
-Knight mobility from position 14: 12
+Move:       None (-10.0) Finished: False, Status: Game on-going
+Raw output: None, -10.0, False, 0
 
-Knight mobility from position 16: 19
-
-Knight mobility from position 17: 19
-
-Knight mobility from position 18: 20
-
-Knight mobility from position 19: 18
-
-Knight mobility from position 20: 18
-
-Knight mobility from position 22: 11
-
-Knight mobility from position 23: 14
-
-Knight mobility from position 24: 20
-
-Knight mobility from position 25: 22
-
-Knight mobility from position 26: 22
-
-Knight mobility from position 27: 23
-
-Knight mobility from position 28: 23
-
-Knight mobility from position 29: 23
-
-Knight mobility from position 30: 21
-
-Knight mobility from position 31: 23
-
-Knight mobility from position 32: 20
-
-Knight mobility from position 33: 22
-
-Knight mobility from position 34: 21
-
-Knight mobility from position 35: 21
-
-Knight mobility from position 36: 21
-
-Knight mobility from position 37: 21
-
-Knight mobility from position 38: 23
-
-Knight mobility from position 39: 23
-
-Knight mobility from position 40: 21
-
-Knight mobility from position 41: 19
-
-Knight mobility from position 42: 19
-
-Knight mobility from position 43: 21
-
-Knight mobility from position 44: 23
-
-Knight mobility from position 45: 19
-
-Knight mobility from position 46: 20
-
-Knight mobility from position 47: 21
-
-Knight mobility from position 48: 21

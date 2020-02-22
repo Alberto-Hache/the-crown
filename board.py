@@ -1,8 +1,9 @@
 import sys
+import types
 import numpy as np
 
 import utils
-import types
+import textcolors
 
 # Saved games location
 GAMES_PATH = "./games/"
@@ -78,7 +79,7 @@ class Board:
 
         # Set position and sides.
         self.load_board(file_name)
-        self.computer_side = self.turn
+        # self.computer_side = self.turn
 
     def load_board(self, file_name):
         if file_name is None:
@@ -153,13 +154,30 @@ class Board:
 
     def make_move(self, coord1, coord2):
         """
-        Execute all board updates required for a move from coord1 to coord2.
-
+        Execute all board updates required for a move from coord1 to coord2,
+        and report piece changes (captures or leaves).
         NOTE: if coord2 is None, assumption is that a checkmated Prince
               is in coord1.
+
+        Input:
+            coord1: int - initial position of the move.
+            coord2: int - final position of the move,
+
+        Output:
+            captured_piece: Piece - Opponent's piece captured at coord 2
+                            (or None).
+            leaving_piece:  Piece - Playing piece that left the board,
+                            (or None):
+                            a) Prince checkmated.
+                            b) Soldier promoted to Prince.
+
         """
         # Obtain moving piece.
         piece1 = self.board1d[coord1]
+        # Captured piece and leaving piece to detect:
+        captured_piece = None
+        leaving_piece = None
+
         if coord2 is not None:
             # A normal move from coord1 to coord2.
             piece2 = self.board1d[coord2]
@@ -173,6 +191,7 @@ class Board:
                         coord2, coord_2_algebraic[coord2],
                         piece_char[piece2.type][piece2.color]
                     )
+                captured_piece = piece2
                 self.remove_piece(coord2)
             # Move piece1.
             self.board1d[coord1] = None
@@ -187,6 +206,7 @@ class Board:
             if coord2 == self.prince_position[piece1.color] and \
                piece1.type == SOLDIER:
                 # A Soldier is promoted to Prince.
+                leaving_piece = piece1
                 self.remove_piece(coord2)
                 self.include_piece(PRINCE, self.turn, coord2)
         else:
@@ -194,15 +214,18 @@ class Board:
             assert piece1.type == PRINCE, \
                 "ERROR: a piece of type {} can't move to 'None'.".\
                 format(piece_name[piece1.type])
+            leaving_piece = piece1
             self.remove_piece(coord1)
         # Change turns.
         self.turn = WHITE if self.turn == BLACK else BLACK
+
+        return captured_piece, leaving_piece
 
     def clear_board(self):
         for piece in self.pieces[0] + self.pieces[1]:
             self.remove_piece(piece.coord)
 
-    def print_char(self, out_file=None):
+    def print_char(self, out_file=None, stylized=False):
         current_pos = self.n_positions - 1
         n_pos_in_row = 1
         n_indent = 2*self.n_rows + 2
@@ -229,7 +252,25 @@ class Board:
                         print(trace_char + edge,
                               end='', file=out_file)
                     else:  # A proper piece.
-                        print(piece_char[piece.type][piece.color] + edge,
+                        if stylized:
+                            # Decorate ASCII:
+                            if piece.color == WHITE:
+                                txt_color, txt_style, bg_color = \
+                                    'reset', 'normal', 'reset'
+                            else:
+                                txt_color, txt_style, bg_color = \
+                                    'white', 'bold', 'black'
+                            piece_txt = textcolors.colorize_bg(
+                                piece_char[piece.type][piece.color],
+                                txt_color,
+                                fg_intensity='bright',
+                                bg_color=bg_color,
+                                style=txt_style
+                                )
+                        else:
+                            # Plain ASCII
+                            piece_txt = piece_char[piece.type][piece.color]
+                        print(piece_txt + edge,
                               end='', file=out_file)
                 black_pos = not black_pos
             print(" ", file=out_file)
