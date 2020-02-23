@@ -37,7 +37,7 @@ class Test_utils(unittest.TestCase):
 
     def test_algebraic_move_2_coords(self):
         # Define tests and expected results.
-        correct_test_cases = [
+        correct_test_cases = [  # Input string; Output: coord1, coord2
             ["a1a12", "a1", "a12"],
             ["b1b2", "b1", "b2"],
             ["a12a13", "a12", "a13"],

@@ -1,28 +1,4 @@
-
-Analysis of position test_minimax_01.cor:
-               .
-           13 /p\ 
-             /---\
-         11 / \ / \ 
-           /---.---\
-        9 / \ /s\ / \ 
-         /---.---.---\
-      7 / \ / \ / \P/ \ 
-       /---.---.---.---\
-    5 / \ / \ / \ / \ / \ 
-     /---.---.---.---.---\
-  3 /s\ / \ / \ / \ / \ /S\ 
-   /---.---.---.---.---.---\
-1 /S\ / \ / \ / \ /K\ / \ / \ 
- ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g
-Black to move.
-
-Move:       None (10000.0) Finished: True, Status: Victory (Prince crowned)
-Raw output: None, 10000.0, True, 1
-
-
-Analysis of position test_minimax_02.cor:
+Evaluation of position position1.cor:
                .
            13 / \ 
              /---\
@@ -30,22 +6,23 @@ Analysis of position test_minimax_02.cor:
            /---.---\
         9 / \ / \ / \ 
          /---.---.---\
-      7 / \ / \ / \P/ \ 
+      7 / \ / \ / \ / \ 
        /---.---.---.---\
     5 / \ / \ / \ / \ / \ 
      /---.---.---.---.---\
-  3 / \ / \ / \ / \ / \ /S\ 
+  3 /p\ /s\ / \ / \ /S\ / \ 
    /---.---.---.---.---.---\
-1 /S\ / \ / \ / \ /K\ / \ / \ 
+1 / \ / \ / \ / \ /S\ / \ /P\ 
  ·---·---·---·---·---·---·---·
   a / b / c / d / e / f / g
-Black to move.
+White to move.
 
-Move:       None (-10000.0) Finished: True, Status: Victory (no pieces left)
-Raw output: None, -10000.0, True, 2
+Move = None, Eval = None, Finished = False, Status = 0
 
+Black to move:
+Move = None, Eval = None, Finished = False, Status = 0
 
-Analysis of position test_minimax_03.cor:
+Evaluation of position position10.cor:
                .
            13 / \ 
              /---\
@@ -53,160 +30,143 @@ Analysis of position test_minimax_03.cor:
            /---.---\
         9 / \ / \ / \ 
          /---.---.---\
-      7 /p\ / \ / \P/ \ 
+      7 / \ / \ / \ / \ 
        /---.---.---.---\
-    5 / \ / \ /K\ / \ / \ 
+    5 / \ / \ / \ / \ / \ 
      /---.---.---.---.---\
-  3 / \ / \ / \ / \ / \ /S\ 
+  3 /p\ /s\ / \ / \ /S\ / \ 
    /---.---.---.---.---.---\
-1 /S\ / \ / \ / \ / \ / \ / \ 
+1 / \ / \ / \ /k\P/S\ / \ / \ 
  ·---·---·---·---·---·---·---·
   a / b / c / d / e / f / g
-Black to move.
+White to move.
 
-Move:       None (0) Finished: True, Status: Draw, (stalemate)
-Raw output: None, 0, True, 4
+Move = None, Eval = None, Finished = False, Status = 0
 
+Black to move:
+Move = None, Eval = None, Finished = False, Status = 0
 
-Analysis of position test_minimax_04.cor:
+Evaluation of position position2.cor:
                .
            13 / \ 
              /---\
          11 / \ / \ 
            /---.---\
-        9 / \ / \ /k\ 
+        9 / \ / \ / \ 
          /---.---.---\
-      7 / \ / \ / \ / \ 
+      7 / \ / \S/ \ / \ 
        /---.---.---.---\
-    5 / \ / \ /K\ / \ / \ 
+    5 / \ / \ / \ / \ / \ 
      /---.---.---.---.---\
-  3 / \ / \ / \ / \ / \ /S\ 
+  3 /p\ /s\ / \ / \ / \ / \ 
    /---.---.---.---.---.---\
-1 /S\ / \ / \ / \ / \ / \ / \ 
+1 / \ / \ / \ / \ / \ / \ /P\ 
  ·---·---·---·---·---·---·---·
   a / b / c / d / e / f / g
-Black to move.
+White to move.
 
-Move:       None (0) Finished: True, Status: Draw (no Princes left)
-Raw output: None, 0, True, 3
+Move = None, Eval = None, Finished = False, Status = 0
 
+Black to move:
+Move = None, Eval = None, Finished = False, Status = 0
 
-Analysis of position test_minimax_05.cor:
+Evaluation of position position3.cor:
                .
            13 / \ 
              /---\
          11 / \ / \ 
            /---.---\
-        9 / \ / \ /k\ 
+        9 / \ / \ / \ 
          /---.---.---\
       7 / \ / \ / \ / \ 
        /---.---.---.---\
-    5 /p\ / \ / \ / \ / \ 
+    5 / \ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 /p\ /s\ / \ / \ /S\ / \ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ /S\ / \ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+Move = None, Eval = None, Finished = False, Status = 0
+
+White to move:
+Move = None, Eval = None, Finished = False, Status = 0
+
+Evaluation of position position4.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \S/ \ / \ 
+       /---.---.---.---\
+    5 / \ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 /p\ /s\ / \ / \ / \ / \ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ / \ / \ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+Move = None, Eval = None, Finished = False, Status = 0
+
+White to move:
+Move = None, Eval = None, Finished = False, Status = 0
+
+Evaluation of position position5.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 / \ / \ / \ / \ / \ 
      /---.---.---.---.---\
   3 / \ / \ / \ / \ / \ / \ 
    /---.---.---.---.---.---\
-1 / \ / \ / \ / \ / \ / \ / \ 
+1 /p\ / \ / \ / \ / \ / \ /P\ 
  ·---·---·---·---·---·---·---·
   a / b / c / d / e / f / g
 White to move.
 
-Move:       None (-10000.0) Finished: True, Status: Victory (no pieces left)
-Raw output: None, -10000.0, True, 2
+Move = None, Eval = None, Finished = False, Status = 0
 
+Black to move:
+Move = None, Eval = None, Finished = False, Status = 0
 
-Analysis of position test_minimax_06.cor:
+Evaluation of position position6.cor:
                .
-           13 / \ 
-             /---\
-         11 / \P/K\ 
-           /---.---\
-        9 / \ / \s/ \ 
-         /---.---.---\
-      7 / \ / \ /S\ / \ 
-       /---.---.---.---\
-    5 /p\ / \ / \ / \ / \ 
-     /---.---.---.---.---\
-  3 / \ /s\s/ \ / \ / \ / \ 
-   /---.---.---.---.---.---\
-1 / \ / \ / \ / \ / \ / \ / \ 
- ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g
-White to move.
-
-Move:       a12a13 (9999.0) Finished: False, Status: Game on-going
-Raw output: [46, 48], 9999.0, False, 0
-
-
-Analysis of position test_minimax_07.cor:
-               .
-           13 / \ 
-             /---\
-         11 / \ / \ 
-           /---.---\
-        9 /s\ / \ / \ 
-         /---.---.---\
-      7 / \ / \ / \ / \ 
-       /---.---.---.---\
-    5 / \ / \ / \ / \P/ \ 
-     /---.---.---.---.---\
-  3 / \ / \ / \ /K\ / \ / \ 
-   /---.---.---.---.---.---\
-1 / \ / \ / \ / \ /S\ / \ / \ 
- ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g
-White to move.
-
-Move:       d3a9 (9999.0) Finished: False, Status: Game on-going
-Raw output: [19, 40], 9999.0, False, 0
-
-
-Analysis of position test_minimax_08.cor:
-               .
-           13 / \ 
+           13 /P\ 
              /---\
          11 / \ / \ 
            /---.---\
         9 / \ / \ / \ 
          /---.---.---\
-      7 /p\ / \ / \ / \ 
-       /---.---.---.---\
-    5 / \ / \ / \S/ \ /K\ 
-     /---.---.---.---.---\
-  3 / \ / \ / \ / \ / \ /P\ 
-   /---.---.---.---.---.---\
-1 / \ / \ / \ / \ / \ / \ / \ 
- ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g
-White to move.
-
-Move:       e5a12 (9998.0) Finished: False, Status: Game on-going
-Raw output: [32, 46], 9998.0, False, 0
-
-
-Analysis of position test_minimax_09.cor:
-               .
-           13 / \ 
-             /---\
-         11 / \ /P\ 
-           /---.---\
-        9 / \s/ \ / \ 
-         /---.---.---\
-      7 /p\ / \ / \ / \ 
+      7 / \ / \S/ \ / \ 
        /---.---.---.---\
     5 / \ / \ / \ / \ / \ 
      /---.---.---.---.---\
-  3 / \ /s\ / \ / \ / \ / \ 
+  3 /p\ /s\ / \ / \ / \ / \ 
    /---.---.---.---.---.---\
-1 / \ / \ /s\ / \ /S\ / \ / \ 
+1 / \ / \ / \ / \ / \ /K\ / \ 
  ·---·---·---·---·---·---·---·
   a / b / c / d / e / f / g
-Black to move.
+White to move.
 
-Move:       a10a11 (1.8) Finished: False, Status: Game on-going
-Raw output: [41, 45], 1.8, False, 0
+Move = None, Eval = 10000.0, Finished = True, Status = 1
 
+Black to move:
+Move = None, Eval = -10000.0, Finished = True, Status = 1
 
-Analysis of position test_minimax_10.cor:
+Evaluation of position position7.cor:
                .
            13 / \ 
              /---\
@@ -214,17 +174,67 @@ Analysis of position test_minimax_10.cor:
            /---.---\
         9 / \ / \ / \ 
          /---.---.---\
-      7 /p\ / \ / \P/ \ 
+      7 / \ / \S/ \ / \ 
        /---.---.---.---\
-    5 / \ /s\ /K\ / \ / \ 
+    5 / \ / \ / \ /P\ / \ 
      /---.---.---.---.---\
-  3 / \ / \ / \ / \ / \ /S\ 
+  3 / \ / \ / \ / \ / \ / \ 
    /---.---.---.---.---.---\
-1 / \ / \ / \ / \ / \ / \ / \ 
+1 / \ / \ / \ / \ / \ /K\ / \ 
  ·---·---·---·---·---·---·---·
   a / b / c / d / e / f / g
-Black to move.
+White to move.
 
-Move:       a7a6 (-9991.0) Finished: False, Status: Game on-going
-Raw output: [33, 25], -9991.0, False, 0
+Move = None, Eval = 10000.0, Finished = True, Status = 2
+
+Black to move:
+Move = None, Eval = -10000.0, Finished = True, Status = 2
+
+Evaluation of position position8.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \S/ \ / \ 
+       /---.---.---.---\
+    5 / \ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 /K\ /s\ / \ / \ / \ / \ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ / \ /K\ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+Move = None, Eval = 0, Finished = True, Status = 3
+
+Black to move:
+Move = None, Eval = 0, Finished = True, Status = 3
+
+Evaluation of position position9.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 / \ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 /p\ /s\ / \ / \ /S\ / \ 
+   /---.---.---.---.---.---\
+1 / \ /k\ / \ / \ /S\ / \ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+Move = None, Eval = None, Finished = False, Status = 0
+
+Black to move:
+Move = None, Eval = None, Finished = False, Status = 0
 

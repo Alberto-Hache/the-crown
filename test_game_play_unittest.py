@@ -77,12 +77,12 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_minimax_10.cor",
                 TEST_SEARCH_PARAMS_4,
-                [26, 27], -10.0, False, 0
+                [33, 25], -9991, False, 0
             ),
             (
                 "test_minimax_10b.cor",
                 TEST_SEARCH_PARAMS_4,
-                [26, 27], -10.0, False, 0
+                [28, 26], 9994, False, 0
             )
         )
 
@@ -541,7 +541,7 @@ class Test_game_play(unittest.TestCase):
 
                 # Evaluate from original moving side.
                 best_move, eval, game_end, game_status = gp.evaluate_end(
-                    board, depth=0, shallow=True)
+                    board, depth=0)
                 move_txt = "None" if best_move is None else \
                     "{} -> {}".format(best_move[0].coord, best_move[1])
                 print("Move = {}, Eval = {}, Finished = {}, Status = {}".format(
@@ -552,7 +552,7 @@ class Test_game_play(unittest.TestCase):
                 print("\n{} to move:".format(bd.color_name[board.turn]), file=f)
 
                 best_move, eval, game_end, game_status = gp.evaluate_end(
-                    board, depth=0, shallow=True)
+                    board, depth=0)
                 move_txt = "None" if best_move is None else \
                     "{} -> {}".format(best_move[0].coord, best_move[1])
                 print("Move = {}, Eval = {}, Finished = {}, Status = {}".format(

@@ -1,4 +1,5 @@
 import time
+import unittest
 import cProfile
 
 import game_play as gp
@@ -6,12 +7,21 @@ import board as bd
 import utils
 
 
-def profiler_generate_pseudomoves():
+class Profiler(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def generate_pseudomoves(self):
+        cProfile.run('loop_generate_pseudomoves()', sort='tottime')
+        self.assertTrue(True)
+
+
+def loop_generate_pseudomoves():
     iterations = 1000
     time_0 = time.ctime()  # Start time.
     print("{:<20}{}".format("- Started:", time_0))
 
-    board = bd.Board("test_make_pseudo_move_01.cor")
+    board = bd.Board("test_make_pseudomove_01.cor")
     for _ in range(iterations):
         _, _ = gp.generate_pseudomoves(board)
 
@@ -20,4 +30,4 @@ def profiler_generate_pseudomoves():
 
 
 if __name__ == '__main__':
-    cProfile.run('profiler_generate_pseudomoves()', sort='tottime')
+    unittest.main()
