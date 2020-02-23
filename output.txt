@@ -18,8 +18,8 @@ Analysis of position test_minimax_01.cor:
   a / b / c / d / e / f / g
 Black to move.
 
-Move:       None (9996.0) Finished: True, Status: Victory (Prince crowned)
-Raw output: None, 9996.0, True, 1
+Move:       None (10000.0) Finished: True, Status: Victory (Prince crowned)
+Raw output: None, 10000.0, True, 1
 
 
 Analysis of position test_minimax_02.cor:
@@ -41,8 +41,8 @@ Analysis of position test_minimax_02.cor:
   a / b / c / d / e / f / g
 Black to move.
 
-Move:       None (-9996.0) Finished: True, Status: Victory (no pieces left)
-Raw output: None, -9996.0, True, 2
+Move:       None (-10000.0) Finished: True, Status: Victory (no pieces left)
+Raw output: None, -10000.0, True, 2
 
 
 Analysis of position test_minimax_03.cor:
@@ -110,8 +110,8 @@ Analysis of position test_minimax_05.cor:
   a / b / c / d / e / f / g
 White to move.
 
-Move:       None (-9996.0) Finished: True, Status: Victory (no pieces left)
-Raw output: None, -9996.0, True, 2
+Move:       None (-10000.0) Finished: True, Status: Victory (no pieces left)
+Raw output: None, -10000.0, True, 2
 
 
 Analysis of position test_minimax_06.cor:
@@ -133,8 +133,8 @@ Analysis of position test_minimax_06.cor:
   a / b / c / d / e / f / g
 White to move.
 
-Move:       a12a13 (9995.0) Finished: False, Status: Game on-going
-Raw output: [46, 48], 9995.0, False, 0
+Move:       a12a13 (9999.0) Finished: False, Status: Game on-going
+Raw output: [46, 48], 9999.0, False, 0
 
 
 Analysis of position test_minimax_07.cor:
@@ -156,8 +156,8 @@ Analysis of position test_minimax_07.cor:
   a / b / c / d / e / f / g
 White to move.
 
-Move:       d3a9 (9995.0) Finished: False, Status: Game on-going
-Raw output: [19, 40], 9995.0, False, 0
+Move:       d3a9 (9999.0) Finished: False, Status: Game on-going
+Raw output: [19, 40], 9999.0, False, 0
 
 
 Analysis of position test_minimax_08.cor:
@@ -179,8 +179,31 @@ Analysis of position test_minimax_08.cor:
   a / b / c / d / e / f / g
 White to move.
 
-Move:       e5a12 (9994.0) Finished: False, Status: Game on-going
-Raw output: [32, 46], 9994.0, False, 0
+Move:       e5a12 (9998.0) Finished: False, Status: Game on-going
+Raw output: [32, 46], 9998.0, False, 0
+
+
+Analysis of position test_minimax_09.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ /P\ 
+           /---.---\
+        9 / \s/ \ / \ 
+         /---.---.---\
+      7 /p\ / \ / \ / \ 
+       /---.---.---.---\
+    5 / \ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ /s\ / \ / \ / \ / \ 
+   /---.---.---.---.---.---\
+1 / \ / \ /s\ / \ /S\ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+Move:       a10a11 (1.8) Finished: False, Status: Game on-going
+Raw output: [41, 45], 1.8, False, 0
 
 
 Analysis of position test_minimax_10.cor:
@@ -202,6 +225,6 @@ Analysis of position test_minimax_10.cor:
   a / b / c / d / e / f / g
 Black to move.
 
-Move:       None (-10.0) Finished: False, Status: Game on-going
-Raw output: None, -10.0, False, 0
+Move:       a7a6 (-9991.0) Finished: False, Status: Game on-going
+Raw output: [33, 25], -9991.0, False, 0
 

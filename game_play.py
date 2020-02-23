@@ -11,14 +11,10 @@ DEFAULT_SEARCH_PARAMS = {
     "randomness":           0
 }
 
-# Types of evaluation.
-EV_REGLAMENTARY = 0     # Only returns PLAYER_WINS / OPPONENT_WINS / DRAW.
-EV_MATERIAL = 1         # If game not ended, it evaluates material balance.
-EV_POSITIONAL = 2       # If game not ended, it evaluates both material
-                        # and positional factors.
-
 ########################################################################
-# Evaluation of positions.
+# Evaluation of static positions.
+
+# Material:
 piece_weights = np.array([
     [  # From White's point of view (Prince, Soldier, Knight).
         [100, 1, 10],
@@ -35,11 +31,16 @@ piece_weights = np.array([
 # 46 moves * 0.1 = 4.6 ≈ 1/2 Knight
 KNIGHT_MOVE = 0.1
 
+# Other:
+# TODO: fine tune mobility vs shortest wins.
+STATIC_DEPTH_PENALTY = 0.05  # Subtract to foster faster wins.
+
 ########################################################################
-# Possible game results
+# Possible end-game results
 PLAYER_WINS = float(10000)  # Winning score; to be reduced by node depth.
 OPPONENT_WINS = -PLAYER_WINS  # Losing score; to be increased by node depth.
 DRAW = 0
+END_DEPTH_PENALTY = 1  # Subtract to foster faster wins.
 
 # Types of game node status
 ON_GOING = 0
@@ -222,15 +223,14 @@ def quiesce(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
     player_side = board.turn
     opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
     board.turn = opponent_side  # Flip turns temporarily.
+    is_legal_board = is_legal(board)
+    board.turn = player_side  # Restablish original turn.
 
-    if is_legal(board):
+    if is_legal_board:
         # Null move is possible.
         player_in_check = False
-        material = np.multiply(board.piece_count, piece_weights[player_side]).sum()
-        positional = 0  # TODO: assess mobility + crown's distance + ...
-
-        result_i = material + positional
         best_move = None
+        result_i = evaluate_static(board, depth)
 
         if result_i >= beta:
             return None, beta, False, ON_GOING  # [fail hard beta cutoff]
@@ -241,7 +241,6 @@ def quiesce(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
         # The player is in check.
         player_in_check = True
 
-    board.turn = player_side  # Restablish original turn.
 
     # 3. Run a recursive quiescence search.
     # 3.1. Generate and explore dynamic pseudomoves.
@@ -321,6 +320,28 @@ def quiesce(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
         return None, alpha, False, ON_GOING
 
 
+def evaluate_static(board, depth):
+    """
+    Evaluate a static position from playing side's perspective.
+
+    Input:
+        board:      Board - The game position to evaluate.
+        depth:      int - Depth of node in the search tree.
+
+    Output:
+        result:     float - A heuristic evaluation taking into account
+                    material and positional features.
+    """
+
+    player_side = board.turn
+
+    material = np.multiply(board.piece_count, piece_weights[player_side]).sum()
+    positional = 0  # TODO: assess mobility + crown's distance + ...
+    other = - depth*STATIC_DEPTH_PENALTY
+
+    return material + positional + other
+
+
 def evaluate_end(board, depth):
     """
     Detect and evaluate clear end positions from playing side's perspective.
@@ -356,15 +377,18 @@ def evaluate_end(board, depth):
     piece = board.board1d[board.crown_position]
     if piece is not None:
         if piece.type == bd.PRINCE:
-            result = PLAYER_WINS - depth if piece.color == player_side \
-                else OPPONENT_WINS + depth
+            result = PLAYER_WINS - depth*END_DEPTH_PENALTY \
+                if piece.color == player_side \
+                else OPPONENT_WINS + depth*END_DEPTH_PENALTY
             return None, result, True, VICTORY_CROWNING
 
     # 2. Side without pieces left?
     if board.piece_count[player_side].sum() == 0:
-        return None, OPPONENT_WINS + depth, True, VICTORY_NO_PIECES_LEFT
+        return None, OPPONENT_WINS + depth*END_DEPTH_PENALTY, \
+               True, VICTORY_NO_PIECES_LEFT
     elif board.piece_count[opponent_side].sum() == 0:
-        return None, PLAYER_WINS - depth, True, VICTORY_NO_PIECES_LEFT
+        return None, PLAYER_WINS - depth*END_DEPTH_PENALTY, \
+               True, VICTORY_NO_PIECES_LEFT
 
     # 3. No Princes left?
     if board.piece_count[player_side][bd.PRINCE] == 0 and \
@@ -617,12 +641,12 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
     if (coord2 == new_board.crown_position) and \
        (piece_type == bd.PRINCE):
         # A Prince was legally moved onto the crown!
-        return new_board, True, True, PLAYER_WINS - depth,\
+        return new_board, True, True, PLAYER_WINS - depth*END_DEPTH_PENALTY,\
             True, VICTORY_CROWNING
 
     # Check if it was the capture of the last piece.
     if new_board.piece_count[new_board.turn].sum() == 0:
-        return new_board, True, True, PLAYER_WINS - depth,\
+        return new_board, True, True, PLAYER_WINS - depth*END_DEPTH_PENALTY,\
             True, VICTORY_NO_PIECES_LEFT
 
     # Optionally, check dynamic conditions of the move.

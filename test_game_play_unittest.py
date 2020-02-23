@@ -1,4 +1,5 @@
 import time
+import datetime
 import glob
 import unittest
 import filecmp
@@ -71,10 +72,15 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_minimax_09.cor",
                 TEST_SEARCH_PARAMS_4,
-                [41, 45], 2.0, False, 0
+                [41, 45], 1.8, False, 0
             ),
             (
                 "test_minimax_10.cor",
+                TEST_SEARCH_PARAMS_4,
+                [26, 27], -10.0, False, 0
+            ),
+            (
+                "test_minimax_10b.cor",
                 TEST_SEARCH_PARAMS_4,
                 [26, 27], -10.0, False, 0
             )
@@ -86,13 +92,19 @@ class Test_game_play(unittest.TestCase):
                     exp_move, exp_result, exp_end, exp_status = test
                 board = bd.Board(file_name)  # The board to put pieces on.
 
+                print("Testing position {}:".format(file_name), end="")
                 print("\nAnalysis of position {}:".format(file_name), file=f)
                 board.print_char(out_file=f)
 
                 # Call to mini_max.
+                t_start = time.time()
                 best_move, result, game_end, game_status = gp.minimax(
                     board, 0, -np.Infinity, np.Infinity,
                     params=params)
+                t_end = time.time()
+                print("{}".format(
+                    datetime.timedelta(seconds=t_end - t_start))
+                )
 
                 # Display results.
                 move_txt = "None" if best_move is None else \
@@ -103,9 +115,8 @@ class Test_game_play(unittest.TestCase):
                     move_txt, result, game_end,
                     gp.game_status_txt[game_status]), file=f)
                 print("Raw output: {}, {}, {}, {}".format(
-                    best_move, result, game_end, game_status,
-                    file=f
-                ))
+                    best_move, result, game_end, game_status
+                    ), file=f)
                 print("", file=f)
 
                 # And check vs. expected.
@@ -171,14 +182,19 @@ class Test_game_play(unittest.TestCase):
                 [32, 46], 9994.0, False, 0
             ),
             (
-                "test_minimax_10.cor",
-                TEST_SEARCH_PARAMS_4,
-                [26, 27], -10.0, False, 0
-            ),
-            (
                 "test_minimax_09.cor",
                 TEST_SEARCH_PARAMS_4,
-                [41, 45], 2.0, False, 0
+                None, 1.8, False, 0
+            ),
+            (
+                "test_minimax_10.cor",
+                TEST_SEARCH_PARAMS_4,
+                None, -10.2, False, 0
+            ),
+            (
+                "test_minimax_10b.cor",
+                TEST_SEARCH_PARAMS_4,
+                [28, 40], 109.7, False, 0
             )
         )
 
