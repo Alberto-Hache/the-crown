@@ -595,7 +595,7 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
                     - Checks [downto 'max_quiescence_depth']
 
                     Conditions not checked:  TODO: check in some cases.
-                    - Prince moves upwards?
+                    - Prince moves upwards (in absence of enemy Knights)?
                     - Soldier moves to throne (in absence of Prince)?
 
         result:     float - an early evaluation of winner moves,
@@ -703,6 +703,25 @@ def is_legal(board):
     return True
 
 
+"""
+Generic functions.
+"""
+
+
+def display_results(move, eval, game_end, game_status, f=None):
+    move_txt = "None" if move is None else \
+        "{}{}".format(
+            bd.coord_2_algebraic[move[0]],
+            bd.coord_2_algebraic[move[1]]
+            )
+    print("Move:       {} ({}) Finished: {}, Status: {}".format(
+        move_txt, eval, game_end,
+        game_status_txt[game_status]), file=f)
+    print("Raw output: {}, {}, {}, {}".format(
+        move, eval, game_end, game_status), file=f)
+    print("", file=f)
+
+
 if __name__ == '__main__':
     # Main program.
     if len(sys.argv) > 0:
@@ -721,7 +740,8 @@ if __name__ == '__main__':
         move_txt = "None" if best_move is None else \
             "{}{}".format(
                 bd.coord_2_algebraic[best_move[0]],
-                bd.coord_2_algebraic[best_move[1]])
+                bd.coord_2_algebraic[best_move[1]]
+                )
         print("Move:       {} ({}) Finished: {}, Status: {}".format(
             move_txt, result, game_end,
             game_status_txt[game_status]))

@@ -636,3 +636,4 @@ def calculate_kingdoms(n):
     kingdoms[0][white_k] = True
     kingdoms[1][black_k] = True
     return kingdoms
+

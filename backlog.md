@@ -3,7 +3,7 @@
 ## Tree search (v1)
 
 - Improved evaluation function:
-  - Positional evaluation: [for v2]
+  - Positional evaluation:
     - material - DONE
     - Knight mobility
     - Prince distance to crown
@@ -24,7 +24,6 @@
   - Prince Crowning
   - Prince moves upwards?
   - Soldier moves to throne (in absence of Prince)?
-- Compare board copying vs make/turnback moves.
 - Add hash-tables for repetitions.
 - Add killer-move heuristic
   - A single move
@@ -45,6 +44,7 @@
 
 ## Optimizations (v2)
 
+- Compare board copying vs make/turnback moves.
 - position_attacked() with several return() points?
 - generate_pseudo_moves based on 'beams' - 'shadows'.
 - position_attacked() with itemgetter.

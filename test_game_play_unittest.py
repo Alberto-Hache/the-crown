@@ -93,7 +93,7 @@ class Test_game_play(unittest.TestCase):
                 board = bd.Board(file_name)  # The board to put pieces on.
 
                 print("Testing position {}:".format(file_name), end="")
-                print("\nAnalysis of position {}:".format(file_name), file=f)
+                print("Analysis of position {}:".format(file_name), file=f)
                 board.print_char(out_file=f)
 
                 # Call to mini_max.
@@ -107,17 +107,7 @@ class Test_game_play(unittest.TestCase):
                 )
 
                 # Display results.
-                move_txt = "None" if best_move is None else \
-                    "{}{}".format(
-                        bd.coord_2_algebraic[best_move[0]],
-                        bd.coord_2_algebraic[best_move[1]])
-                print("Move:       {} ({}) Finished: {}, Status: {}".format(
-                    move_txt, result, game_end,
-                    gp.game_status_txt[game_status]), file=f)
-                print("Raw output: {}, {}, {}, {}".format(
-                    best_move, result, game_end, game_status
-                    ), file=f)
-                print("", file=f)
+                gp.display_results(best_move, result, game_end, game_status, f)
 
                 # And check vs. expected.
                 self.assertEqual(
@@ -213,18 +203,7 @@ class Test_game_play(unittest.TestCase):
                     params=params)
 
                 # Display results.
-                move_txt = "None" if best_move is None else \
-                    "{}{}".format(
-                        bd.coord_2_algebraic[best_move[0]],
-                        bd.coord_2_algebraic[best_move[1]])
-                print("Move:       {} ({}) Finished: {}, Status: {}".format(
-                    move_txt, result, game_end,
-                    gp.game_status_txt[game_status]),
-                    file=f)
-                print("Raw output: {}, {}, {}, {}".format(
-                    best_move, result, game_end, game_status),
-                    file=f)
-                print("", file=f)
+                gp.display_results(best_move, result, game_end, game_status, f)
 
                 # And check vs. expected.
                 self.assertEqual(
@@ -234,7 +213,7 @@ class Test_game_play(unittest.TestCase):
                 )
 
     def test_position_attacked(self):
-        file_list = glob.glob(bd.GAMES_PATH + "position1.cor")
+        file_list = glob.glob(bd.GAMES_PATH + "position_01.cor")
         file_list.sort()
 
         with open("output.txt", "w") as f:
@@ -335,8 +314,8 @@ class Test_game_play(unittest.TestCase):
             "output.txt", "tests/output_knights_mobility.txt"))
 
     def test_count_knight_pseudomoves(self):
-        # file_list = glob.glob(bd.GAMES_PATH + "position1.cor")
-        file_list = ["position1.cor", "empty.cor"]
+        # file_list = glob.glob(bd.GAMES_PATH + "position_01.cor")
+        file_list = ["position_01.cor", "empty.cor"]
         file_list.sort()
 
         with open("output.txt", "w") as f:
@@ -384,125 +363,125 @@ class Test_game_play(unittest.TestCase):
             # BOARD to test: test_make_pseudomove_01
             [
                 "test_make_pseudomove_01.cor",
-                "c8b7", True, None, False, 0
+                "c8b7", True, False, None, False, 0
             ],
             [
                 "test_make_pseudomove_01.cor",
-                "c8c3", True, None, False, 0
+                "c8c3", True, False, None, False, 0
             ],
             [
                 "test_make_pseudomove_01.cor",
-                "c8a8", True, None, False, 0
+                "c8a8", True, False, None, False, 0
             ],
             [
                 "test_make_pseudomove_01.cor",
-                "e3e2", False, None, None, None
+                "e3e2", False, False, None, None, None
             ],
             # BOARD to test: test_make_pseudomove_02.cor
             [
                 "test_make_pseudomove_02.cor",
-                "b2e1", False, None, None, None
+                "b2e1", False, False, None, None, None
             ],
             [
                 "test_make_pseudomove_02.cor",
-                "a5a4", False, None, None, None
+                "a5a4", False, False, None, None, None
             ],
             [
                 "test_make_pseudomove_02.cor",
-                "a5a6", False, None, None, None
+                "a5a6", False, False, None, None, None
             ],
             [
                 "test_make_pseudomove_02.cor",
-                "b5b4", False, None, None, None
+                "b5b4", False, False, None, None, None
             ],
             [
                 "test_make_pseudomove_02.cor",
-                "b5a6", True, None, False, 0
+                "b5a6", True, False, None, False, 0
             ],
             # BOARD to test: test_make_pseudomove_03.cor
             [
                 "test_make_pseudomove_03.cor",
-                "a7b5", True, 1, True, 2
+                "a7b5", True, False, 1, True, 2
             ],
             [
                 "test_make_pseudomove_03.cor",
-                "c5b6", False, None, None, None
+                "c5b6", False, False, None, None, None
             ],
             [
                 "test_make_pseudomove_03.cor",
-                "f1g1", False, None, None, None
+                "f1g1", False, False, None, None, None
             ],
             [
                 "test_make_pseudomove_03.cor",
-                "c5c4", True, None, False, 0
+                "c5c4", True, False, None, False, 0
             ],
             [
                 "test_make_pseudomove_03.cor",
-                "f1f2", True, None, False, 0
+                "f1f2", True, False, None, False, 0
             ],
             # BOARD to test: test_make_pseudomove_04.cor
             [
                 "test_make_pseudomove_04.cor",
-                "b1a1", True, None, False, 0
+                "b1a1", True, False, None, False, 0
             ],
             # BOARD to test: test_make_pseudomove_05.cor
             [
                 "test_make_pseudomove_05.cor",
-                "a3a1", True, None, False, 0
+                "a3a1", True, False, None, False, 0
             ],
             # BOARD to test: test_make_pseudomove_06.cor
             [
                 "test_make_pseudomove_06.cor",
-                "a3a1", False, None, None, None
+                "a3a1", False, False, None, None, None
             ],
             # BOARD to test: test_make_pseudomove_07.cor
             [
                 "test_make_pseudomove_07.cor",
-                "a3a1", False, None, None, None
+                "a3a1", False, False, None, None, None
             ],
             [
                 "test_make_pseudomove_07.cor",
-                "a12a13", True, 1, True, 1
+                "a12a13", True, False, 1, True, 1
             ],
             # BOARD to test: test_make_pseudomove_11.cor
             [
                 "test_make_pseudomove_11.cor",
-                "a12a13", False, None, None, None
+                "a12a13", False, False, None, None, None
             ],
             [
                 "test_make_pseudomove_11.cor",
-                "a3a1", False, None, None, None
+                "a3a1", False, False, None, None, None
             ],
             [
                 "test_make_pseudomove_11.cor",
-                "a12b11", True, None, False, 0
+                "a12b11", True, False, None, False, 0
             ],
             [
                 "test_make_pseudomove_11.cor",
-                "b9a10", True, None, False, 0
+                "b9a10", True, False, None, False, 0
             ],
             # BOARD to test: test_make_pseudomove_12.cor
             [
                 "test_make_pseudomove_12.cor",
-                "b2e1", False, None, None, None
+                "b2e1", False, False, None, None, None
             ],
             [
                 "test_make_pseudomove_12.cor",
-                "a5a4", False, None, None, None
+                "a5a4", False, False, None, None, None
             ],
             [
                 "test_make_pseudomove_12.cor",
-                "a5a6", False, None, None, None
+                "a5a6", False, False, None, None, None
             ],
             [
                 "test_make_pseudomove_12.cor",
-                "a5++", True, None, False, 0
+                "a5++", True, True, None, False, 0
             ]
         ]
 
         # Go through all test cases, each on one board.
         for test_case in test_cases:
-            file_name, test_move, res1, res2, res3, res4 = test_case
+            file_name, test_move, res1, res2, res3, res4, res5 = test_case
             board = bd.Board(file_name)
             # Parse move.
             coord1_str, coord2_str, is_correct = \
@@ -515,16 +494,22 @@ class Test_game_play(unittest.TestCase):
                 coord2 = None
 
             # Make the move and check results (ignoring 'new_board')
-            _, is_legal, result, game_end, game_status = \
-                gp.make_pseudomove(board, coord1, coord2, depth=0)
+            _, is_legal, is_dynamic, result, game_end, game_status = \
+                gp.make_pseudomove(
+                    board, coord1, coord2,
+                    depth=0, params=gp.DEFAULT_SEARCH_PARAMS,
+                    check_dynamic=True
+                    )
 
         self.assertTrue(
-            (res1, res2, res3, res4) == (
-                is_legal, result, game_end, game_status),
-            "Expected: {}, {}, {}, {}\n"
-            "Received: {}, {}, {}, {}".format(
-                res1, res2, res3, res4,
-                is_legal, result, game_end, game_status
+            (res1, res2, res3, res4, res5) == (
+                is_legal, is_dynamic, result, game_end, game_status),
+            "ERROR in position {}, move: {}{}:"
+            "Expected: {}, {}, {}, {}, {}\n"
+            "Received: {}, {}, {}, {}, {}".format(
+                file_name, coord1_str, coord2_str,
+                res1, res2, res3, res4, res5,
+                is_legal, is_dynamic, result, game_end, game_status
             ))
 
     def test_evaluate(self):
@@ -542,10 +527,8 @@ class Test_game_play(unittest.TestCase):
                 # Evaluate from original moving side.
                 best_move, eval, game_end, game_status = gp.evaluate_end(
                     board, depth=0)
-                move_txt = "None" if best_move is None else \
-                    "{} -> {}".format(best_move[0].coord, best_move[1])
-                print("Move = {}, Eval = {}, Finished = {}, Status = {}".format(
-                    move_txt, eval, game_end,  game_status), file=f)
+                # Display results.
+                gp.display_results(best_move, eval, game_end, game_status, f)
 
                 # Evaluate from the other side now.
                 board.turn = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
@@ -553,12 +536,9 @@ class Test_game_play(unittest.TestCase):
 
                 best_move, eval, game_end, game_status = gp.evaluate_end(
                     board, depth=0)
-                move_txt = "None" if best_move is None else \
-                    "{} -> {}".format(best_move[0].coord, best_move[1])
-                print("Move = {}, Eval = {}, Finished = {}, Status = {}".format(
-                    move_txt, eval, game_end,  game_status), file=f)
 
-                print("", file=f)
+                # Display results.
+                gp.display_results(best_move, eval, game_end, game_status, f)
 
         self.assertTrue(filecmp.cmp(
             "output.txt",

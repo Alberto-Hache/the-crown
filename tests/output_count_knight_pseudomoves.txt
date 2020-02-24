@@ -66,7 +66,7 @@ Knight mobility from position a11: 22
 Knight mobility from position a12: 23
 Knight mobility from position b11: 22
 Knight mobility from position a13: 23
-Testing of position position1.cor:
+Testing of position position_01.cor:
                .
            13 / \ 
              /---\
