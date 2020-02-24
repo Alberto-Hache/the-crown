@@ -1,4 +1,5 @@
 import time
+import numpy as np
 import unittest
 import cProfile
 
@@ -13,7 +14,11 @@ class Profiler(unittest.TestCase):
 
     def generate_pseudomoves(self):
         cProfile.run('loop_generate_pseudomoves()', sort='tottime')
-        self.assertTrue(True)
+        self.assertTrue(True)  # TODO: Add proper test (duration?)
+
+    def minimax(self):
+        cProfile.run('loop_minimax()', sort='tottime')
+        self.assertTrue(True)  # TODO: Add proper test (duration?)
 
 
 def loop_generate_pseudomoves():
@@ -27,6 +32,27 @@ def loop_generate_pseudomoves():
 
     time_end = time.ctime()  # End time.
     print("{:<20}{}".format("- Ended:", time_end))
+
+def loop_minimax():
+
+    TEST_SEARCH_PARAMS_4 = {
+        "max_depth":    4,
+        "randomness":   0
+    }
+
+    iterations = 1
+    # time_0 = time.ctime()  # Start time.
+    # print("{:<20}{}".format("- Started:", time_0))
+
+    board = bd.Board("test_minimax_10b.cor")
+    for _ in range(iterations):
+        _, _, _, _ = gp.minimax(
+            board, 0, -np.Infinity, np.Infinity,
+            params=TEST_SEARCH_PARAMS_4
+        )
+
+    # time_end = time.ctime()  # End time.
+    # print("{:<20}{}".format("- Ended:", time_end))
 
 
 if __name__ == '__main__':
