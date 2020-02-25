@@ -5,6 +5,12 @@ import sys
 import board as bd
 
 # Tree search parameters:
+MINIMAL_SEARCH_PARAMS = {
+    "max_depth":            1,
+    "max_quiescence_depth": 4,
+    "randomness":           0
+}
+
 DEFAULT_SEARCH_PARAMS = {
     "max_depth":            4,
     "max_quiescence_depth": 8,
@@ -60,13 +66,13 @@ game_status_txt = (
 )
 
 
-def play(board):
+def play(board, params=DEFAULT_SEARCH_PARAMS):
     search_end = False
     alpha, beta = [-float("inf"), float("inf")]
     depth = 0
     while not search_end:
         move, result, game_end, game_status = minimax(
-            board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS)
+            board, depth, alpha, beta, params)
         search_end = True  # No iterated search for now.
     return move, result, game_end, game_status
 
