@@ -340,9 +340,11 @@ def evaluate_static(board, depth):
     """
 
     player_side = board.turn
+    opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
 
     material = np.multiply(board.piece_count, piece_weights[player_side]).sum()
-    positional = 0  # TODO: assess mobility + crown's distance + ...
+    positional = knights_mobility(board, player_side) - \
+        knights_mobility(board, opponent_side)
     other = - depth*STATIC_DEPTH_PENALTY
 
     return material + positional + other

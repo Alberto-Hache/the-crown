@@ -5,7 +5,7 @@
 - Improved evaluation function:
   - Positional evaluation:
     - material - DONE
-    - Knight mobility
+    - Knight mobility - DONE
     - Prince distance to crown
     - Prince's safety?
   - Add small noise to leave nodes evaluation for diverse game.
