@@ -24,6 +24,7 @@ class Test_game_play(unittest.TestCase):
 
         TEST_SEARCH_PARAMS_4 = {
             "max_depth":    4,
+            "max_quiescence_depth": 8,
             "randomness":   0
         }
 

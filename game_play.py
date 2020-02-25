@@ -145,7 +145,7 @@ def minimax(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
                 else:
                     # We need to recursively search this move deeper.
                     childs_move, result_i, game_end_i, game_status_i = \
-                        minimax(new_board_i, depth + 1, -beta, -alpha)
+                        minimax(new_board_i, depth + 1, -beta, -alpha, params)
                     result_i = -float(result_i)  # Switch to player's view.
                 if result_i >= beta:
                     # Ignore rest of pseudomoves [fail hard beta cutoff].
@@ -180,7 +180,7 @@ def minimax(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
             )
         # And the new board must be assessed.
         childs_move, result_i, game_end_i, game_status_i = \
-            minimax(new_board_i, depth + 1, -beta, -alpha)
+            minimax(new_board_i, depth + 1, -beta, -alpha, params)
         alpha = -float(result_i)  # Switch to player's view.
         return best_move, alpha, False, ON_GOING
 
@@ -232,8 +232,10 @@ def quiesce(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
     is_legal_board = is_legal(board)
     board.turn = player_side  # Restablish original turn.
 
+    n_null_moves_tried = 0
     if is_legal_board:
         # Null move is possible.
+        n_null_moves_tried = 1
         player_in_check = False
         best_move = None
         result_i = evaluate_static(board, depth)
@@ -254,7 +256,7 @@ def quiesce(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
     assert(moves_count > 0),\
         "ERROR: No pseudomoves found despite game is not ended."
     best_move = None
-    n_legal_moves_tried = 0
+    n_legal_moves_tried = n_null_moves_tried  # A legal move counts as 1.
     n_legal_moves_found = 0
     for piece_moves in moves:  # [[piece_1, [13, 53...]], [piece_2, [...]]
         piece, pseudomoves_list = piece_moves  # piece_1, [13, 53...]
@@ -280,7 +282,9 @@ def quiesce(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
                     else:
                         # We need to recursively search this move deeper.
                         childs_move, result_i, game_end_i, game_status_i = \
-                            quiesce(new_board_i, depth + 1, -beta, -alpha)
+                            quiesce(
+                                new_board_i, depth + 1, -beta, -alpha, params
+                            )
                         result_i = -float(result_i)  # Switch to player's view.
                     if result_i >= beta:
                         # Ignore rest of pseudomoves [fail hard beta cutoff].
@@ -314,7 +318,9 @@ def quiesce(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
             )
         # And the new board must be assessed.
         childs_move, result_i, game_end_i, game_status_i = \
-            quiesce(new_board_i, depth + 1, -beta, -alpha)
+            quiesce(
+                new_board_i, depth + 1, -beta, -alpha, params
+            )
         alpha = -float(result_i)  # Switch to player's view.
         return best_move, alpha, False, ON_GOING
 

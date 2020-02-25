@@ -33,6 +33,7 @@ def loop_generate_pseudomoves():
     time_end = time.ctime()  # End time.
     print("{:<20}{}".format("- Ended:", time_end))
 
+
 def loop_minimax():
 
     TEST_SEARCH_PARAMS_4 = {

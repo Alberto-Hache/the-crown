@@ -44,7 +44,7 @@
 
 ## Optimizations (v2)
 
-- Compare board copying vs make/turnback moves.
+- Change board copying for make/turnback moves.
 - position_attacked() with several return() points?
 - generate_pseudo_moves based on 'beams' - 'shadows'.
 - position_attacked() with itemgetter.
