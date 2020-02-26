@@ -35,7 +35,7 @@ piece_weights = np.array([
 # Pieces mobility:
 # max mobility of a Knight = 23 moves, so 2 Knights max = 46 moves.
 # 46 moves * 0.1 = 4.6 ≈ 1/2 Knight
-KNIGHT_MOVE = 0.1
+KNIGHT_MOVE_VALUE = 0.1
 
 # Other:
 # TODO: fine tune mobility vs shortest wins.
@@ -249,14 +249,13 @@ def quiesce(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
         # The player is in check.
         player_in_check = True
 
-
     # 3. Run a recursive quiescence search.
     # 3.1. Generate and explore dynamic pseudomoves.
     moves, moves_count = generate_pseudomoves(board)
     assert(moves_count > 0),\
         "ERROR: No pseudomoves found despite game is not ended."
     best_move = None
-    n_legal_moves_tried = n_null_moves_tried  # A legal move counts as 1.
+    n_legal_moves_tried = 0
     n_legal_moves_found = 0
     for piece_moves in moves:  # [[piece_1, [13, 53...]], [piece_2, [...]]
         piece, pseudomoves_list = piece_moves  # piece_1, [13, 53...]
@@ -300,13 +299,14 @@ def quiesce(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
 
     # 3.3. No legal moves were played: check for player's Prince check.
     player_prince = board.prince[player_side]
+    """
     assert (player_prince is not None),\
         "ERROR: no legal moves found for {} side, which has {} "\
         "pieces but no Prince.".format(
             bd.color_name[player_side],
             np.sum(board.piece_count[player_side])
         )
-
+    """
     if player_in_check:
         # The player is checkmated, its Prince leaves and yields turn.
         best_move = [player_prince.coord, None]
@@ -349,8 +349,10 @@ def evaluate_static(board, depth):
     opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
 
     material = np.multiply(board.piece_count, piece_weights[player_side]).sum()
-    positional = knights_mobility(board, player_side) - \
+    positional = (
+        knights_mobility(board, player_side) -
         knights_mobility(board, opponent_side)
+    ) * KNIGHT_MOVE_VALUE
     other = - depth*STATIC_DEPTH_PENALTY
 
     return material + positional + other
@@ -722,12 +724,22 @@ Generic functions.
 """
 
 
+def move_2_txt(move):
+    """
+    Return a string representing a move: "f1c6", "a1++", "None".
+    """
+    if move is None:
+        move_txt = "None"
+    else:
+        txt1 = bd.coord_2_algebraic[move[0]]
+        txt2 = "++" if move[1] is None else bd.coord_2_algebraic[move[1]]
+        move_txt = txt1 + txt2
+
+    return move_txt
+
+
 def display_results(move, eval, game_end, game_status, f=None):
-    move_txt = "None" if move is None else \
-        "{}{}".format(
-            bd.coord_2_algebraic[move[0]],
-            bd.coord_2_algebraic[move[1]]
-            )
+    move_txt = move_2_txt(move)
     print("Move:       {} ({}) Finished: {}, Status: {}".format(
         move_txt, eval, game_end,
         game_status_txt[game_status]), file=f)

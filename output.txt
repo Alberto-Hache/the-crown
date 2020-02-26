@@ -1,28 +1,5 @@
 
-Analysis of position test_minimax_01.cor:
-               .
-           13 /p\ 
-             /---\
-         11 / \ / \ 
-           /---.---\
-        9 / \ /s\ / \ 
-         /---.---.---\
-      7 / \ / \ / \P/ \ 
-       /---.---.---.---\
-    5 / \ / \ / \ / \ / \ 
-     /---.---.---.---.---\
-  3 /s\ / \ / \ / \ / \ /S\ 
-   /---.---.---.---.---.---\
-1 /S\ / \ / \ / \ /K\ / \ / \ 
- ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g
-Black to move.
-
-Move:       None (9996.0) Finished: True, Status: Victory (Prince crowned)
-Raw output: None, 9996.0, True, 1
-
-
-Analysis of position test_minimax_02.cor:
+Analysis of position test_quiesce_01.cor:
                .
            13 / \ 
              /---\
@@ -30,22 +7,22 @@ Analysis of position test_minimax_02.cor:
            /---.---\
         9 / \ / \ / \ 
          /---.---.---\
-      7 / \ / \ / \P/ \ 
+      7 /p\ / \ / \P/ \ 
        /---.---.---.---\
-    5 / \ / \ / \ / \ / \ 
+    5 / \ / \ /K\ / \ / \ 
      /---.---.---.---.---\
-  3 / \ / \ / \ / \ / \ /S\ 
+  3 / \ / \ /s\ / \ / \ /S\ 
    /---.---.---.---.---.---\
-1 /S\ / \ / \ / \ /K\ / \ / \ 
+1 /S\ / \ /s\ / \ / \ / \ / \ 
  ·---·---·---·---·---·---·---·
   a / b / c / d / e / f / g
 Black to move.
 
-Move:       None (-9996.0) Finished: True, Status: Victory (no pieces left)
-Raw output: None, -9996.0, True, 2
+Move:       None (-11.899999999999999) Finished: False, Status: Game on-going
+Raw output: None, -11.899999999999999, False, 0
 
 
-Analysis of position test_minimax_03.cor:
+Analysis of position test_quiesce_02.cor:
                .
            13 / \ 
              /---\
@@ -64,6 +41,121 @@ Analysis of position test_minimax_03.cor:
   a / b / c / d / e / f / g
 Black to move.
 
-Move:       None (-31.2) Finished: False, Status: Game on-going
-Raw output: None, -31.2, False, 0
+Move:       None (0) Finished: True, Status: Draw, (stalemate)
+Raw output: None, 0, True, 4
+
+
+Analysis of position test_quiesce_03.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 /p\ / \ / \P/ \ 
+       /---.---.---.---\
+    5 / \ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \ / \K/ \ / \ /S\ 
+   /---.---.---.---.---.---\
+1 /S\ / \ /s\ / \ / \ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+Move:       None (-13.2) Finished: False, Status: Game on-going
+Raw output: None, -13.2, False, 0
+
+
+Analysis of position test_quiesce_05.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 /K\ / \ / \ 
+         /---.---.---\
+      7 /p\ / \ / \P/ \ 
+       /---.---.---.---\
+    5 / \ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \ / \ / \ / \ /S\ 
+   /---.---.---.---.---.---\
+1 /S\ / \ /s\ / \ / \ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+Move:       a7None (-112.85) Finished: False, Status: Game on-going
+Raw output: [33, None], -112.85, False, 0
+
+
+Analysis of position test_quiesce_06.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 /K\ / \ / \ 
+         /---.---.---\
+      7 /p\ /s\ / \P/ \ 
+       /---.---.---.---\
+    5 / \ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \ / \ / \ / \ /S\ 
+   /---.---.---.---.---.---\
+1 /S\ / \ / \ / \ / \ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+Move:       b7a8 (-11.55) Finished: False, Status: Game on-going
+Raw output: [35, 34], -11.55, False, 0
+
+
+Analysis of position test_quiesce_07.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 /p\ / \ / \P/ \ 
+       /---.---.---.---\
+    5 / \ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \K/ \ / \ / \ /S\ 
+   /---.---.---.---.---.---\
+1 /S\ / \ / \ / \ / \ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+Move:       a7a8 (-9991.0) Finished: False, Status: Game on-going
+Raw output: [33, 34], -9991.0, False, 0
+
+
+Analysis of position test_quiesce_08.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \P/ \ 
+       /---.---.---.---\
+    5 / \ / \K/ \ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \ /s\ / \ / \ /S\ 
+   /---.---.---.---.---.---\
+1 /S\ / \ /s\ / \ / \ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+Black to move.
+
+Move:       None (-112.5) Finished: False, Status: Game on-going
+Raw output: None, -112.5, False, 0
 

@@ -133,6 +133,42 @@ class Test_game_play(unittest.TestCase):
         # Go through all test cases, each on one board.
         test_cases = (
             (
+                "test_quiesce_01.cor",  # Position to play.
+                TEST_SEARCH_PARAMS_4,   # Search parameters.
+                None, -11.899999999999999, False, 0    # Move, result, end, status.
+            ),
+            (
+                "test_quiesce_02.cor",
+                TEST_SEARCH_PARAMS_4,
+                None, 0, True, 4
+            ),
+            (
+                "test_quiesce_03.cor",
+                TEST_SEARCH_PARAMS_4,
+                None, -13.2, False, 0
+            ),
+            (
+                "test_quiesce_05.cor",
+                TEST_SEARCH_PARAMS_4,
+                [33, None], -112.85, False, 0
+            ),
+            (
+                "test_quiesce_06.cor",
+                TEST_SEARCH_PARAMS_4,
+                [35, 34], -11.55, False, 0
+            ),
+            (
+                "test_quiesce_07.cor",
+                TEST_SEARCH_PARAMS_4,
+                [33, 34], -9991.0, False, 0
+            ),
+            (
+                "test_quiesce_08.cor",
+                TEST_SEARCH_PARAMS_4,
+                None, -112.5, False, 0
+            ),
+            #  Taken from minimax() unit tests.
+            (
                 "test_minimax_01.cor",  # Position to play.
                 TEST_SEARCH_PARAMS_4,   # Search parameters.
                 None, 9996, True, 1    # Move, result, end, status.
@@ -180,12 +216,12 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_minimax_10.cor",
                 TEST_SEARCH_PARAMS_4,
-                None, -10.2, False, 0
+                None, -11.899999999999999, False, 0
             ),
             (
                 "test_minimax_10b.cor",
                 TEST_SEARCH_PARAMS_4,
-                [28, 40], 109.7, False, 0
+                [28, 26], 9990.0, False, 0
             )
         )
 
