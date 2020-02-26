@@ -11,6 +11,18 @@ MINIMAL_SEARCH_PARAMS = {
     "randomness":           0
 }
 
+PLY2_SEARCH_PARAMS = {
+    "max_depth":            2,
+    "max_quiescence_depth": 6,
+    "randomness":           0
+}
+
+PLY3_SEARCH_PARAMS = {
+    "max_depth":            3,
+    "max_quiescence_depth": 7,
+    "randomness":           0
+}
+
 DEFAULT_SEARCH_PARAMS = {
     "max_depth":            4,
     "max_quiescence_depth": 8,
@@ -593,8 +605,7 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
         coord2:         int - final position of pseudomove,
                         or None for a checkmated Prince leaving.
         depth:          int - node depth before the pseudomove.
-        params:         A dictionary with the search settings to follow:
-                        max_depth, quiescence,randomness, (more to come).
+        params:         A dictionary with the search settings to follow.
         check_dynamic:  Boolean - whether dynamism of move must be
                         assessed.
 
