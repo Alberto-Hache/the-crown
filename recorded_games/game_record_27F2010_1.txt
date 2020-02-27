@@ -1,0 +1,15 @@
+Game started!
+ White: Crowy-I
+ Black: Crowy-II
+
+1. e3d3, b3c3
+1. f1c6, b1b7
+1. e5e3, a5b5
+1. e3e2, b7b6
+1. c6c7, a3a8
+1. c7c8, c1b3
+1. d3d2, a1a2
+1. c8c9, a8a7
+1. f3d4, b5b4
+1. e2f1, a2a1
+1. d2d1, 

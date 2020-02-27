@@ -22,6 +22,10 @@ def calculate_coord1to3(n_rows):
 
 
 def calculate_coord_2_algebraic():
+    """
+    Transform a coodinate [0, 48] into an algebraic coordinate,
+    e.g.: "a1"... "a13".
+    """
     coord_2_algebraic = (
         "a1", "a2", "b1", "b2", "c1", "c2", "d1", "d2", "e1", "e2", "f1", "f2",
         "g1",
@@ -36,6 +40,10 @@ def calculate_coord_2_algebraic():
 
 
 def algebraic_move_2_coords(move_txt):
+    """
+    Transform a move expressed in algebraic notation (e.g. "a1a2",
+    "a12a13", "g1++") into a pair of coordinates ([1, 2], [12, None]).
+    """
 
     # First, get rid of possible capital letters.
     move_txt = str.lower(move_txt)

@@ -15,14 +15,8 @@
 - Profiling of v1: bottlenecks?
 - Pre-evaluation of moves (extend make pseudo-move()?) for move sorting?
   - Static exchange evaluation?
-- Add quiescence search. Tactical moves:
-  - (null move) assumed to guarantee the static evaluation (stand_pat)
-  - Piece captures
-  - Checks
-  - Check evasion (no null move)
-  - Soldier promotions
-  - Prince Crowning
-  - Prince moves upwards?
+- Extend quiescence search. Tactical moves:
+  - Prince moves upwards (in absence of opponent's Knights)?
   - Soldier moves to throne (in absence of Prince)?
 - Add hash-tables for repetitions.
 - Add killer-move heuristic
@@ -44,6 +38,7 @@
 
 ## Optimizations (v2)
 
+- Remove board3d field from Board class.
 - Change board copying for make/turnback moves.
 - position_attacked() with several return() points?
 - generate_pseudo_moves based on 'beams' - 'shadows'.

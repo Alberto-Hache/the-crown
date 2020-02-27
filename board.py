@@ -157,7 +157,7 @@ class Board:
         Execute all board updates required for a move from coord1 to coord2,
         and report piece changes (captures or leaves).
         NOTE: if coord2 is None, assumption is that a checkmated Prince
-              is in coord1.
+              is in coord1, and must now leave.
 
         Input:
             coord1: int - initial position of the move.

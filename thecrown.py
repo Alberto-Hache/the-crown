@@ -1,13 +1,20 @@
 import sys
+import types
 
 import board as bd
 import game_play as game
+
+
+# Local constants.
+HUMAN_PLAYER = "Human"
+MACHINE_PLAYER = "Computer"
 
 
 class Player:
     def __init__(self, name, player_type, color, params):
         self.name = name
         self.type = player_type
+        self.color = color
         self.params = params
 
 
@@ -19,19 +26,40 @@ if __name__ == "__main__":
 
     # Create array with the two players data:
     player = [
+        types.SimpleNamespace(
+            name="Crowny-I",
+            type=MACHINE_PLAYER,
+            color=bd.WHITE,
+            params=game.MINIMAL_SEARCH_PARAMS
+        ),
+        types.SimpleNamespace(
+            name="Crowny-I",
+            type=MACHINE_PLAYER,
+            color=bd.BLACK,
+            params=game.MINIMAL_SEARCH_PARAMS
+        )
+    ]
+    """
+    # Create the piece.
+    piece = types.SimpleNamespace(
+        type=type, color=color, coord=coord, tracing=tracing)
+
+
+    player = [
         Player(
-            "Crowy-I",
-            "computer",
+            "Crowny-I",
+            MACHINE_PLAYER,
             bd.WHITE,
             game.MINIMAL_SEARCH_PARAMS
         ),
         Player(
-            "Crowy-II",
-            "computer",
+            "Crowny-I",
+            MACHINE_PLAYER,
             bd.BLACK,
-            game.DEFAULT_SEARCH_PARAMS
+            game.MINIMAL_SEARCH_PARAMS
         )
     ]
+    """
 
     # Start the match!
     with open("game_record.txt", "w") as recorded_game:
@@ -46,10 +74,15 @@ if __name__ == "__main__":
         move_number = 1
         while not game_end:
             board.print_char()
-            move, result, game_end, end_status = game.play(
-                board, player[board.turn].params
-                )
-            coord1, coord2 = move
+            if player[board.turn].type == MACHINE_PLAYER:
+                # The machine plays this color.
+                move, result, game_end, end_status = game.play(
+                    board, player[board.turn].params
+                    )
+                coord1, coord2 = move
+            else:
+                # The human plays this color. TODO: read keyboard input.
+                exit(1)
             if move is not None:
                 board.make_move(coord1, coord2)
                 if board.turn == bd.BLACK:

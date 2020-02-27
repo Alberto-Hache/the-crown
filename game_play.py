@@ -19,7 +19,7 @@ PLY2_SEARCH_PARAMS = {
 
 PLY3_SEARCH_PARAMS = {
     "max_depth":            3,
-    "max_quiescence_depth": 7,
+    "max_quiescence_depth": 6,
     "randomness":           0
 }
 
