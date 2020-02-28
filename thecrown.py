@@ -16,18 +16,26 @@ def request_human_move(board):
     Request and validate a move from the keyboard in algebraic notation,
     returning its two coordinates.
     """
-    valid_move = False
-    while not valid_move:
+    move = None
+    result = None
+
+    valid_input = False
+    while not valid_input:
         move_txt = input(
-            "Type move for {}:\n".
+            "Type move for {} (Q to quit):\n".
             format(bd.color_name[board.turn])
         )
-        coord1, coord2, valid_move = utils.algebraic_move_2_coords(move_txt)
-        # TODO: manage 'valid_move'.
-        # TODO: validate that the move is a pseudo_move.
-        # TODO: validate that the move is legal.
-    move = [coord1, coord2]
-    return move
+        if str.upper(move_txt) == "Q":
+            valid_input = True
+            result = "Quit"
+        else:
+            coord1, coord2, valid_input = utils.algebraic_move_2_coords(move_txt)
+            # TODO: manage 'valid_move'.
+            # TODO: validate that the move is a pseudo_move.
+            # TODO: validate that the move is legal.
+            move = [coord1, coord2]
+    return move, result
+
 
 if __name__ == "__main__":
     # Handle possible arguments passed.
@@ -44,7 +52,7 @@ if __name__ == "__main__":
             params=game.MINIMAL_SEARCH_PARAMS
         ),
         types.SimpleNamespace(
-            name="Crowny-I",
+            name="Alberto H",
             type=HUMAN_PLAYER,
             color=bd.BLACK,
             params=game.MINIMAL_SEARCH_PARAMS
@@ -72,20 +80,26 @@ if __name__ == "__main__":
                     board, player[board.turn].params)
             else:
                 # The human plays this color. TODO: read keyboard input.
-                move = request_human_move(board)
-            coord1, coord2 = move
+                move, result = request_human_move(board)
+                game_end = (result is not None)  # Non-void value signals end.
 
-            # Update board with move.
-            board.make_move(coord1, coord2)
-            if board.turn == bd.BLACK:
-                print(
-                    "{}. {}, ".format(move_number, utils.move_2_txt(move)),
-                    end="",
-                    file=recorded_game
-                )
+            if not game_end:
+                # Update board with move.
+                coord1, coord2 = move
+                board.make_move(coord1, coord2)
+                if board.turn == bd.BLACK:
+                    print(
+                        "{}. {}, ".format(move_number, utils.move_2_txt(move)),
+                        end="",
+                        file=recorded_game
+                    )
+                else:
+                    print(
+                        "{}".format(utils.move_2_txt(move)),
+                        file=recorded_game
+                    )
+                    move_number += 1
             else:
-                print(
-                    "{}".format(utils.move_2_txt(move)),
-                    file=recorded_game
-                )
-                move_number += 1
+                # Quit game.
+                print("Bye!")
+                
