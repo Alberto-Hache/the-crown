@@ -1,0 +1,25 @@
+Game started!
+ White: Crowny-I
+ Black: Crowny-I
+
+1. e3d3, b3c3
+1. f1c6, b1b7
+1. e5e3, a5b5
+1. e3e2, c3c2
+1. f3c9, a3a4
+1. c6d5, a4a3
+1. e2f1, a3a4
+1. e1d2, a4a3
+1. f1e1, a3a4
+1. g1f2, a4a3
+1. f2f1, a3a4
+1. d5a10, b5a6
+1. a10a11, a6a7
+1. a11d5, a4a6
+1. d5a11, a6c3
+1. d3c4, c3a6
+1. c4c5, a6a3
+1. c5c4, a3a5
+1. c4c5, a5a3
+1. c5c4, a3a5
+1. c4c5, a5a3

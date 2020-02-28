@@ -36,11 +36,6 @@ def loop_generate_pseudomoves():
 
 def loop_minimax():
 
-    TEST_SEARCH_PARAMS_4 = {
-        "max_depth":    4,
-        "randomness":   0
-    }
-
     iterations = 1
     # time_0 = time.ctime()  # Start time.
     # print("{:<20}{}".format("- Started:", time_0))
@@ -49,7 +44,7 @@ def loop_minimax():
     for _ in range(iterations):
         _, _, _, _ = gp.minimax(
             board, 0, -np.Infinity, np.Infinity,
-            params=TEST_SEARCH_PARAMS_4
+            params=gp.PLY4_SEARCH_PARAMS
         )
 
     # time_end = time.ctime()  # End time.

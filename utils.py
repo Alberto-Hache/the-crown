@@ -5,6 +5,55 @@ import re  # Regular expressions.
 import numpy as np
 
 
+# Precalculated table(s):
+
+coord_2_algebraic = (
+    "a1", "a2", "b1", "b2", "c1", "c2", "d1", "d2", "e1", "e2", "f1", "f2",
+    "g1",
+    "a3", "a4", "b3", "b4", "c3", "c4", "d3", "d4", "e3", "e4", "f3",
+    "a5", "a6", "b5", "b6", "c5", "c6", "d5", "d6", "e5",
+    "a7", "a8", "b7", "b8", "c7", "c8", "d7",
+    "a9", "a10", "b9", "b10", "c9",
+    "a11", "a12", "b11",
+    "a13"
+)
+
+game_status_txt = (
+    "Game on-going",
+    "Victory (Prince crowned)",
+    "Victory (no pieces left)",
+    "Draw (no Princes left)",
+    "Draw, (stalemate)",
+    "Draw, (three repetitions)"
+)
+
+# Functions:
+
+
+def move_2_txt(move):  # TODO: check all calls.
+    """
+    Transform a move [coord1, coord2] into a string: "f1c6", "a1++", "None".
+    """
+    if move is None:
+        move_txt = "None"
+    else:
+        txt1 = coord_2_algebraic[move[0]]
+        txt2 = "++" if move[1] is None else coord_2_algebraic[move[1]]
+        move_txt = txt1 + txt2
+
+    return move_txt
+
+
+def display_results(move, eval, game_end, game_status, f=None):  # TODO: check all calls.
+    move_txt = move_2_txt(move)
+    print("Move:       {} ({}) Finished: {}, Status: {}".format(
+        move_txt, eval, game_end,
+        game_status_txt[game_status]), file=f)
+    print("Raw output: {}, {}, {}, {}".format(
+        move, eval, game_end, game_status), file=f)
+    print("", file=f)
+
+
 def calculate_coord1to3(n_rows):
     coord1to3 = np.array([tuple for _ in range(n_rows ** 2)])
     position = 0
@@ -19,24 +68,6 @@ def calculate_coord1to3(n_rows):
         coord1to3[position] = (n_rows - y - 1, x2, y)
         position += 1
     return coord1to3
-
-
-def calculate_coord_2_algebraic():
-    """
-    Transform a coodinate [0, 48] into an algebraic coordinate,
-    e.g.: "a1"... "a13".
-    """
-    coord_2_algebraic = (
-        "a1", "a2", "b1", "b2", "c1", "c2", "d1", "d2", "e1", "e2", "f1", "f2",
-        "g1",
-        "a3", "a4", "b3", "b4", "c3", "c4", "d3", "d4", "e3", "e4", "f3",
-        "a5", "a6", "b5", "b6", "c5", "c6", "d5", "d6", "e5",
-        "a7", "a8", "b7", "b8", "c7", "c8", "d7",
-        "a9", "a10", "b9", "b10", "c9",
-        "a11", "a12", "b11",
-        "a13"
-    )
-    return coord_2_algebraic
 
 
 def algebraic_move_2_coords(move_txt):
@@ -59,12 +90,32 @@ def algebraic_move_2_coords(move_txt):
     if bits is not None:
         # It worked: associate the right groups: "a1", "a2"
         is_correct = True
-        coord1 = bits.group(1)
-        coord2 = bits.group(4)
+        coord1_txt = bits.group(1)
+        coord2_txt = bits.group(4)
     else:
         # Wrong format.
         is_correct = False
-        coord1, coord2 = "", ""
+        coord1_txt, coord2_txt = "", ""
+
+    # Try on coord1_txt.
+    try:
+        coord1 = coord_2_algebraic.index(coord1_txt)
+    except ValueError:
+        # If not found, the coordinate is wrong.
+        is_correct = False
+        coord1 = None
+
+    # Try on coord2_txt.
+    if coord2_txt == "++":
+        # coord2 can be "++", which correspondes to a 'None'.
+        coord2 = None
+    else:
+        try:
+            coord2 = coord_2_algebraic.index(coord2_txt)
+        except ValueError:
+            # If not found, the coordinate is wrong.
+            is_correct = False
+            coord2 = None
 
     return coord1, coord2, is_correct
 
@@ -644,4 +695,5 @@ def calculate_kingdoms(n):
     kingdoms[0][white_k] = True
     kingdoms[1][black_k] = True
     return kingdoms
+
 

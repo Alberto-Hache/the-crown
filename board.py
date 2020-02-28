@@ -44,8 +44,7 @@ initial_position = (
 )
 
 # Load precalculated tables:
-coord1to3 = utils.calculate_coord1to3(N_ROWS)
-coord_2_algebraic = utils.calculate_coord_2_algebraic()
+coord1to3 = utils.calculate_coord1to3(N_ROWS)  # TODO: move to utils.py
 kingdoms = utils.calculate_kingdoms(N_POSITIONS)
 
 simple_moves = utils.calculate_simple_moves()  # For the Prince of any side.
@@ -107,7 +106,7 @@ class Board:
             else:
                 try:
                     type, color = char_piece[line[0]]
-                    coord = coord_2_algebraic.index(line[1:])
+                    coord = utils.coord_2_algebraic.index(line[1:])
                     self.include_piece(type, color, coord)
                 except ValueError:
                     print("Error found in file {} ; "
@@ -119,7 +118,8 @@ class Board:
         # Check that it's empty.
         assert self.board1d[coord] is None, \
             "Coord {} ({}) is not empty.".format(
-                coord, coord_2_algebraic[coord])
+                coord, utils.coord_2_algebraic[coord]
+                )
 
         # Create the piece.
         piece = types.SimpleNamespace(
@@ -188,7 +188,7 @@ class Board:
                     already occupied by {}." \
                     .format(
                         piece_char[piece1.type][piece1.color],
-                        coord2, coord_2_algebraic[coord2],
+                        coord2, utils.coord_2_algebraic[coord2],
                         piece_char[piece2.type][piece2.color]
                     )
                 captured_piece = piece2

@@ -3,6 +3,7 @@ import copy
 import sys
 
 import board as bd
+import utils
 
 # Tree search parameters:
 MINIMAL_SEARCH_PARAMS = {
@@ -23,11 +24,13 @@ PLY3_SEARCH_PARAMS = {
     "randomness":           0
 }
 
-DEFAULT_SEARCH_PARAMS = {
+PLY4_SEARCH_PARAMS = {
     "max_depth":            4,
     "max_quiescence_depth": 8,
     "randomness":           0
 }
+
+DEFAULT_SEARCH_PARAMS = PLY4_SEARCH_PARAMS
 
 ########################################################################
 # Evaluation of static positions.
@@ -67,15 +70,6 @@ VICTORY_NO_PIECES_LEFT = 2
 DRAW_NO_PRINCES_LEFT = 3
 DRAW_STALEMATE = 4
 DRAW_THREE_REPETITIONS = 5
-
-game_status_txt = (
-    "Game on-going",
-    "Victory (Prince crowned)",
-    "Victory (no pieces left)",
-    "Draw (no Princes left)",
-    "Draw, (stalemate)",
-    "Draw, (three repetitions)"
-)
 
 
 def play(board, params=DEFAULT_SEARCH_PARAMS):
@@ -730,41 +724,11 @@ def is_legal(board):
     return True
 
 
-"""
-Generic functions.
-"""
-
-
-def move_2_txt(move):
-    """
-    Return a string representing a move: "f1c6", "a1++", "None".
-    """
-    if move is None:
-        move_txt = "None"
-    else:
-        txt1 = bd.coord_2_algebraic[move[0]]
-        txt2 = "++" if move[1] is None else bd.coord_2_algebraic[move[1]]
-        move_txt = txt1 + txt2
-
-    return move_txt
-
-
-def display_results(move, eval, game_end, game_status, f=None):
-    move_txt = move_2_txt(move)
-    print("Move:       {} ({}) Finished: {}, Status: {}".format(
-        move_txt, eval, game_end,
-        game_status_txt[game_status]), file=f)
-    print("Raw output: {}, {}, {}, {}".format(
-        move, eval, game_end, game_status), file=f)
-    print("", file=f)
-
-
 if __name__ == '__main__':
     # Main program.
     if len(sys.argv) > 0:
         file_name = sys.argv[1]
         board = bd.Board(file_name)
-        board.print_char()
         print("\nPlaying position: {}".format(file_name))
         board.print_char()
 
@@ -774,15 +738,6 @@ if __name__ == '__main__':
             params=DEFAULT_SEARCH_PARAMS)
 
         # Display results.
-        move_txt = "None" if best_move is None else \
-            "{}{}".format(
-                bd.coord_2_algebraic[best_move[0]],
-                bd.coord_2_algebraic[best_move[1]]
-                )
-        print("Move:       {} ({}) Finished: {}, Status: {}".format(
-            move_txt, result, game_end,
-            game_status_txt[game_status]))
-        print("Raw output: {}, {}, {}, {}".format(
+        utils.display_results(
             best_move, result, game_end, game_status
-        ))
-        print("")
+        )

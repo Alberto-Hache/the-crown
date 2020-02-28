@@ -1,8 +1,9 @@
 Game started!
+
  White: Crowny-I
  Black: Crowny-I
+ Thu Feb 27 22:36:49 2020
 
 1. e3d3, b3c3
-1. f1c6, b1b7
-1. e5e3, a5b5
-1. e3e2, 
+2. f1c6, a3b4
+3. c6a5, 

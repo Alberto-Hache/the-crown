@@ -38,16 +38,17 @@ class Test_utils(unittest.TestCase):
     def test_algebraic_move_2_coords(self):
         # Define tests and expected results.
         correct_test_cases = [  # Input string; Output: coord1, coord2
-            ["a1a12", "a1", "a12"],
-            ["b1b2", "b1", "b2"],
-            ["a12a13", "a12", "a13"],
-            ["b9b10", "b9", "b10"],
-            ["G1f1", "g1", "f1"],
-            ["a1++", "a1", "++"],
-            ["b12++", "b12", "++"]
+            ["a1a12", 0, 46],
+            ["b1b2", 2, 3],
+            ["a12a13", 46, 48],
+            ["b9b10", 42, 43],
+            ["G1f1", 12, 10],
+            ["a1++", 0, None],
+            ["b11++", 47, None]
         ]
         incorrect_test_cases = [
-            "ab12", "ab1a2", "c1", "d1", "c1 d1", "++", "a1+", "a1+++"
+            "ab12", "ab1a2", "c1", "d1", "c1 d1", "b12++", "++", "a1+", \
+            "a1+++", "a1a34"
         ]
 
         # Run test cases for correct moves.
@@ -68,7 +69,7 @@ class Test_utils(unittest.TestCase):
             _, _, is_correct = utils.algebraic_move_2_coords(case)
             self.assertFalse(is_correct,
                              "Error found while testing incorrect move: {}"
-                             .format(case[0]))
+                             .format(case))
 
     def test_calculate_simple_moves(self):
         simple_moves = utils.calculate_simple_moves()

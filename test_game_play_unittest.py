@@ -108,7 +108,7 @@ class Test_game_play(unittest.TestCase):
                 )
 
                 # Display results.
-                gp.display_results(best_move, result, game_end, game_status, f)
+                utils.display_results(best_move, result, game_end, game_status, f)
 
                 # And check vs. expected.
                 self.assertEqual(
@@ -240,7 +240,7 @@ class Test_game_play(unittest.TestCase):
                     params=params)
 
                 # Display results.
-                gp.display_results(best_move, result, game_end, game_status, f)
+                utils.display_results(best_move, result, game_end, game_status, f)
 
                 # And check vs. expected.
                 self.assertEqual(
@@ -371,7 +371,7 @@ class Test_game_play(unittest.TestCase):
                         moves_count = gp.count_knight_pseudomoves(
                             board, position, board.turn)
                         print("Knight mobility from position {}: {}"
-                              .format(bd.coord_2_algebraic[position],
+                              .format(utils.coord_2_algebraic[position],
                                       moves_count),
                               file=f)
 
@@ -521,14 +521,9 @@ class Test_game_play(unittest.TestCase):
             file_name, test_move, res1, res2, res3, res4, res5 = test_case
             board = bd.Board(file_name)
             # Parse move.
-            coord1_str, coord2_str, is_correct = \
+            coord1, coord2, is_correct = \
                 utils.algebraic_move_2_coords(test_move)
             assert is_correct, "Error parsing move {}".format(test_move)
-            coord1 = bd.coord_2_algebraic.index(coord1_str)
-            try:
-                coord2 = bd.coord_2_algebraic.index(coord2_str)
-            except ValueError:
-                coord2 = None
 
             # Make the move and check results (ignoring 'new_board')
             _, is_legal, is_dynamic, result, game_end, game_status = \
@@ -541,10 +536,10 @@ class Test_game_play(unittest.TestCase):
         self.assertTrue(
             (res1, res2, res3, res4, res5) == (
                 is_legal, is_dynamic, result, game_end, game_status),
-            "ERROR in position {}, move: {}{}:"
+            "ERROR in position {}, move: {}:"
             "Expected: {}, {}, {}, {}, {}\n"
             "Received: {}, {}, {}, {}, {}".format(
-                file_name, coord1_str, coord2_str,
+                file_name, test_move,
                 res1, res2, res3, res4, res5,
                 is_legal, is_dynamic, result, game_end, game_status
             ))
@@ -565,7 +560,7 @@ class Test_game_play(unittest.TestCase):
                 best_move, eval, game_end, game_status = gp.evaluate_end(
                     board, depth=0)
                 # Display results.
-                gp.display_results(best_move, eval, game_end, game_status, f)
+                utils.display_results(best_move, eval, game_end, game_status, f)
 
                 # Evaluate from the other side now.
                 board.turn = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
@@ -575,7 +570,7 @@ class Test_game_play(unittest.TestCase):
                     board, depth=0)
 
                 # Display results.
-                gp.display_results(best_move, eval, game_end, game_status, f)
+                utils.display_results(best_move, eval, game_end, game_status, f)
 
         self.assertTrue(filecmp.cmp(
             "output.txt",
