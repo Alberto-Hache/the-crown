@@ -6,7 +6,7 @@ import board as bd
 import utils
 
 # Tree search parameters:
-MINIMAL_SEARCH_PARAMS = {
+PLY1_SEARCH_PARAMS = {
     "max_depth":            1,
     "max_quiescence_depth": 4,
     "randomness":           0
@@ -30,6 +30,7 @@ PLY4_SEARCH_PARAMS = {
     "randomness":           0
 }
 
+MINIMAL_SEARCH_PARAMS = PLY1_SEARCH_PARAMS
 DEFAULT_SEARCH_PARAMS = PLY4_SEARCH_PARAMS
 
 ########################################################################
@@ -724,6 +725,56 @@ def is_legal(board):
     return True
 
 
+def is_legal_move(board, move):
+    """
+    Detect if a move for a given position is legal.
+    Cases checked:
+    - The move is at least a pseudo_move.
+    - The move is legal.
+
+    NO CHECK ON: number of other pieces on board (must check at load time).
+    """
+    coord1, coord2 = move  # The coordinates of the move.
+    moving_piece = board.board1d[coord1]  # The moving piece.
+
+    # Initially the moving piece has not been identified.
+    result = False
+    explanation = "Error: No piece found at {}.".format(
+        utils.coord_2_algebraic[coord1])
+
+    # First, obtain pseudomoves for moving side, a list of lists:
+    # [[piece_1, [13, 53...]], [piece_2, [...]]
+    pseudo_moves, _ = generate_pseudomoves(board)
+    # Loop over all pseudomoves found to spot the one given.
+    pseudo_move_found = False
+    for pm in pseudo_moves:
+        if pm[0] == moving_piece:
+            if coord2 in pm[1]:
+                pseudo_move_found = True
+                break
+            else:
+                explanation = "Error: wrong move from {} to {}.".format(
+                    utils.coord_2_algebraic[coord1],
+                    utils.coord_2_algebraic[coord2]
+                )
+    if pseudo_move_found:
+        # The move was found; check if it's legal [use default params.].
+        _, pseudo_move_legal, _, _, _, _ = make_pseudomove(
+            board, coord1, coord2,
+            depth=0, params=MINIMAL_SEARCH_PARAMS, check_dynamic=False)
+        if pseudo_move_legal:
+            result = True
+        else:
+            result = False
+            explanation = "Error: {}{} is an illegal move.".format(
+                    utils.coord_2_algebraic[coord1],
+                    utils.coord_2_algebraic[coord2]
+            )
+        
+    # The move was not found.
+    return result, explanation
+
+
 if __name__ == '__main__':
     # Main program.
     if len(sys.argv) > 0:
@@ -735,7 +786,7 @@ if __name__ == '__main__':
         # Call to mini_max.
         best_move, result, game_end, game_status = minimax(
             board, 0, -np.Infinity, np.Infinity,
-            params=DEFAULT_SEARCH_PARAMS)
+            params=PLY3_SEARCH_PARAMS)
 
         # Display results.
         utils.display_results(

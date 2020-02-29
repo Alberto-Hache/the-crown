@@ -1,7 +1,6 @@
 # Useless temporary files
 kk/
-output.txt
-out.txt
+*.txt
 
 # Visual Studio Code
 .vscode

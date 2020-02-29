@@ -72,8 +72,17 @@ def calculate_coord1to3(n_rows):
 
 def algebraic_move_2_coords(move_txt):
     """
-    Transform a move expressed in algebraic notation (e.g. "a1a2",
-    "a12a13", "g1++") into a pair of coordinates ([1, 2], [12, None]).
+    Transform a move expressed in algebraic notation into
+    a pair of coordinates ([1, 2], [12, None]).
+
+    Input:
+        move_txt:       string - e.g. "a1a2", "a12a13", "g1++".
+
+    Output:
+        coord1, coord2: int, int - the coordinates of the move.
+        is_correct:     Boolean - Detects:
+                        a) wrong algebraic formats
+                        b) unexisting coordinates
     """
 
     # First, get rid of possible capital letters.

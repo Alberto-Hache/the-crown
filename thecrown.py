@@ -13,8 +13,17 @@ MACHINE_PLAYER = "Computer"
 
 def request_human_move(board):
     """
-    Request and validate a move from the keyboard in algebraic notation,
-    returning its two coordinates.
+    Request and validate a move from the keyboard in algebraic notation.
+
+    Input:
+        board:          Board - the position to play on.
+
+    Output:
+        move:           A list [coord1, coord2], or None.
+        result:         None or a string to signal end.
+                        - None: the move was valid.
+                        - "Quit": human player asked to quit.
+
     """
     move = None
     result = None
@@ -29,11 +38,22 @@ def request_human_move(board):
             valid_input = True
             result = "Quit"
         else:
-            coord1, coord2, valid_input = utils.algebraic_move_2_coords(move_txt)
-            # TODO: manage 'valid_move'.
-            # TODO: validate that the move is a pseudo_move.
-            # TODO: validate that the move is legal.
-            move = [coord1, coord2]
+            # Check the input is formally valid.
+            coord1, coord2, valid_input = \
+                utils.algebraic_move_2_coords(move_txt)
+            if valid_input:
+                # Validate that the move is legal.
+                is_legal, explanation = game.is_legal_move(
+                    board, (coord1, coord2))
+                if is_legal:
+                    move = [coord1, coord2]
+                else:
+                    valid_input = False
+                    print(explanation)
+            else:
+                # Wrong format or unexisting coordinates.
+                valid_input = False
+                print("Invalid move: {}".format(move_txt))
     return move, result
 
 
@@ -55,7 +75,7 @@ if __name__ == "__main__":
             name="Alberto H",
             type=HUMAN_PLAYER,
             color=bd.BLACK,
-            params=game.MINIMAL_SEARCH_PARAMS
+            params=None
         )
     ]
 
@@ -79,7 +99,7 @@ if __name__ == "__main__":
                 move, result, game_end, end_status = game.play(
                     board, player[board.turn].params)
             else:
-                # The human plays this color. TODO: read keyboard input.
+                # The human plays this color.
                 move, result = request_human_move(board)
                 game_end = (result is not None)  # Non-void value signals end.
 
@@ -90,8 +110,7 @@ if __name__ == "__main__":
                 if board.turn == bd.BLACK:
                     print(
                         "{}. {}, ".format(move_number, utils.move_2_txt(move)),
-                        end="",
-                        file=recorded_game
+                        end="", file=recorded_game
                     )
                 else:
                     print(
@@ -102,4 +121,4 @@ if __name__ == "__main__":
             else:
                 # Quit game.
                 print("Bye!")
-                
+
