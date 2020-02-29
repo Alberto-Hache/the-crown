@@ -56,13 +56,13 @@ KNIGHT_MOVE_VALUE = 0.1
 # Other:
 # TODO: fine tune mobility vs shortest wins.
 STATIC_DEPTH_PENALTY = 0.05  # Subtract to foster faster wins.
+END_DEPTH_PENALTY = 1  # Subtract to foster faster wins.
 
 ########################################################################
 # Possible end-game results
 PLAYER_WINS = float(10000)  # Winning score; to be reduced by node depth.
 OPPONENT_WINS = -PLAYER_WINS  # Losing score; to be increased by node depth.
 DRAW = 0
-END_DEPTH_PENALTY = 1  # Subtract to foster faster wins.
 
 # Types of game node status
 ON_GOING = 0

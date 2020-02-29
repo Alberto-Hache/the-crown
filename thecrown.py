@@ -57,6 +57,26 @@ def request_human_move(board):
     return move, result
 
 
+def display_end_results(board, result, end_status, rec_file):
+    # Result of the match.
+    if result == game.DRAW:
+        match_result_txt = "1/2 - 1/2"
+    elif result == game.PLAYER_WINS and board.turn == bd.WHITE:
+        match_result_txt = "1 - 0"
+    else:
+        match_result_txt = "0 - 1"
+
+    # Final status of the board.
+    end_status_txt = "\nEnd of the game: {}".format(
+        utils.game_status_txt[end_status])
+
+    # Display texts.
+    print("{}".format(match_result_txt))
+    print("\n{}".format(match_result_txt), file=rec_file)
+    print("{}".format(end_status_txt))
+    print("{}".format(end_status_txt), file=rec_file)
+
+
 if __name__ == "__main__":
     # Handle possible arguments passed.
     # Load indicated board position if any.
@@ -80,18 +100,19 @@ if __name__ == "__main__":
     ]
 
     # Start the match!
-    with open("game_record.txt", "w") as recorded_game:
+    with open("game_record.txt", "w") as rec_file:
         print("Starting The Crown!")
         print(
             "Game started!\n\n",
             "White: {}\n".format(player[0].name),
             "Black: {}\n".format(player[1].name),
             "{}\n".format(time.ctime()),
-            file=recorded_game
+            file=rec_file
         )
         game_end = False
         player_quit = False
         move_number = 1
+        white_move_printed = False  # In case Black starts.
         while not game_end:
             # Main loop of the full game.
             board.print_char()
@@ -113,22 +134,27 @@ if __name__ == "__main__":
                 board.make_move(coord1, coord2)
                 # Register move in game log.
                 if board.turn == bd.BLACK:
+                    # White just played a move.
+                    white_move_printed = True
                     print(
                         "{}. {}, ".format(move_number, utils.move_2_txt(move)),
-                        end="", file=recorded_game
+                        end="", file=rec_file
                     )
                 else:
+                    # Black just played a move.
+                    if not white_move_printed:
+                        print(
+                            "{}. ..., ".format(move_number),
+                            end="", file=rec_file
+                        )
                     print(
                         "{}".format(utils.move_2_txt(move)),
-                        file=recorded_game
+                        file=rec_file
                     )
                     move_number += 1
             else:
                 # End of the game.
                 if player_quit:
-                    print("Bye!")  # The player left the game.
+                    print("\nBye!")  # The player left the game.
                 else:
-                    print("End: {}".format(utils.game_status_txt[end_status]))
-                    print("End: {}".format(utils.game_status_txt[end_status]),
-                          file=recorded_game
-                    )
+                    display_end_results(board, result, end_status, rec_file)
