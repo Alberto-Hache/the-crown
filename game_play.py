@@ -103,7 +103,7 @@ def minimax(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
         result:         float - evaluation of the node from the moving side's
                         perspective (+ is good).
         game_end:       Boolen - whether the game was ended in this node.
-        game_status:    int
+        game_status:    int - situation of the board passed.
                         Conditions detected:
                         ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT /
                         DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE
@@ -727,52 +727,69 @@ def is_legal(board):
 
 def is_legal_move(board, move):
     """
-    Detect if a move for a given position is legal.
+    Detect if a move for a given (legal) position is legal.
     Cases checked:
     - The move is at least a pseudo_move.
     - The move is legal.
 
-    NO CHECK ON: number of other pieces on board (must check at load time).
+    Input:
+        board:      Board - the position on which to move.
+        move:       int, int/None - the coordinates of the move.
+
+    Output:
+        result:     Boolean - whether it's a legal move.
+        explanation:string - the error cause, or "".
     """
     coord1, coord2 = move  # The coordinates of the move.
     moving_piece = board.board1d[coord1]  # The moving piece.
 
-    # Initially the moving piece has not been identified.
-    result = False
-    explanation = "Error: No piece found at {}.".format(
-        utils.coord_2_algebraic[coord1])
+    # Identify moving_piece.
+    if moving_piece is None:
+        return False, "Error: No piece found at {}.".format(
+            utils.coord_2_algebraic[coord1])
 
     # First, obtain pseudomoves for moving side, a list of lists:
     # [[piece_1, [13, 53...]], [piece_2, [...]]
     pseudo_moves, _ = generate_pseudomoves(board)
-    # Loop over all pseudomoves found to spot the one given.
-    pseudo_move_found = False
-    for pm in pseudo_moves:
-        if pm[0] == moving_piece:
-            if coord2 in pm[1]:
-                pseudo_move_found = True
-                break
-            else:
-                explanation = "Error: wrong move from {} to {}.".format(
-                    utils.coord_2_algebraic[coord1],
-                    utils.coord_2_algebraic[coord2]
-                )
-    if pseudo_move_found:
-        # The move was found; check if it's legal [use default params.].
-        _, pseudo_move_legal, _, _, _, _ = make_pseudomove(
-            board, coord1, coord2,
-            depth=0, params=MINIMAL_SEARCH_PARAMS, check_dynamic=False)
-        if pseudo_move_legal:
-            result = True
-        else:
-            result = False
-            explanation = "Error: {}{} is an illegal move.".format(
-                    utils.coord_2_algebraic[coord1],
-                    utils.coord_2_algebraic[coord2]
+    # Loop over all pseudomoves found to:
+    # 1. try to spot the one given.
+    # 2. know if the player has any legal move.
+    n_legal_pseudo_moves = 0
+    for pm_list in pseudo_moves:  # [piece_1, [13, 53...]]
+        pm_coord1 = pm_list[0].coord
+        # Loop over all moves of the pm_list.
+        for pm_coord2 in pm_list[1]:  # [13, 53...]
+            # Check if the pm is legal [use default parameters].
+            _, pseudo_move_legal, _, _, _, _ = make_pseudomove(
+                board, pm_coord1, pm_coord2,
+                depth=0, params=MINIMAL_SEARCH_PARAMS, check_dynamic=False)
+            if pseudo_move_legal:
+                # The player has some legal moves.
+                n_legal_pseudo_moves += 1
+            if pm_list[0] == moving_piece and pm_coord2 == coord2:
+                # The move was found, return its legal value.
+                if pseudo_move_legal:
+                    return True, ""
+                else:
+                    return False, "Error: {}{} is an illegal move.".format(
+                        utils.coord_2_algebraic[coord1],
+                        utils.coord_2_algebraic[coord2]
+                    )
+
+    # Move not found in the pseudo_moves list; is it a mated Prince leave?
+    if (moving_piece.type == bd.PRINCE and
+            moving_piece.color == board.turn and
+            coord2 is None and
+            n_legal_pseudo_moves == 0):
+        # It's a legal Prince leave.
+        return True, ""
+    else:
+        # It's an incorrect move.
+        return False, \
+            "Error: wrong move from {} to {}.".format(
+                utils.coord_2_algebraic[coord1],
+                utils.coord_2_algebraic[coord2]
             )
-        
-    # The move was not found.
-    return result, explanation
 
 
 if __name__ == '__main__':

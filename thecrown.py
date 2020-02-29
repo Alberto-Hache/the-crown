@@ -44,7 +44,7 @@ def request_human_move(board):
             if valid_input:
                 # Validate that the move is legal.
                 is_legal, explanation = game.is_legal_move(
-                    board, (coord1, coord2))
+                    board, [coord1, coord2])
                 if is_legal:
                     move = [coord1, coord2]
                 else:
@@ -90,6 +90,7 @@ if __name__ == "__main__":
             file=recorded_game
         )
         game_end = False
+        player_quit = False
         move_number = 1
         while not game_end:
             # Main loop of the full game.
@@ -101,12 +102,16 @@ if __name__ == "__main__":
             else:
                 # The human plays this color.
                 move, result = request_human_move(board)
-                game_end = (result is not None)  # Non-void value signals end.
-
+                if result is not None:
+                    # Non-void value signals end.
+                    player_quit = True
+                    game_end = True
+                    
             if not game_end:
                 # Update board with move.
                 coord1, coord2 = move
                 board.make_move(coord1, coord2)
+                # Register move in game log.
                 if board.turn == bd.BLACK:
                     print(
                         "{}. {}, ".format(move_number, utils.move_2_txt(move)),
@@ -119,6 +124,11 @@ if __name__ == "__main__":
                     )
                     move_number += 1
             else:
-                # Quit game.
-                print("Bye!")
-
+                # End of the game.
+                if player_quit:
+                    print("Bye!")  # The player left the game.
+                else:
+                    print("End: {}".format(utils.game_status_txt[end_status]))
+                    print("End: {}".format(utils.game_status_txt[end_status]),
+                          file=recorded_game
+                    )

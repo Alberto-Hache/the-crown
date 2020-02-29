@@ -10,7 +10,6 @@
 - Detect repetition of positions.
 
 ## Game-play (v1)
-- Check human typed moves are valid.
 - Detect natural game end and leave.
 - Track:
   - Time spent for the move.
@@ -19,19 +18,22 @@
   - some given position
   - some playing level/style
 - Define several playing styles.
-  - Give K mobility a higher value.
+  - Give Knight mobility a higher value.
   - Impatient Prince? (premature bonus for going up).
   - ...
 
 ## Tree search (v1)
 
-- Improved evaluation function:
-  - Positional evaluation:
-    - material - DONE
-    - Knight mobility - DONE
+- Review null move in quiesce()
+  - Rename to stand pat.
+  - Review misvalued position in game game_record_23F2020.
+- Improve evaluation function:
+  - End-game:
     - Prince distance to crown
-    - Prince's safety?
   - Add small noise to leave nodes evaluation for diverse game.
+  - Middle game: (v2)
+    - Prince's safety?
+    - Soldiers' structure?
 
 ## Tree search efficiency (v2)
 
