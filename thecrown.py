@@ -92,10 +92,10 @@ if __name__ == "__main__":
             params=game.MINIMAL_SEARCH_PARAMS
         ),
         types.SimpleNamespace(
-            name="Alberto H",
-            type=HUMAN_PLAYER,
+            name="Crowny-I",
+            type=MACHINE_PLAYER,
             color=bd.BLACK,
-            params=None
+            params=game.MINIMAL_SEARCH_PARAMS
         )
     ]
 

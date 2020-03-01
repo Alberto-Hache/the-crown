@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 import sys
+import types
 
 import board as bd
 import utils
@@ -72,11 +73,35 @@ DRAW_NO_PRINCES_LEFT = 3
 DRAW_STALEMATE = 4
 DRAW_THREE_REPETITIONS = 5
 
+# Other
+DEFAULT_TRACE_LENGTH = 500
+
+
+class Gametrace:
+    def __init__(self, first_board, length=DEFAULT_TRACE_LENGTH):
+        self.level_trace = [None for x in range(length)]
+        self.current_board = 0
+        self.trace_board(first_board, self.current_board)
+
+    def trace_board(self, board, depth):
+        """
+        Register a board position at the given depth.
+        """
+        if self.level_trace[depth] is None:
+            self.level_trace[depth] = types.SimpleNamespace(
+                position=board.pieces,
+                n_nodes=1
+            )
+        else:
+            self.level_trace[depth].position = board.pieces
+            self.level_trace[depth].n_nodes += 1
+
 
 def play(board, params=DEFAULT_SEARCH_PARAMS):
     search_end = False
     alpha, beta = [-float("inf"), float("inf")]
     depth = 0
+
     while not search_end:
         move, result, game_end, game_status = minimax(
             board, depth, alpha, beta, params)

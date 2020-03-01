@@ -45,6 +45,11 @@ initial_position = (
     "w"
 )
 
+piece_code = (
+    (1, 2, 3),
+    (4, 5, 6)
+)
+
 # Load precalculated tables:
 coord1to3 = utils.calculate_coord1to3(N_ROWS)  # TODO: move to utils.py
 kingdoms = utils.calculate_kingdoms(N_POSITIONS)
@@ -76,6 +81,7 @@ class Board:
         self.prince = [None, None]
 
         self.board1d = np.full((self.n_positions), None)
+        self.boardcode = np.zeros(self.n_positions)
         self.board3d = np.full((N_ROWS, N_ROWS, N_ROWS), None)
 
         # Set position and sides.
@@ -148,13 +154,13 @@ class Board:
         p_at_white_promo = self.board1d[self.prince_position[WHITE]]
         if p_at_white_promo is not None:
             if p_at_white_promo.type == SOLDIER and \
-                p_at_white_promo.color == WHITE:
+               p_at_white_promo.color == WHITE:
                 return False
 
         p_at_black_promo = self.board1d[self.prince_position[BLACK]]
         if p_at_black_promo is not None:
             if p_at_black_promo.type == SOLDIER and \
-                p_at_black_promo.color == BLACK:
+               p_at_black_promo.color == BLACK:
                 return False
 
         # Otherwise, the board is legal.
@@ -173,10 +179,11 @@ class Board:
         # Update board references.
         self.pieces[color].append(piece)
         self.board1d[coord] = piece
+        if not tracing:
+            self.boardcode[coord] = piece_code[color][type]
         x1, x2, y = coord1to3[coord]
         self.board3d[x1][x2][y] = piece
         # Update piece counts (unless just tracing for testing purposes).
-        # TODO: Check if the number of legal pieces is exceeded [1P, 2K, 3S]
         if not piece.tracing:
             self.piece_count[color][type] += 1
         # If it's a Prince, update Princes' list.
@@ -189,6 +196,7 @@ class Board:
         # Update board references.
         self.pieces[piece.color].remove(piece)
         self.board1d[coord] = None
+        self.boardcode[coord] = 0
         x1, x2, y = coord1to3[coord]
         self.board3d[x1][x2][y] = None
         # Update piece counts.
@@ -241,11 +249,13 @@ class Board:
                 self.remove_piece(coord2)
             # Move piece1.
             self.board1d[coord1] = None
+            self.boardcode[coord1] = 0
             x1, x2, y = coord1to3[coord1]
             self.board3d[x1][x2][y] = None
 
             piece1.coord = coord2
             self.board1d[coord2] = piece1
+            self.boardcode[coord2] = piece_code[piece1.color][piece1.type]
             x1, x2, y = coord1to3[coord2]
             self.board3d[x1][x2][y] = piece1
             # Manage possible Soldier's promotion.

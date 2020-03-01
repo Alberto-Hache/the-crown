@@ -170,5 +170,6 @@ class Test_utils(unittest.TestCase):
             "output.txt",
             "tests/output_calculate_kingdoms.txt"))
 
+
 if __name__ == '__main__':
     unittest.main()

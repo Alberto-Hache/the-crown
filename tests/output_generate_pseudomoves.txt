@@ -38,7 +38,7 @@ piece = White Prince at 12: 14 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Knight at 8: 14 moves:
+piece = White Soldier at 8: 14 moves:
                .
            13 / \ 
              /---\
@@ -57,7 +57,7 @@ piece = White Knight at 8: 14 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Knight at 21: 14 moves:
+piece = White Soldier at 21: 14 moves:
                .
            13 / \ 
              /---\
@@ -115,7 +115,7 @@ piece = Black Prince at 13: 10 moves:
   a / b / c / d / e / f / g
 Black to move.
 
-piece = Black Knight at 15: 10 moves:
+piece = Black Soldier at 15: 10 moves:
                .
            13 / \ 
              /---\
@@ -174,7 +174,7 @@ piece = White Prince at 12: 4 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Knight at 36: 4 moves:
+piece = White Soldier at 36: 4 moves:
                .
            13 / \ 
              /---\
@@ -232,7 +232,7 @@ piece = Black Prince at 13: 10 moves:
   a / b / c / d / e / f / g
 Black to move.
 
-piece = Black Knight at 15: 10 moves:
+piece = Black Soldier at 15: 10 moves:
                .
            13 / \ 
              /---\
@@ -291,7 +291,7 @@ piece = White Prince at 12: 14 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Knight at 8: 14 moves:
+piece = White Soldier at 8: 14 moves:
                .
            13 / \ 
              /---\
@@ -310,7 +310,7 @@ piece = White Knight at 8: 14 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Knight at 21: 14 moves:
+piece = White Soldier at 21: 14 moves:
                .
            13 / \ 
              /---\
@@ -368,7 +368,7 @@ piece = Black Prince at 13: 10 moves:
   a / b / c / d / e / f / g
 Black to move.
 
-piece = Black Knight at 15: 10 moves:
+piece = Black Soldier at 15: 10 moves:
                .
            13 / \ 
              /---\
@@ -427,7 +427,7 @@ piece = White Prince at 12: 4 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Knight at 36: 4 moves:
+piece = White Soldier at 36: 4 moves:
                .
            13 / \ 
              /---\
@@ -485,7 +485,7 @@ piece = Black Prince at 13: 10 moves:
   a / b / c / d / e / f / g
 Black to move.
 
-piece = Black Knight at 15: 10 moves:
+piece = Black Soldier at 15: 10 moves:
                .
            13 / \ 
              /---\
@@ -623,7 +623,7 @@ piece = White Prince at 48: 22 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Knight at 36: 22 moves:
+piece = White Soldier at 36: 22 moves:
                .
            13 / \ 
              /---\
@@ -642,7 +642,7 @@ piece = White Knight at 36: 22 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Soldier at 10: 22 moves:
+piece = White Knight at 10: 22 moves:
                .
            13 / \ 
              /---\
@@ -700,7 +700,7 @@ piece = Black Prince at 13: 10 moves:
   a / b / c / d / e / f / g
 Black to move.
 
-piece = Black Knight at 15: 10 moves:
+piece = Black Soldier at 15: 10 moves:
                .
            13 / \ 
              /---\
@@ -759,7 +759,7 @@ piece = White Prince at 30: 21 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Knight at 36: 21 moves:
+piece = White Soldier at 36: 21 moves:
                .
            13 / \ 
              /---\
@@ -778,7 +778,7 @@ piece = White Knight at 36: 21 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Soldier at 10: 21 moves:
+piece = White Knight at 10: 21 moves:
                .
            13 / \ 
              /---\
@@ -838,7 +838,7 @@ Pseudo-moves for position: position_08.cor
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Knight at 36: 35 moves:
+piece = White Soldier at 36: 35 moves:
                .
            13 / \ 
              /---\
@@ -857,7 +857,7 @@ piece = White Knight at 36: 35 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Soldier at 10: 35 moves:
+piece = White Knight at 10: 35 moves:
                .
            13 / \ 
              /---\
@@ -876,7 +876,7 @@ piece = White Soldier at 10: 35 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Soldier at 13: 35 moves:
+piece = White Knight at 13: 35 moves:
                .
            13 /*\ 
              /---\
@@ -915,7 +915,7 @@ Pseudo-moves for position: position_08.cor
   a / b / c / d / e / f / g
 Black to move.
 
-piece = Black Knight at 15: 9 moves:
+piece = Black Soldier at 15: 9 moves:
                .
            13 / \ 
              /---\
@@ -974,7 +974,7 @@ piece = White Prince at 12: 14 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Knight at 8: 14 moves:
+piece = White Soldier at 8: 14 moves:
                .
            13 / \ 
              /---\
@@ -993,7 +993,7 @@ piece = White Knight at 8: 14 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Knight at 21: 14 moves:
+piece = White Soldier at 21: 14 moves:
                .
            13 / \ 
              /---\
@@ -1051,7 +1051,7 @@ piece = Black Prince at 13: 17 moves:
   a / b / c / d / e / f / g
 Black to move.
 
-piece = Black Knight at 15: 17 moves:
+piece = Black Soldier at 15: 17 moves:
                .
            13 / \ 
              /---\
@@ -1070,7 +1070,7 @@ piece = Black Knight at 15: 17 moves:
   a / b / c / d / e / f / g
 Black to move.
 
-piece = Black Soldier at 2: 17 moves:
+piece = Black Knight at 2: 17 moves:
                .
            13 / \ 
              /---\
@@ -1129,7 +1129,7 @@ piece = White Prince at 7: 12 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Knight at 8: 12 moves:
+piece = White Soldier at 8: 12 moves:
                .
            13 / \ 
              /---\
@@ -1148,7 +1148,7 @@ piece = White Knight at 8: 12 moves:
   a / b / c / d / e / f / g
 White to move.
 
-piece = White Knight at 21: 12 moves:
+piece = White Soldier at 21: 12 moves:
                .
            13 / \ 
              /---\
@@ -1206,7 +1206,7 @@ piece = Black Prince at 13: 22 moves:
   a / b / c / d / e / f / g
 Black to move.
 
-piece = Black Knight at 15: 22 moves:
+piece = Black Soldier at 15: 22 moves:
                .
            13 / \ 
              /---\
@@ -1225,7 +1225,7 @@ piece = Black Knight at 15: 22 moves:
   a / b / c / d / e / f / g
 Black to move.
 
-piece = Black Soldier at 6: 22 moves:
+piece = Black Knight at 6: 22 moves:
                .
            13 / \ 
              /---\

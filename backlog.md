@@ -8,19 +8,22 @@
 - Track:
   - Time spent for the move.
   - Display move played.
-- Allow starting game from:
-  - some given position - DONE
-  - some playing level/style
+
 - Define several playing styles.
   - Give Knight mobility a higher value.
   - Impatient Prince? (premature bonus for going up).
   - ...
 
+- Allow starting game from:
+  - some given position - DONE
+  - some playing level/style
+  
 ## Tree search (v1)
 
 - Review null move in quiesce()
-  - Rename to stand pat.
+  - Rename to stand pat?
   - Review misvalued position in game game_record_23F2020.
+
 - Improve evaluation function:
   - End-game:
     - Prince distance to crown
