@@ -5,6 +5,8 @@ import numpy as np
 import utils
 import textcolors
 
+import game_play as game
+
 # Saved games location
 GAMES_PATH = "./games/"
 
@@ -34,7 +36,7 @@ char_piece = {
     "k": (KNIGHT, BLACK),
     "s": (SOLDIER, BLACK)
 }
-piece_name = ("Prince", "Knight", "Soldier")
+piece_name = ("Prince", "Soldier", "Knight")
 color_name = ("White", "Black")
 
 initial_position = (
@@ -113,6 +115,50 @@ class Board:
                           "Incorrect <piece><coord>: {}".format(
                             file_name, line))
                     sys.exit(1)
+
+        if not self.is_legal_board():
+            print("Error: {} is not a legal board for 'The Crown'.".format(
+                file_name
+            ))
+            sys.exit(1)
+
+    def is_legal_board(self):
+        """
+        Check if a board is legal (e.g. after loading it from a .cor file).
+        Conditions checked:
+        - No Princes can be taken.
+        - Number of Princes, Knights, Soldiers per side.
+        - No Soldiers in their Prince's starting position.
+        """
+
+        # Check basic conditions: Princes <= 1 by side; Prince can't be taken.
+        if not game.is_legal(self):
+            return False
+
+        # Check now the rest of pieces:
+        if (
+            self.piece_count[WHITE][KNIGHT] > 2 or
+            self.piece_count[WHITE][SOLDIER] > 3 or
+            self.piece_count[BLACK][KNIGHT] > 2 or
+            self.piece_count[BLACK][SOLDIER] > 3
+        ):
+            return False
+
+        # Finally, check no Soldier stands on its Princes's starting position.
+        p_at_white_promo = self.board1d[self.prince_position[WHITE]]
+        if p_at_white_promo is not None:
+            if p_at_white_promo.type == SOLDIER and \
+                p_at_white_promo.color == WHITE:
+                return False
+
+        p_at_black_promo = self.board1d[self.prince_position[BLACK]]
+        if p_at_black_promo is not None:
+            if p_at_black_promo.type == SOLDIER and \
+                p_at_black_promo.color == BLACK:
+                return False
+
+        # Otherwise, the board is legal.
+        return True
 
     def include_piece(self, type, color, coord, tracing=False):
         # Check that it's empty.
@@ -306,3 +352,5 @@ if __name__ == '__main__':
     if len(sys.argv) > 0:
         board = Board(sys.argv[1])
         board.print_char()
+    else:
+        print("First argument must be the .cor file to display.")

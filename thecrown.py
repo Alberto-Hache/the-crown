@@ -127,7 +127,7 @@ if __name__ == "__main__":
                     # Non-void value signals end.
                     player_quit = True
                     game_end = True
-                    
+
             if not game_end:
                 # Update board with move.
                 coord1, coord2 = move

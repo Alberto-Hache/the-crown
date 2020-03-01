@@ -1,21 +1,15 @@
 # Backlog
 
-
 ## Rules (v1)
 
-- Load position: check if it's legal.
-  - No Princes can be taken.
-  - No Soldiers in their Prince's starting position.
-  - Number of Princes, Knights, Soldiers per side.
 - Detect repetition of positions.
 
 ## Game-play (v1)
-- Detect natural game end and leave.
 - Track:
   - Time spent for the move.
   - Display move played.
 - Allow starting game from:
-  - some given position
+  - some given position - DONE
   - some playing level/style
 - Define several playing styles.
   - Give Knight mobility a higher value.

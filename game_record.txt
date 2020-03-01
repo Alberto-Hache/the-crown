@@ -2,12 +2,5 @@ Game started!
 
  White: Crowny-I
  Black: Alberto H
- Sat Feb 29 23:37:33 2020
+ Sun Mar  1 09:21:46 2020
 
-1. ..., a7a8
-2. b4c4, a8a7
-3. c4a3, a7++
-
-1 - 0
-
-End of the game: Victory (no pieces left)
