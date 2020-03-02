@@ -1,0 +1,26 @@
+Game started!
+
+ White: Crowny-I
+ Black: Crowny-I
+ Sun Mar  1 23:08:43 2020
+
+1. e3d3, b3c3
+2. f1c6, b1b7
+3. e5e3, a5b5
+4. e3e2, c3c2
+5. f3c9, a3a4
+6. c6d5, a4a3
+7. e2f1, a3a4
+8. e1d2, a4a3
+9. f1e1, a3a4
+10. g1f2, a4a3
+11. f2f1, a3a4
+12. d5a10, b5a6
+13. a10a11, a6a7
+14. a11d5, a4a6
+15. d5a11, a6c3
+16. d3c4, c3a6
+17. c4c5, a6a3
+18. c5c4, a3a5
+19. c4c5, a5a3
+20. c5c4, 

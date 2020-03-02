@@ -172,15 +172,15 @@ class Board:
             "Coord {} ({}) is not empty.".format(
                 coord, utils.coord_2_algebraic[coord]
                 )
-
         # Create the piece.
+        code_to_use = 0 if tracing else piece_code[color][type]
         piece = types.SimpleNamespace(
-            type=type, color=color, coord=coord, tracing=tracing)
+            type=type, color=color, coord=coord,
+            code=code_to_use, tracing=tracing)
         # Update board references.
         self.pieces[color].append(piece)
         self.board1d[coord] = piece
-        if not tracing:
-            self.boardcode[coord] = piece_code[color][type]
+        self.boardcode[coord] = piece.code
         x1, x2, y = coord1to3[coord]
         self.board3d[x1][x2][y] = piece
         # Update piece counts (unless just tracing for testing purposes).
@@ -280,6 +280,9 @@ class Board:
     def clear_board(self):
         for piece in self.pieces[0] + self.pieces[1]:
             self.remove_piece(piece.coord)
+
+    def hash(self):
+        return hash(self.boardcode.tostring())
 
     def print_char(self, out_file=None, stylized=False):
         current_pos = self.n_positions - 1

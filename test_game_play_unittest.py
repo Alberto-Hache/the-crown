@@ -269,7 +269,8 @@ class Test_game_play(unittest.TestCase):
                         board.include_piece(bd.KNIGHT, board.turn, position)
                         for position_2 in range(bd.N_POSITIONS):
                             if gp.position_attacked(
-                                board, position_2, board.turn):
+                               board, position_2, board.turn
+                               ):
                                 display_board.include_piece(
                                     bd.TRACE, board.turn, position_2,
                                     tracing=True)
