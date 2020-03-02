@@ -80,21 +80,21 @@ DEFAULT_TRACE_LENGTH = 500
 class Gametrace:
     def __init__(self, first_board, length=DEFAULT_TRACE_LENGTH):
         self.level_trace = [None for x in range(length)]
-        self.current_board = 0
-        self.trace_board(first_board, self.current_board)
+        self.current_board_ply = 0
+        self.trace_board(first_board, self.current_board_ply)
 
-    def trace_board(self, board, depth):
+    def trace_board(self, board, ply_number):
         """
-        Register a board position at the given depth.
+        Register a board position at the given ply_number.
         """
-        if self.level_trace[depth] is None:
-            self.level_trace[depth] = types.SimpleNamespace(
-                position=board.pieces,
+        if self.level_trace[ply_number] is None:
+            self.level_trace[ply_number] = types.SimpleNamespace(
+                position=board.hash(),
                 n_nodes=1
             )
         else:
-            self.level_trace[depth].position = board.pieces
-            self.level_trace[depth].n_nodes += 1
+            self.level_trace[ply_number].position = board.hash()
+            self.level_trace[ply_number].n_nodes += 1
 
 
 def play(board, params=DEFAULT_SEARCH_PARAMS):
