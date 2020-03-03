@@ -71,12 +71,14 @@ piece_moves = (
 
 class Board:
     def __init__(self, file_name=None):
+        # Generic boaard info.
         self.n_rows = N_ROWS
         self.n_positions = N_ROWS ** 2
         self.crown_position = N_ROWS ** 2 - 1
         self.prince_position = [N_ROWS * 2 - 2, 0]
 
-        self.pieces = [[], []]  # Pieces on the board from 0=WHITE, 1=BLACK.
+        # Pieces info.
+        self.pieces = [[], []]  # Lists of pieces from 0=WHITE, 1=BLACK.
         self.piece_count = np.zeros((2, 3))  # 2 sides x 3 piece types.
         self.prince = [None, None]
 

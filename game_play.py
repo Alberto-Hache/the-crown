@@ -73,10 +73,12 @@ DRAW_NO_PRINCES_LEFT = 3
 DRAW_STALEMATE = 4
 DRAW_THREE_REPETITIONS = 5
 
-# Other
-DEFAULT_TRACE_LENGTH = 500
-HASH_IDX = 0
-NODE_COUNT_IDX = 1
+# Table used for game-tracing:
+DEFAULT_TRACE_LENGTH = 500  # Max depth supported by the program.
+HASH = 0            # Index of hash column.
+NODE_COUNT = 1      # Index of node_counter column.
+IRREVERSIBLE = 2    # Index of flag for board obtained after irreversible move.
+N_TRACE_COLS = 3    # Number of columns required for the above data.
 
 
 class Gametrace:
@@ -88,28 +90,42 @@ class Gametrace:
         Game searched:
             ply = self.current_board_ply ... DEFAULT_TRACE_LENGTH
         TODO:
-        - Store boolean 'irreversible' for each ply to cut repetition search
-          above plies labelled as "True".
+        - Store an 'irreversible' boolean for each ply.
+          to cut repetition search above plies labelled as "True".
         - Manage overflow beyond DEFAULT_TRACE_LENGTH.
         - Store moves sequence from start to self.current_board_ply.
         """
         # Initialize the tracing array.
-        self.level_trace = np.zeros((max_length, 2))
+        self.level_trace = np.zeros((max_length, N_TRACE_COLS))
+        self.level_trace[:, IRREVERSIBLE] = False
         # Initialize internal variables.
         self.current_board_ply = 0
         self.max_ply_searched = self.current_board_ply
 
         # Register first board of the game.
-        self.register_board(first_board, self.current_board_ply)
+        self.register_board(
+            first_board, self.current_board_ply,
+            irreversible=False, persist=True
+        )
 
-    def register_board(self, board, ply_number, persist=False):
+    def register_board(self, board, ply_number,
+                       irreversible=False, persist=False):
         """
-        Register a board position at the given ply_number.
+        Register a board position at its given ply_number that:
+        a) has already been played: 'persist' is True, current ply is tagged as
+        the last one actually played.
+        b) is being explored during game search: 'persist' is False.
         """
         # Update the tracing array.
-        self.level_trace[ply_number][HASH_IDX] = \
-            board.hash()
-        self.level_trace[NODE_COUNT_IDX] += 1
+        self.level_trace[ply_number, HASH] = board.hash()
+        if persist:
+            # No more search to count at this ply.
+            self.level_trace[ply_number, NODE_COUNT] = 1
+        else:
+            # Update nodes searched at this ply.
+            self.level_trace[ply_number, NODE_COUNT] += 1
+        self.level_trace[ply_number, IRREVERSIBLE] = irreversible
+
         # Update internal variables.
         if persist:
             self.current_board_ply = ply_number
@@ -120,35 +136,49 @@ class Gametrace:
 
     def reset_for_new_search(self):
         """
-        Wipe out all information traced after actual game.
+        Wipe out all information traced below actual game registered.
         """
         # Zero out the tracing array from current board onwards.
-        self.level_trace[self.current_board_ply + 1:][HASH_IDX] = 0
-        self.level_trace[self.current_board_ply + 1:][NODE_COUNT_IDX] = 0
+        self.level_trace[self.current_board_ply + 1:, HASH] = 0
+        self.level_trace[self.current_board_ply + 1:, NODE_COUNT] = 0
+        self.level_trace[self.current_board_ply + 1:, IRREVERSIBLE] = False
         # Update internal variables.
         self.max_ply_searched = self.current_board_ply
 
     def board_repeated(self, board, board_ply):
         """
-        Given a board position at certain ply in the game tree,
+        Given a board position at a certain ply in the game tree,
         check if it has already happened in the game traced.
-        Plies discarded:
+
+        Algorithm:
+        1. plies flagged as 'irreversible' interrupt search with False.
+        2. Plies discarded for hash comparison:
           ply - 1 : opponent's move.
           ply - 2 : can't be the same, as the player changed something.
           ply - 3 : opponent's move.
-        First ply to check: ply - 4 (player's move => not same_turn)
+        3. First ply for hash check: ply - 4 (player's move => same_turn)
         """
+
+        # Plies -3 to 0 relative to board:
+        # Check only 'irrevesible' flags for a fast False.
+        min_idx = max(0, board_ply - 3)
+        if np.any(self.level_trace[min_idx:board_ply, IRREVERSIBLE]):
+            return False
+
         # Get board's hash.
         board_hash = board.hash()
         # Search trace from the 4 plies above to ply 0.
-        same_turn = False  # The board just above was opponent's move.
-        for ply in range(current_ply - 4, -1, -1):
-            if same_turn:
-                pass  # TODO: check if some irreversible change was made.
-            else:
-                if self.level_trace[ply][HASH_IDX] == board_hash:
-                    return True
-
+        same_turn = True  # The board 4 plies above was the player's move.
+        min_idx = max(0, board_ply - 4)
+        for ply in range(min_idx, -1, -1):
+            # If turns match, check hash.
+            if same_turn and self.level_trace[ply, HASH] == board_hash:
+                return True
+            # Else, check if previous boards can be skipped.
+            if self.level_trace[ply, IRREVERSIBLE]:
+                return False
+            same_turn = not same_turn  # Flip turns for next node.
+        # No match was found.
         return False
 
 
