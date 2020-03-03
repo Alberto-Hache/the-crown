@@ -75,26 +75,81 @@ DRAW_THREE_REPETITIONS = 5
 
 # Other
 DEFAULT_TRACE_LENGTH = 500
+HASH_IDX = 0
+NODE_COUNT_IDX = 1
 
 
 class Gametrace:
-    def __init__(self, first_board, length=DEFAULT_TRACE_LENGTH):
-        self.level_trace = [None for x in range(length)]
+    def __init__(self, first_board, max_length=DEFAULT_TRACE_LENGTH):
+        """
+        Initialize array to trace game played so far and currently searched.
+        Game played:
+            ply = 0 ... self.current_board_ply
+        Game searched:
+            ply = self.current_board_ply ... DEFAULT_TRACE_LENGTH
+        TODO:
+        - Store boolean 'irreversible' for each ply to cut repetition search
+          above plies labelled as "True".
+        - Manage overflow beyond DEFAULT_TRACE_LENGTH.
+        - Store moves sequence from start to self.current_board_ply.
+        """
+        # Initialize the tracing array.
+        self.level_trace = np.zeros((max_length, 2))
+        # Initialize internal variables.
         self.current_board_ply = 0
-        self.trace_board(first_board, self.current_board_ply)
+        self.max_ply_searched = self.current_board_ply
 
-    def trace_board(self, board, ply_number):
+        # Register first board of the game.
+        self.register_board(first_board, self.current_board_ply)
+
+    def register_board(self, board, ply_number, persist=False):
         """
         Register a board position at the given ply_number.
         """
-        if self.level_trace[ply_number] is None:
-            self.level_trace[ply_number] = types.SimpleNamespace(
-                position=board.hash(),
-                n_nodes=1
-            )
-        else:
-            self.level_trace[ply_number].position = board.hash()
-            self.level_trace[ply_number].n_nodes += 1
+        # Update the tracing array.
+        self.level_trace[ply_number][HASH_IDX] = \
+            board.hash()
+        self.level_trace[NODE_COUNT_IDX] += 1
+        # Update internal variables.
+        if persist:
+            self.current_board_ply = ply_number
+        self.max_ply_searched = max(
+            self.max_ply_searched,
+            ply_number
+        )
+
+    def reset_for_new_search(self):
+        """
+        Wipe out all information traced after actual game.
+        """
+        # Zero out the tracing array from current board onwards.
+        self.level_trace[self.current_board_ply + 1:][HASH_IDX] = 0
+        self.level_trace[self.current_board_ply + 1:][NODE_COUNT_IDX] = 0
+        # Update internal variables.
+        self.max_ply_searched = self.current_board_ply
+
+    def board_repeated(self, board, board_ply):
+        """
+        Given a board position at certain ply in the game tree,
+        check if it has already happened in the game traced.
+        Plies discarded:
+          ply - 1 : opponent's move.
+          ply - 2 : can't be the same, as the player changed something.
+          ply - 3 : opponent's move.
+        First ply to check: ply - 4 (player's move => not same_turn)
+        """
+        # Get board's hash.
+        board_hash = board.hash()
+        # Search trace from the 4 plies above to ply 0.
+        same_turn = False  # The board just above was opponent's move.
+        for ply in range(current_ply - 4, -1, -1):
+            if same_turn:
+                pass  # TODO: check if some irreversible change was made.
+            else:
+                if self.level_trace[ply][HASH_IDX] == board_hash:
+                    return True
+
+        return False
 
 
 def play(board, params=DEFAULT_SEARCH_PARAMS):

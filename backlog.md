@@ -3,8 +3,11 @@
 ## Rules (v1)
 
 - Detect repetition of positions.
+  - Hash board positions (as np.array / string?).
+  - Return DRAW when repetition is found during search.
 
 ## Game-play (v1)
+
 - Track:
   - Time spent for the move.
   - Display move played.
