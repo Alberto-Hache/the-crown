@@ -97,10 +97,9 @@ class Gametrace:
         """
         # Initialize the tracing array.
         self.level_trace = np.zeros((max_length, N_TRACE_COLS))
-        # self.level_trace[:,IRREVERSIBLE] = False
         # Initialize internal variables.
         self.current_board_ply = -1  # So that first board gets 0.
-        self.max_ply_searched = self.current_board_ply
+        self.max_depth_searched = 0  # Search not started yet.
 
         # Register first board of the game.
         self.register_played_board(
@@ -113,11 +112,18 @@ class Gametrace:
         """
         Register a board that has just been actually played
         (not just searched).
+
+        Input:
+            board:          Board - the position to register.
+            irreversible:   Boolean - whether this board was produced by a move
+                            changing material of any side.
+
+        Output:             None
+
         """
-        # Update variables.
+        # Update variables after search ended (or at start).
         self.current_board_ply += 1
-        # No more search to count at this ply.
-        self.max_ply_searched = self.current_board_ply
+        self.max_depth_searched = 0  # Reset max depth.
         # Update the tracing array at the ply just played.
         self.level_trace[self.current_board_ply, HASH] = board.hash()
         self.level_trace[self.current_board_ply, NODE_COUNT] = 0
@@ -128,24 +134,41 @@ class Gametrace:
         self.level_trace[self.current_board_ply + 1:, IRREVERSIBLE] = False
 
     def register_searched_board(
-        self, board, ply_number, irreversible=False
+        self, board, depth, irreversible=False
     ):
         """
         Register a board position at its given ply_number that
         is being explored during game search.
+
+        Input:
+            board:          Board - the position to register.
+            depth:          integer - detph of the node in the game search:
+                            0 for root node, 1 for its children, etc.                            
+            irreversible:   Boolean - whether this board was produced by a move
+                            changing material of any side.
+
+        Output:
+            repeated:       Boolean - whether this position had already
+                            happenned in the game traced.
+
         """
+        board_hash = board.hash()
+        ply_number = self.current_board_ply + depth  # idx in general game trace.
         # Update the tracing array.
-        self.level_trace[ply_number, HASH] = board.hash()
+        self.level_trace[ply_number, HASH] = board_hash
         self.level_trace[ply_number, NODE_COUNT] += 1
         self.level_trace[ply_number, IRREVERSIBLE] = irreversible
 
         # Update internal variables.
-        self.max_ply_searched = max(
-            self.max_ply_searched,
-            ply_number
+        self.max_depth_searched = max(
+            self.max_depth_searched,
+            depth
         )
 
-    def board_repeated(self, board, board_ply):
+        # Check if the board is repeated in past history.
+        return self.board_repeated(board_hash, ply_number)
+
+    def board_repeated(self, board_hash, board_ply):
         """
         Given a board position at a certain ply in the game tree,
         check if it has already happened in the game traced.
@@ -159,14 +182,12 @@ class Gametrace:
         3. First ply for hash check: ply - 4 (player's move => same_turn)
         """
 
-        # Plies -3 to 0 relative to board:
-        # Check only 'irrevesible' flags for a fast False.
+        # For plies -3 to 0 relative to board:
+        # check only 'irrevesible' flags for a fast False.
         min_idx = max(0, board_ply - 3)
-        if np.any(self.level_trace[min_idx:board_ply, IRREVERSIBLE]):
+        if np.any(self.level_trace[min_idx:board_ply + 1, IRREVERSIBLE]):
             return False
 
-        # Get board's hash.
-        board_hash = board.hash()
         # Search trace from the 4 plies above to ply 0.
         same_turn = True  # The board 4 plies above was the player's move.
         min_idx = max(0, board_ply - 4)
@@ -221,21 +242,22 @@ def minimax(
         game_status:    int - situation of the board passed.
                         Conditions detected:
                         ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT /
-                        DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE
-
-                        Conditions not checked:
+                        DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE /
                         DRAW_THREE_REPETITIONS
     """
 
-    # 0. If at max_depth, quiescence search takes care.
+    # If at max_depth, quiescence search takes care.
     if depth == params["max_depth"]:
         return quiesce(board, depth, alpha, beta, params, trace)
 
-    # Register searched node.
-    if trace is not None:
-        trace.register_searched_board(board, depth)
+    # 0. Register searched node [excluding root node], checking repetitions.
+    if trace is not None and depth != 0:
+        repetition = trace.register_searched_board(board, depth)
+        if repetition:
+            # The position had already happenned in the game.
+            return None, DRAW, True, DRAW_THREE_REPETITIONS
 
-    # 1. Check for some end conditions:
+    # 1. Check for other end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
     #   Otherwise, assume ON_GOING
     childs_move, result, game_end, game_status = evaluate_end(board, depth)
@@ -337,16 +359,21 @@ def quiesce(
         result:         float - evaluation of the node from the moving side's
                         perspective (+ is good).
         game_end:       Boolen - whether the game was ended in this node.
-        game_status:    int
+        game_status:    int - situation of the board passed.
                         Conditions detected:
                         ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT /
-                        DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE
-
-                        Conditions not checked:
+                        DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE /
                         DRAW_THREE_REPETITIONS
     """
 
-    # 1. Check for some end conditions:
+    # 0. Register searched node, checking repetitions.
+    if trace is not None and depth != 0:  # TODO: suppress depth checking.
+        repetition = trace.register_searched_board(board, depth)
+        if repetition:
+            # The position had already happenned in the game.
+            return None, DRAW, True, DRAW_THREE_REPETITIONS
+
+    # 1. Check for other end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
     #   Otherwise, assume ON_GOING
     childs_move, result, game_end, game_status = evaluate_end(board, depth)
@@ -509,10 +536,10 @@ def evaluate_end(board, depth):
                     DRAW_NO_PRINCES_LEFT
 
                     Conditions not checked:
-                    DRAW_STALEMATE /
+                    DRAW_STALEMATE
+                    [Detected by calling method once moves are generated.]
                     DRAW_THREE_REPETITIONS
-
-    NOTE: multiple return points for efficiency.
+                    [Done before by calling method]
     """
 
     player_side = board.turn
@@ -540,13 +567,11 @@ def evaluate_end(board, depth):
             board.piece_count[opponent_side][bd.PRINCE] == 0:
         return None, DRAW, True, DRAW_NO_PRINCES_LEFT
 
-    # 4. Stalemate?
-    pass  # TODO: Currently it's only detected in non-leave nodes.
-    # DRAW_STALEMATE
+    # 4. Stalemate.
+    # [Detected by calling method once moves are generated.]
 
-    # 5. Three repetitions?
-    pass  # TODO: Will require a record of all past positions.
-    # DRAW_THREE_REPETITIONS
+    # 5. Three repetitions.
+    # [Done before by calling method.]
 
     # 6. Otherwise, it's not decided yet.
     return None, None, False, ON_GOING
