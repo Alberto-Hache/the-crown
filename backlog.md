@@ -1,5 +1,14 @@
 # Backlog
 
+## Environment and versioning
+
+- Enable vs code from CLI:
+export PATH="$PATH:/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin"
+
+- Lock first full version (0.0.0?) with:
+git tag v0.0.0
+git push --tags
+
 ## Rules (v1)
 
 - Detect repetition of positions.

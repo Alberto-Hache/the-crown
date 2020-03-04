@@ -90,60 +90,60 @@ class Gametrace:
         Game searched:
             ply = self.current_board_ply ... DEFAULT_TRACE_LENGTH
         TODO:
-        - Store an 'irreversible' boolean for each ply.
+        - Update an 'irreversible' boolean for each ply.
           to cut repetition search above plies labelled as "True".
         - Manage overflow beyond DEFAULT_TRACE_LENGTH.
         - Store moves sequence from start to self.current_board_ply.
         """
         # Initialize the tracing array.
         self.level_trace = np.zeros((max_length, N_TRACE_COLS))
-        self.level_trace[:, IRREVERSIBLE] = False
+        # self.level_trace[:,IRREVERSIBLE] = False
         # Initialize internal variables.
-        self.current_board_ply = 0
+        self.current_board_ply = -1  # So that first board gets 0.
         self.max_ply_searched = self.current_board_ply
 
         # Register first board of the game.
-        self.register_board(
-            first_board, self.current_board_ply,
-            irreversible=False, persist=True
+        self.register_played_board(
+            first_board, irreversible=False
         )
 
-    def register_board(self, board, ply_number,
-                       irreversible=False, persist=False):
+    def register_played_board(
+        self, board, irreversible=False
+    ):
         """
-        Register a board position at its given ply_number that:
-        a) has already been played: 'persist' is True, current ply is tagged as
-        the last one actually played.
-        b) is being explored during game search: 'persist' is False.
+        Register a board that has just been actually played
+        (not just searched).
         """
-        # Update the tracing array.
-        self.level_trace[ply_number, HASH] = board.hash()
-        if persist:
-            # No more search to count at this ply.
-            self.level_trace[ply_number, NODE_COUNT] = 1
-        else:
-            # Update nodes searched at this ply.
-            self.level_trace[ply_number, NODE_COUNT] += 1
-        self.level_trace[ply_number, IRREVERSIBLE] = irreversible
-
-        # Update internal variables.
-        if persist:
-            self.current_board_ply = ply_number
-        self.max_ply_searched = max(
-            self.max_ply_searched,
-            ply_number
-        )
-
-    def reset_for_new_search(self):
-        """
-        Wipe out all information traced below actual game registered.
-        """
+        # Update variables.
+        self.current_board_ply += 1
+        # No more search to count at this ply.
+        self.max_ply_searched = self.current_board_ply
+        # Update the tracing array at the ply just played.
+        self.level_trace[self.current_board_ply, HASH] = board.hash()
+        self.level_trace[self.current_board_ply, NODE_COUNT] = 0
+        self.level_trace[self.current_board_ply, IRREVERSIBLE] = irreversible
         # Zero out the tracing array from current board onwards.
         self.level_trace[self.current_board_ply + 1:, HASH] = 0
         self.level_trace[self.current_board_ply + 1:, NODE_COUNT] = 0
         self.level_trace[self.current_board_ply + 1:, IRREVERSIBLE] = False
+
+    def register_searched_board(
+        self, board, ply_number, irreversible=False
+    ):
+        """
+        Register a board position at its given ply_number that
+        is being explored during game search.
+        """
+        # Update the tracing array.
+        self.level_trace[ply_number, HASH] = board.hash()
+        self.level_trace[ply_number, NODE_COUNT] += 1
+        self.level_trace[ply_number, IRREVERSIBLE] = irreversible
+
         # Update internal variables.
-        self.max_ply_searched = self.current_board_ply
+        self.max_ply_searched = max(
+            self.max_ply_searched,
+            ply_number
+        )
 
     def board_repeated(self, board, board_ply):
         """
@@ -182,19 +182,23 @@ class Gametrace:
         return False
 
 
-def play(board, params=DEFAULT_SEARCH_PARAMS):
+def play(
+    board, params=DEFAULT_SEARCH_PARAMS, trace=None
+):
     search_end = False
     alpha, beta = [-float("inf"), float("inf")]
     depth = 0
 
     while not search_end:
         move, result, game_end, game_status = minimax(
-            board, depth, alpha, beta, params)
+            board, depth, alpha, beta, params, trace)
         search_end = True  # No iterated search for now.
     return move, result, game_end, game_status
 
 
-def minimax(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
+def minimax(
+    board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS, trace=None
+):
     """
     Given a *legal* position in the game-tree, find and evaluate the best move.
 
@@ -207,6 +211,7 @@ def minimax(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
                         Search is prunned when alpha >= beta.
         params:         A dictionary with the search settings to follow:
                         max_depth, quiescence,randomness, (more to come).
+        trace:          The structure tracking played / searched boards.
 
     Output:
         best_move:      A list [coord1, coord2], or None.
@@ -224,7 +229,11 @@ def minimax(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
 
     # 0. If at max_depth, quiescence search takes care.
     if depth == params["max_depth"]:
-        return quiesce(board, depth, alpha, beta, params)
+        return quiesce(board, depth, alpha, beta, params, trace)
+
+    # Register searched node.
+    if trace is not None:
+        trace.register_searched_board(board, depth)
 
     # 1. Check for some end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
@@ -305,7 +314,9 @@ def minimax(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
     return None, DRAW, True, DRAW_STALEMATE
 
 
-def quiesce(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
+def quiesce(
+    board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS, trace=None
+):
     """
     Evaluate a *legal* position exploring only DYNAMIC moves (or none).
     This is used instead of minimax() once MAX_DEPTH has been reached.
@@ -319,6 +330,7 @@ def quiesce(board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS):
                         Search is prunned when alpha >= beta.
         params:         A dictionary with the search settings to follow:
                         max_depth, quiescence,randomness, (more to come).
+        trace:          The structure tracking played / searched boards.
 
     Output:
         best_move:      A list [coord1, coord2], or None.

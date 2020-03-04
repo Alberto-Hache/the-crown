@@ -2,53 +2,9 @@ Game started!
 
  White: Crowny-I
  Black: Crowny-I
- Tue Mar  3 09:20:45 2020
+ Wed Mar  4 18:32:48 2020
 
 1. e3d3, b3c3
 2. f1c6, b1b7
 3. e5e3, a5b5
 4. e3e2, c3c2
-5. f3c9, a3a4
-6. c6d5, a4a3
-7. e2f1, a3a4
-8. e1d2, a4a3
-9. f1e1, a3a4
-10. g1f2, a4a3
-11. f2f1, a3a4
-12. d5a10, b5a6
-13. a10a11, a6a7
-14. a11d5, a4a6
-15. d5a11, a6c3
-16. d3c4, c3a6
-17. c4c5, a6a3
-18. c5c4, a3a5
-19. c4c5, a5a3
-20. c5c4, a3a5
-21. c4c5, a5a3
-22. c5c4, a3a5
-23. c4c5, a5a3
-24. c5c4, a3a5
-25. c4c5, a5a3
-26. c5c4, a3a5
-27. c4c5, a5a3
-28. c5c4, a3a5
-29. c4c5, a5a3
-30. c5c4, a3a5
-31. c4c5, a5a3
-32. c5c4, a3a5
-33. c4c5, a5a3
-34. c5c4, a3a5
-35. c4c5, a5a3
-36. c5c4, a3a5
-37. c4c5, a5a3
-38. c5c4, a3a5
-39. c4c5, a5a3
-40. c5c4, a3a5
-41. c4c5, a5a3
-42. c5c4, a3a5
-43. c4c5, a5a3
-44. c5c4, a3a5
-45. c4c5, a5a3
-46. c5c4, a3a5
-47. c4c5, a5a3
-48. c5c4, 

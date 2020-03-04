@@ -109,17 +109,20 @@ if __name__ == "__main__":
             "{}\n".format(time.ctime()),
             file=rec_file
         )
+        # Initialize game variables.
         game_end = False
         player_quit = False
-        move_number = 1
+        move_number = 1  # Used to print the game played.
         white_move_printed = False  # In case Black starts.
+        game_trace = game.Gametrace(board)
+        # Main game loop.
         while not game_end:
             # Main loop of the full game.
             board.print_char()
             if player[board.turn].type == MACHINE_PLAYER:
                 # The machine plays this color.
                 move, result, game_end, end_status = game.play(
-                    board, player[board.turn].params)
+                    board, params=player[board.turn].params, trace=game_trace)
             else:
                 # The human plays this color.
                 move, result = request_human_move(board)
@@ -132,7 +135,9 @@ if __name__ == "__main__":
                 # Update board with move.
                 coord1, coord2 = move
                 board.make_move(coord1, coord2)
-                # Register move in game log.
+                # Update game trace.  TODO: include irreversible arg.
+                game_trace.register_played_board(board)
+                # Print move in game log.
                 if board.turn == bd.BLACK:
                     # White just played a move.
                     white_move_printed = True
