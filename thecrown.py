@@ -57,6 +57,40 @@ def request_human_move(board):
     return move, result
 
 
+def display_start(board, player, rec_file):
+    print("Starting The Crown!")
+    print(
+        "Game started!\n\n",
+        "White: {}\n".format(player[0].name),
+        "Black: {}\n".format(player[1].name),
+        "{}\n".format(time.ctime()),
+        file=rec_file
+    )
+    move_number = 1  # Used to print the game played.
+    if board.turn == bd.BLACK:
+        print("{}. ...".format(move_number), end="", file=rec_file)
+
+    return move_number
+
+
+def display_move(board, move, move_number, rec_file):
+    if board.turn == bd.BLACK:
+        # White just played a move.
+        print(
+            "{}. {}".format(move_number, utils.move_2_txt(move)),
+            end="", file=rec_file
+        )
+    else:
+        # Black just played a move.
+        print(
+            ", {}".format(utils.move_2_txt(move)),
+            file=rec_file
+        )
+        move_number += 1
+
+    return move_number
+
+
 def display_end_results(board, result, end_status, rec_file):
     # Result of the match.
     if result == game.DRAW:
@@ -77,6 +111,13 @@ def display_end_results(board, result, end_status, rec_file):
     print("{}".format(end_status_txt), file=rec_file)
 
 
+def display_quit_results(board, rec_file):
+    print(
+        "\n\n{} quit the game.".format(bd.color_name[board.turn]),
+        file=rec_file
+    )
+
+
 if __name__ == "__main__":
     # Handle possible arguments passed.
     # Load indicated board position if any.
@@ -92,8 +133,8 @@ if __name__ == "__main__":
             params=game.MINIMAL_SEARCH_PARAMS
         ),
         types.SimpleNamespace(
-            name="Crowny-I",
-            type=MACHINE_PLAYER,
+            name="Alberto H",
+            type=HUMAN_PLAYER,
             color=bd.BLACK,
             params=game.MINIMAL_SEARCH_PARAMS
         )
@@ -101,18 +142,10 @@ if __name__ == "__main__":
 
     # Start the match!
     with open("game_record.txt", "w") as rec_file:
-        print("Starting The Crown!")
-        print(
-            "Game started!\n\n",
-            "White: {}\n".format(player[0].name),
-            "Black: {}\n".format(player[1].name),
-            "{}\n".format(time.ctime()),
-            file=rec_file
-        )
+        move_number = display_start(board, player, rec_file)
         # Initialize game variables.
         game_end = False
         player_quit = False
-        move_number = 1  # Used to print the game played.
         white_move_printed = False  # In case Black starts.
         game_trace = game.Gametrace(board)
         # Main game loop.
@@ -138,36 +171,17 @@ if __name__ == "__main__":
                 # Update game trace.  TODO: include irreversible arg.
                 repetition = game_trace.register_played_board(board)
                 # Print move in game log.
-                if board.turn == bd.BLACK:
-                    # White just played a move.
-                    white_move_printed = True
-                    print(
-                        "{}. {}, ".format(move_number, utils.move_2_txt(move)),
-                        end="", file=rec_file
-                    )
-                else:
-                    # Black just played a move.
-                    if not white_move_printed:
-                        print(
-                            "{}. ..., ".format(move_number),
-                            end="", file=rec_file
-                        )
-                    print(
-                        "{}".format(utils.move_2_txt(move)),
-                        file=rec_file
-                    )
-                    move_number += 1
+                move_number = display_move(board, move, move_number, rec_file)
                 if repetition:
                     # Draw; end of game.
                     game_end = True
                     display_end_results(
-                        board, result=game.DRAW,
-                        end_status=game.DRAW_THREE_REPETITIONS,
-                        rec_file
+                        board, game.DRAW, game.DRAW_THREE_REPETITIONS, rec_file
                     )
             else:
                 # End of the game.
                 if player_quit:
                     print("\nBye!")  # The player left the game.
+                    display_quit_results(board, rec_file)
                 else:
                     display_end_results(board, result, end_status, rec_file)
