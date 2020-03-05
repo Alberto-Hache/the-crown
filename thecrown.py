@@ -135,7 +135,12 @@ def print_move_metrics(move, result, game_trace):
             game_trace.max_depth_searched
         )
     )
-    # print("{}".format(game_trace.level_trace[:, game.NODE_COUNT]))
+
+    # itemindex = np.argwhere(array==item)[0]
+    nodes_per_level = game_trace.level_trace[
+        game_trace.current_board_ply:,
+        game.NODE_COUNT
+        ]
 
 
 if __name__ == "__main__":

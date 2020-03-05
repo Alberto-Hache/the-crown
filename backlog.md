@@ -13,10 +13,6 @@ git push --tags
 
 - Track:
   - Move metrics:
-    - Move played (algebraic notation).
-    - Evaluation.
-    - Nodes searched.
-    - Max depth reached.
     - Time spent for the move.
 
 - Define several playing styles.
