@@ -101,8 +101,8 @@ class Gametrace:
         self.current_board_ply = -1  # So that first board gets 0.
         self.max_depth_searched = 0  # Search not started yet.
 
-        # Register first board of the game.
-        self.register_played_board(
+        # Register first board of the game (assume no repetition).
+        _ = self.register_played_board(
             first_board, irreversible=False
         )
 
@@ -118,20 +118,25 @@ class Gametrace:
             irreversible:   Boolean - whether this board was produced by a move
                             changing material of any side.
 
-        Output:             None
-
+        Output:
+            repeated:       Boolean - whether this position had already
+                            happenned in the game traced.
         """
+        board_hash = board.hash()
         # Update variables after search ended (or at start).
         self.current_board_ply += 1
         self.max_depth_searched = 0  # Reset max depth.
         # Update the tracing array at the ply just played.
-        self.level_trace[self.current_board_ply, HASH] = board.hash()
+        self.level_trace[self.current_board_ply, HASH] = board_hash
         self.level_trace[self.current_board_ply, NODE_COUNT] = 0
         self.level_trace[self.current_board_ply, IRREVERSIBLE] = irreversible
         # Zero out the tracing array from current board onwards.
         self.level_trace[self.current_board_ply + 1:, HASH] = 0
         self.level_trace[self.current_board_ply + 1:, NODE_COUNT] = 0
         self.level_trace[self.current_board_ply + 1:, IRREVERSIBLE] = False
+
+        # Check if the board is repeated in past history.
+        return self.board_repeated(board_hash, self.current_board_ply)
 
     def register_searched_board(
         self, board, depth, irreversible=False
@@ -150,10 +155,9 @@ class Gametrace:
         Output:
             repeated:       Boolean - whether this position had already
                             happenned in the game traced.
-
         """
         board_hash = board.hash()
-        ply_number = self.current_board_ply + depth  # idx in general game trace.
+        ply_number = self.current_board_ply + depth  # idx in gral. game trace.
         # Update the tracing array.
         self.level_trace[ply_number, HASH] = board_hash
         self.level_trace[ply_number, NODE_COUNT] += 1
@@ -293,7 +297,10 @@ def minimax(
                 else:
                     # We need to recursively search this move deeper.
                     childs_move, result_i, game_end_i, game_status_i = \
-                        minimax(new_board_i, depth + 1, -beta, -alpha, params)
+                        minimax(
+                            new_board_i, depth + 1, -beta, -alpha,
+                            params, trace
+                        )
                     result_i = -float(result_i)  # Switch to player's view.
                 if result_i >= beta:
                     # Ignore rest of pseudomoves [fail hard beta cutoff].
@@ -328,7 +335,10 @@ def minimax(
             )
         # And the new board must be assessed.
         childs_move, result_i, game_end_i, game_status_i = \
-            minimax(new_board_i, depth + 1, -beta, -alpha, params)
+            minimax(
+                new_board_i, depth + 1, -beta, -alpha, 
+                params, trace
+            )
         alpha = -float(result_i)  # Switch to player's view.
         return best_move, alpha, False, ON_GOING
 
@@ -950,7 +960,7 @@ if __name__ == '__main__':
         # Call to mini_max.
         best_move, result, game_end, game_status = minimax(
             board, 0, -np.Infinity, np.Infinity,
-            params=PLY3_SEARCH_PARAMS)
+            params=PLY3_SEARCH_PARAMS, trace=None)
 
         # Display results.
         utils.display_results(

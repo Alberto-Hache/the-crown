@@ -136,7 +136,7 @@ if __name__ == "__main__":
                 coord1, coord2 = move
                 board.make_move(coord1, coord2)
                 # Update game trace.  TODO: include irreversible arg.
-                game_trace.register_played_board(board)
+                repetition = game_trace.register_played_board(board)
                 # Print move in game log.
                 if board.turn == bd.BLACK:
                     # White just played a move.
@@ -157,6 +157,14 @@ if __name__ == "__main__":
                         file=rec_file
                     )
                     move_number += 1
+                if repetition:
+                    # Draw; end of game.
+                    game_end = True
+                    display_end_results(
+                        board, result=game.DRAW,
+                        end_status=game.DRAW_THREE_REPETITIONS,
+                        rec_file
+                    )
             else:
                 # End of the game.
                 if player_quit:
