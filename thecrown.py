@@ -118,6 +118,26 @@ def display_quit_results(board, rec_file):
     )
 
 
+def print_move_metrics(move, result, game_trace):
+    """
+    - Move played (algebraic notation).
+    - Evaluation.
+    - Nodes searched.
+    - Max depth reached.
+    - Time spent for the move.
+    """
+    print(
+        "{} ({:+0.10f}): nodes searched: {:.0f};"
+        " max. depth reached: {:d}".format(
+            utils.move_2_txt(move),
+            result,
+            game_trace.level_trace[:, game.NODE_COUNT].sum(),
+            game_trace.max_depth_searched
+        )
+    )
+    # print("{}".format(game_trace.level_trace[:, game.NODE_COUNT]))
+
+
 if __name__ == "__main__":
     # Handle possible arguments passed.
     # Load indicated board position if any.
@@ -156,6 +176,8 @@ if __name__ == "__main__":
                 # The machine plays this color.
                 move, result, game_end, end_status = game.play(
                     board, params=player[board.turn].params, trace=game_trace)
+                # Print move metrics.
+                print_move_metrics(move, result, game_trace)
             else:
                 # The human plays this color.
                 move, result = request_human_move(board)

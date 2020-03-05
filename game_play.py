@@ -448,7 +448,8 @@ def quiesce(
                         # We need to recursively search this move deeper.
                         childs_move, result_i, game_end_i, game_status_i = \
                             quiesce(
-                                new_board_i, depth + 1, -beta, -alpha, params
+                                new_board_i, depth + 1, -beta, -alpha,
+                                params, trace
                             )
                         result_i = -float(result_i)  # Switch to player's view.
                     if result_i >= beta:
@@ -485,7 +486,8 @@ def quiesce(
         # And the new board must be assessed.
         childs_move, result_i, game_end_i, game_status_i = \
             quiesce(
-                new_board_i, depth + 1, -beta, -alpha, params
+                new_board_i, depth + 1, -beta, -alpha,
+                params, trace
             )
         alpha = -float(result_i)  # Switch to player's view.
         return best_move, alpha, False, ON_GOING

@@ -9,17 +9,15 @@ export PATH="$PATH:/Applications/Visual\ Studio\ Code.app/Contents/Resources/app
 git tag v0.0.0
 git push --tags
 
-## Rules (v1)
-
-- Detect repetition of positions.
-  - Hash board positions (as np.array / string?).
-  - Return DRAW when repetition is found during search.
-
 ## Game-play (v1)
 
 - Track:
-  - Time spent for the move.
-  - Display move played.
+  - Move metrics:
+    - Move played (algebraic notation).
+    - Evaluation.
+    - Nodes searched.
+    - Max depth reached.
+    - Time spent for the move.
 
 - Define several playing styles.
   - Give Knight mobility a higher value.
