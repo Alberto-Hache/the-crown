@@ -258,11 +258,11 @@ def minimax(
     if depth == params["max_depth"]:
         return quiesce(board, depth, alpha, beta, params, trace)
 
-    # 0. Register searched node [excluding root node], checking repetitions.
-    if trace is not None and depth != 0:
+    # 0. Register searched node, checking repetitions.
+    if trace is not None:
         repetition = trace.register_searched_board(board, depth)
-        if repetition:
-            # The position had already happenned in the game.
+        if repetition and depth != 0:
+            # The position already happenned in the game [excluding root node].
             return None, DRAW, True, DRAW_THREE_REPETITIONS
 
     # 1. Check for other end conditions:

@@ -86,7 +86,7 @@ def display_start(board, player, rec_file):
     with open(METRICS_FILE, "w") as metrics_file:
         print(
             "SIDE   MOVE       TIME  EVALUATION MAX_DEPTH       "
-            "NODES    FULL_SRCH    QUIE_SRCH  TOP_20_LEVELS",
+            "NODES    FULL_SRCH  QUIESC_SRCH  TOP_20_LEVELS",
             file=metrics_file
         )
 
