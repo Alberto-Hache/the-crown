@@ -2,6 +2,12 @@
 
 ## Environment and versioning
 
+- Split program output in three separate flows :
+  - Screen (game play) (OST)
+  - Game moves (text file .txt? .gam?)
+  - Metrics (txt? csv?)
+  NOTE: use <https://realpython.com/python-csv/>
+
 - Enable vs code from CLI:
 export PATH="$PATH:/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin"
 
@@ -26,9 +32,9 @@ git push --tags
   
 ## Tree search (v1)
 
-- Review null move in quiesce()
-  - Rename to stand pat?
+- BUG? Review null move in quiesce()
   - Review misvalued position in game game_record_23F2020.
+  - Rename to stand pat?
 
 - Improve evaluation function:
   - End-game:
