@@ -85,8 +85,8 @@ def display_start(board, player, rec_file):
     # Game-traces FILE:
     with open(METRICS_FILE, "w") as metrics_file:
         print(
-            "SIDE   MOVE       TIME  EVALUATION MAX_DEPTH "
-            "TOTAL_NODES  TOP_20_NODES",
+            "SIDE   MOVE       TIME  EVALUATION MAX_DEPTH       "
+            "NODES    FULL_SRCH    QUIE_SRCH  TOP_20_LEVELS",
             file=metrics_file
         )
 
@@ -157,21 +157,23 @@ def display_quit_results(board, rec_file):
     pass
 
 
-def track_move_metrics(side, move, result, time_used, game_trace, metrics_file):
+def track_move_metrics(
+    side, move, result, max_depth, time_used, game_trace, metrics_file
+):
     """
     Track metrics of a move just produced by the program:
 
-    - SIDE who played.
+    - SIDE who played (White / Black)
     - MOVE played (algebraic notation).
-    - TIME spent for the move.
-    - EVALuation.
-    - MAX DEPTH reached.
-    - TOTAL NODES searched.
-    - Nodes searched by level. PENDING!
-
+    - TIME spent for the move (seconds).
+    - EVALuation (float).
+    - MAX DEPTH reached (integer).
+    - TOTAL NODES searched (integer).
+    - Nodes searched in top 20 levels (list of integers).
     """
+    # First columns.
     print(
-        "{:<5}  {:<6} {:>8.2f} {:>+11.5f} {:>9d}{:>12.0f}  "
+        "{:<5}  {:<6} {:>8.2f} {:>+11.5f} {:>9d}{:>12.0f} "
         .format(
             bd.color_name[side],
             utils.move_2_txt(move),
@@ -184,13 +186,28 @@ def track_move_metrics(side, move, result, time_used, game_trace, metrics_file):
         end="",
         file=metrics_file
     )
-
     ply = game_trace.current_board_ply
+
+    # Full search nodes; quiescence search nodes.
+    full_search_nodes = game_trace.level_trace[
+        ply:ply + max_depth, game.NODE_COUNT
+        ].sum()
+    quiescence_search_nodes = game_trace.level_trace[
+        ply + max_depth:, game.NODE_COUNT
+        ].sum()
+    print(
+        "{:>12.0f} {:>12.0f}  ".format(
+            full_search_nodes, quiescence_search_nodes
+        ),
+        end="",
+        file=metrics_file
+    )
+
+    # Top 20 levels.
     nodes_per_level = game_trace.level_trace[
         ply:ply+20,
         game.NODE_COUNT
     ]
-    # print("", file=metrics_file)
     with np.printoptions(formatter={'float': '{:>2.0f}'.format}):
         print("{}".format(nodes_per_level), file=metrics_file)
 
@@ -237,6 +254,7 @@ if __name__ == "__main__":
                 with open(METRICS_FILE, "a") as metrics_file:
                     track_move_metrics(
                         board.turn, move, result,
+                        player[board.turn].params["max_depth"],
                         time_used, game_trace, metrics_file
                         )
             else:

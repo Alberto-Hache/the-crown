@@ -1,5 +1,11 @@
 # Backlog
 
+## Bugs
+- Track root node in metrics (not counting now).
+- BUG? Review null move in quiesce()
+  - Review misvalued position in game game_record_23F2020.
+  - Rename to stand pat?
+
 ## Environment and versioning
 
 - Split program output in three separate flows :
@@ -20,6 +26,7 @@ git push --tags
 - Track:
   - Move metrics:
     - Time spent for the move.
+    - Full search nodes; quiescence search nodes:
 
 - Define several playing styles.
   - Give Knight mobility a higher value.
@@ -31,10 +38,6 @@ git push --tags
   - some playing level/style
   
 ## Tree search (v1)
-
-- BUG? Review null move in quiesce()
-  - Review misvalued position in game game_record_23F2020.
-  - Rename to stand pat?
 
 - Improve evaluation function:
   - End-game:
