@@ -1,6 +1,8 @@
 import sys
 import types
 import time
+import datetime
+import numpy as np
 
 import board as bd
 import game_play as game
@@ -82,7 +84,11 @@ def display_start(board, player, rec_file):
 
     # Game-traces FILE:
     with open(METRICS_FILE, "w") as metrics_file:
-        print("Headers row (TBA):")
+        print(
+            "SIDE   MOVE       TIME  EVALUATION MAX_DEPTH "
+            "TOTAL_NODES  TOP_20_NODES",
+            file=metrics_file
+        )
 
     return move_number
 
@@ -151,30 +157,42 @@ def display_quit_results(board, rec_file):
     pass
 
 
-def print_move_metrics(move, result, game_trace, metrics_file):
+def track_move_metrics(side, move, result, time_used, game_trace, metrics_file):
     """
-    - Move played (algebraic notation).
-    - Evaluation.
-    - Nodes searched.
-    - Max depth reached.
-    - Time spent for the move.
+    Track metrics of a move just produced by the program:
+
+    - SIDE who played.
+    - MOVE played (algebraic notation).
+    - TIME spent for the move.
+    - EVALuation.
+    - MAX DEPTH reached.
+    - TOTAL NODES searched.
+    - Nodes searched by level. PENDING!
+
     """
     print(
-        "{} ({:+0.10f}): nodes searched: {:.0f};"
-        " max. depth reached: {:d}".format(
+        "{:<5}  {:<6} {:>8.2f} {:>+11.5f} {:>9d}{:>12.0f}  "
+        .format(
+            bd.color_name[side],
             utils.move_2_txt(move),
+            # str(datetime.timedelta(seconds=time_used)),
+            time_used,
             result,
-            game_trace.level_trace[:, game.NODE_COUNT].sum(),
-            game_trace.max_depth_searched
+            game_trace.max_depth_searched,
+            game_trace.level_trace[:, game.NODE_COUNT].sum()
         ),
+        end="",
         file=metrics_file
     )
 
-    # itemindex = np.argwhere(array==item)[0]
+    ply = game_trace.current_board_ply
     nodes_per_level = game_trace.level_trace[
-        game_trace.current_board_ply:,
+        ply:ply+20,
         game.NODE_COUNT
-        ]
+    ]
+    # print("", file=metrics_file)
+    with np.printoptions(formatter={'float': '{:>2.0f}'.format}):
+        print("{}".format(nodes_per_level), file=metrics_file)
 
 
 if __name__ == "__main__":
@@ -213,12 +231,13 @@ if __name__ == "__main__":
             board.print_char()
             if player[board.turn].type == MACHINE_PLAYER:
                 # The machine plays this color.
-                move, result, game_end, end_status = game.play(
+                move, result, game_end, end_status, time_used = game.play(
                     board, params=player[board.turn].params, trace=game_trace)
                 # Print move metrics.
                 with open(METRICS_FILE, "a") as metrics_file:
-                    print_move_metrics(
-                        move, result, game_trace, metrics_file
+                    track_move_metrics(
+                        board.turn, move, result,
+                        time_used, game_trace, metrics_file
                         )
             else:
                 # The human plays this color.

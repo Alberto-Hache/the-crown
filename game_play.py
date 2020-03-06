@@ -2,6 +2,7 @@ import numpy as np
 import copy
 import sys
 import types
+import time
 
 import board as bd
 import utils
@@ -214,11 +215,14 @@ def play(
     alpha, beta = [-float("inf"), float("inf")]
     depth = 0
 
+    time_0 = time.time()
     while not search_end:
         move, result, game_end, game_status = minimax(
             board, depth, alpha, beta, params, trace)
         search_end = True  # No iterated search for now.
-    return move, result, game_end, game_status
+    time_1 = time.time()
+    
+    return move, result, game_end, game_status, time_1 - time_0
 
 
 def minimax(

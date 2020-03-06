@@ -37,8 +37,6 @@ def loop_generate_pseudomoves():
 def loop_minimax():
 
     iterations = 1
-    # time_0 = time.ctime()  # Start time.
-    # print("{:<20}{}".format("- Started:", time_0))
 
     board = bd.Board("test_minimax_10b.cor")
     for _ in range(iterations):
@@ -46,9 +44,6 @@ def loop_minimax():
             board, 0, -np.Infinity, np.Infinity,
             params=gp.PLY4_SEARCH_PARAMS
         )
-
-    # time_end = time.ctime()  # End time.
-    # print("{:<20}{}".format("- Ended:", time_end))
 
 
 if __name__ == '__main__':
