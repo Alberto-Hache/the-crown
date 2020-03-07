@@ -1,18 +1,11 @@
 # Backlog
 
 ## Bugs
-- Track root node in metrics (not counting now).
 - BUG? Review null move in quiesce()
   - Review misvalued position in game game_record_23F2020.
   - Rename to stand pat?
 
 ## Environment and versioning
-
-- Split program output in three separate flows :
-  - Screen (game play) (OST)
-  - Game moves (text file .txt? .gam?)
-  - Metrics (txt? csv?)
-  NOTE: use <https://realpython.com/python-csv/>
 
 - Enable vs code from CLI:
 export PATH="$PATH:/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin"
@@ -22,11 +15,6 @@ git tag v0.0.0
 git push --tags
 
 ## Game-play (v1)
-
-- Track:
-  - Move metrics:
-    - Time spent for the move.
-    - Full search nodes; quiescence search nodes:
 
 - Define several playing styles.
   - Give Knight mobility a higher value.
@@ -42,10 +30,12 @@ git push --tags
 - Improve evaluation function:
   - End-game:
     - Prince distance to crown
+    - Obstacles to crown?
   - Add small noise to leave nodes evaluation for diverse game.
   - Middle game: (v2)
     - Prince's safety?
     - Soldiers' structure?
+  - Middle game situations depending on Knights' balance.
 
 ## Tree search efficiency (v2)
 

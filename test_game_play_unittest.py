@@ -78,7 +78,7 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_minimax_10.cor",
                 TEST_SEARCH_PARAMS_4,
-                [33, 25], -9991, False, 0
+                [26, 27], -9991, False, 0
             ),
             (
                 "test_minimax_10b.cor",
@@ -88,6 +88,7 @@ class Test_game_play(unittest.TestCase):
         )
 
         with open("output.txt", "w") as f:
+            print("")  # To clean up the screen traces.
             for test in test_cases:
                 file_name, params, \
                     exp_move, exp_result, exp_end, exp_status = test
@@ -135,7 +136,7 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_quiesce_01.cor",  # Position to play.
                 TEST_SEARCH_PARAMS_4,   # Search parameters.
-                None, -11.899999999999999, False, 0    # Move, result, end, status.
+                None, -113.1, False, 0    # Move, result, end, status.
             ),
             (
                 "test_quiesce_02.cor",
@@ -236,7 +237,7 @@ class Test_game_play(unittest.TestCase):
 
                 # Call to quiesce() with depth 'max_depth".
                 best_move, result, game_end, game_status = gp.quiesce(
-                    board, params["max_depth"], -np.Infinity, np.Infinity,
+                    board, params["max_depth"], -np.Infinity, np.Infinity, True,
                     params=params)
 
                 # Display results.

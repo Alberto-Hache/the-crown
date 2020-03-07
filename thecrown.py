@@ -13,7 +13,7 @@ HUMAN_PLAYER = "Human"
 MACHINE_PLAYER = "Computer"
 
 # Output files.
-METRICS_FILE = "output_game_metrics.txt"
+GAME_METRICS_FILE = "output_game_metrics.txt"
 GAME_RECORD_FILE = "output_game_record.txt"
 
 
@@ -83,7 +83,7 @@ def display_start(board, player, rec_file):
         )
 
     # Game-traces FILE:
-    with open(METRICS_FILE, "w") as metrics_file:
+    with open(GAME_METRICS_FILE, "w") as metrics_file:
         print(
             "SIDE   MOVE       TIME  EVALUATION MAX_DEPTH       "
             "NODES    FULL_SRCH  QUIESC_SRCH  TOP_20_LEVELS",
@@ -221,16 +221,16 @@ if __name__ == "__main__":
     # Create array with the two players' configuration:
     player = [
         types.SimpleNamespace(
-            name="Crowny-I",
+            name="Crowny-II",
             type=MACHINE_PLAYER,
             color=bd.WHITE,
-            params=game.MINIMAL_SEARCH_PARAMS
+            params=game.PLY1_SEARCH_PARAMS
         ),
         types.SimpleNamespace(
-            name="Crowny-I",
+            name="Crowny-II",
             type=MACHINE_PLAYER,
             color=bd.BLACK,
-            params=game.MINIMAL_SEARCH_PARAMS
+            params=game.PLY1_SEARCH_PARAMS
         )
     ]
 
@@ -251,7 +251,7 @@ if __name__ == "__main__":
                 move, result, game_end, end_status, time_used = game.play(
                     board, params=player[board.turn].params, trace=game_trace)
                 # Print move metrics.
-                with open(METRICS_FILE, "a") as metrics_file:
+                with open(GAME_METRICS_FILE, "a") as metrics_file:
                     track_move_metrics(
                         board.turn, move, result,
                         player[board.turn].params["max_depth"],
