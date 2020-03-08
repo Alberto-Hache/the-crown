@@ -1,5 +1,6 @@
 # Useless temporary files
 kk/
+benchmarkings/
 *.txt
 
 # Visual Studio Code

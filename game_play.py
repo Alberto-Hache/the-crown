@@ -7,8 +7,6 @@ import time
 import board as bd
 import utils
 
-# Output files.
-MOVE_METRICS_FILE = "output_game_metrics.txt"  # Used for single-move calls.
 
 ########################################################################
 # Tree search parameters:
@@ -963,7 +961,7 @@ if __name__ == '__main__':
         file_name = sys.argv[1]
         board = bd.Board(file_name)
         game_trace = Gametrace(board)
-        parameters = PLY1_SEARCH_PARAMS
+        parameters = PLY3_SEARCH_PARAMS
 
         print("\nPlaying position: {}".format(file_name))
         board.print_char()

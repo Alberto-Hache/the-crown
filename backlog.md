@@ -1,19 +1,31 @@
 # Backlog
 
-## Bugs
-- BUG? Review null move in quiesce()
-  - Review misvalued position in game game_record_23F2020.
+## Tree search efficiency (v2)
 
-## Game-play (v1)
+- Capture metrics of sample games in GAME_METRICS_FILE:
+  - PLY1 vs PLY1
+  - PLY1 vs PLY2
+  - PLY2 vs PLY2
+- Capture metrics of sample positions in MOVE_METRICS_FILE:
+  - Positions from test_game_play_unittest.py
+  - Report 
+- Profiling of v1: bottlenecks?
+
+
+## Game-play
+
+### (v1)
 
 - Define several playing styles.
   - Give Knight mobility a higher value.
   - Impatient Prince? (premature bonus for going up).
   - ...
 
-- Allow starting game from:
-  - some given position - DONE
-  - some playing level/style
+- Allow starting game from some playing level/style.
+  
+- Extend quiescence search. Tactical moves:
+  - Prince moves upwards (in absence of opponent's Knights)?
+  - Soldier moves to throne (in absence of Prince)?
   
 ## Tree search (v1)
 
@@ -23,9 +35,10 @@
     - Obstacles to crown?
   - Add small noise to leave nodes evaluation for diverse game.
   - Middle game: (v2)
-    - Prince's safety?
-    - Soldiers' structure?
+    - Prince's safety? (e.g. soldiers and prince in kingdom)
+    - Soldiers' structure??
   - Middle game situations depending on Knights' balance.
+  - Encourage exchanging material when in advantage.
 
 ## Environment and versioning
 
@@ -38,12 +51,8 @@ git push --tags
 
 ## Tree search efficiency (v2)
 
-- Profiling of v1: bottlenecks?
 - Pre-evaluation of moves (extend make pseudo-move()?) for move sorting?
   - Static exchange evaluation?
-- Extend quiescence search. Tactical moves:
-  - Prince moves upwards (in absence of opponent's Knights)?
-  - Soldier moves to throne (in absence of Prince)?
 - Add hash-tables for repetitions.
 - Add killer-move heuristic? 
   - A single move

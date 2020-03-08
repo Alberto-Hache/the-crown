@@ -15,6 +15,7 @@ MACHINE_PLAYER = "Computer"
 # Output files.
 GAME_METRICS_FILE = "output_game_metrics.txt"
 GAME_RECORD_FILE = "output_game_record.txt"
+MOVE_METRICS_FILE = "output_game_metrics.txt"
 
 
 def request_human_move(board):
@@ -63,13 +64,17 @@ def request_human_move(board):
     return move, result
 
 
-def display_start(board, player, rec_file):
+def display_start(board, player, file_name, rec_file):
     # On-SCREEN output:
-    print("Starting The Crown!")
+    game_txt = "starting position" if file_name is None else file_name
+    print(
+        "Starting The Crown!\n[{}]"
+        .format(game_txt)
+    )
 
     # Game-record FILE:
     print(
-        "Game started!\n\n",
+        "Game started!\n{}\n\n".format(game_txt),
         "White: {}\n".format(player[0].name),
         "Black: {}\n".format(player[1].name),
         "{}\n".format(time.ctime()),
@@ -85,7 +90,8 @@ def display_start(board, player, rec_file):
     # Game-traces FILE:
     with open(GAME_METRICS_FILE, "w") as metrics_file:
         print(
-            "SIDE   MOVE       TIME  EVALUATION MAX_DEPTH       "
+            "MAX_DPTH CHECK_DPTH  RAND "
+            "SIDE   MOVE       TIME  EVALUATION     DEPTH       "
             "NODES    FULL_SRCH  QUIESC_SRCH  TOP_20_LEVELS",
             file=metrics_file
         )
@@ -157,11 +163,11 @@ def display_quit_results(board, rec_file):
     pass
 
 
-def track_move_metrics(
-    side, move, result, max_depth, time_used, game_trace, metrics_file
+def display_move_metrics(
+    side, move, result, player_params, time_used, game_trace, metrics_file
 ):
     """
-    Track metrics of a move just produced by the program:
+    Display metrics of a move just produced by the program:
 
     - SIDE who played (White / Black)
     - MOVE played (algebraic notation).
@@ -171,17 +177,60 @@ def track_move_metrics(
     - TOTAL NODES searched (integer).
     - Nodes searched in top 20 levels (list of integers).
     """
-    # First columns.
+    # Variables and player's search parameters:
+    player_max_depth = player_params["max_depth"]
+    player_max_check_quiesc_depth = player_params["max_check_quiesc_depth"]
+    player_randomness = player_params["randomness"]
+
+    move_txt = utils.move_2_txt(move)
+    nodes_count = game_trace.level_trace[:, game.NODE_COUNT].sum()
+
+    # On-SCREEN output:
+    print(
+        "{}: [max_depth={}, max_check_depth={}, rnd={:0.2f}]"
+        .format(
+            bd.color_name[side],
+            player_max_depth,
+            player_max_check_quiesc_depth,
+            player_randomness
+        )
+    )
+    print(
+        "Move: {} ({:+.5f}) {:.0f} nodes searched, "
+        "{:.2f} sec., max depth={:d}"
+        .format(
+            move_txt,
+            result,
+            nodes_count,
+            time_used,
+            game_trace.max_depth_searched
+        )
+    )
+    # Game-record FILE:
+    pass
+
+    # Game-traces FILE:
+    # Player's parameters:
+    print(
+        "{:>8d} {:>10d} {:>5.2f} "
+        .format(
+            player_max_depth,
+            player_max_check_quiesc_depth,
+            player_randomness
+        ),
+        end="",
+        file=metrics_file
+    )
+    # Main search results:
     print(
         "{:<5}  {:<6} {:>8.2f} {:>+11.5f} {:>9d}{:>12.0f} "
         .format(
             bd.color_name[side],
-            utils.move_2_txt(move),
-            # str(datetime.timedelta(seconds=time_used)),
+            move_txt,
             time_used,
             result,
             game_trace.max_depth_searched,
-            game_trace.level_trace[:, game.NODE_COUNT].sum()
+            nodes_count
         ),
         end="",
         file=metrics_file
@@ -190,10 +239,10 @@ def track_move_metrics(
 
     # Full search nodes; quiescence search nodes.
     full_search_nodes = game_trace.level_trace[
-        ply:ply + max_depth, game.NODE_COUNT
+        ply:ply + player_max_depth, game.NODE_COUNT
         ].sum()
     quiescence_search_nodes = game_trace.level_trace[
-        ply + max_depth:, game.NODE_COUNT
+        ply + player_max_depth:, game.NODE_COUNT
         ].sum()
     print(
         "{:>12.0f} {:>12.0f}  ".format(
@@ -212,58 +261,42 @@ def track_move_metrics(
         print("{}".format(nodes_per_level), file=metrics_file)
 
 
-if __name__ == "__main__":
-    # Handle possible arguments passed.
-    # Load indicated board position if any.
-    file_name = None if (len(sys.argv) == 1) else sys.argv[1]
-    board = bd.Board(file_name)
-
-    # Create array with the two players' configuration:
-    player = [
-        types.SimpleNamespace(
-            name="Crowny-I",
-            type=MACHINE_PLAYER,
-            color=bd.WHITE,
-            params=game.PLY1_SEARCH_PARAMS
-        ),
-        types.SimpleNamespace(
-            name="Crowny-I (no null refut)",
-            type=MACHINE_PLAYER,
-            color=bd.BLACK,
-            params=game.PLY1_SEARCH_PARAMS
-        )
-    ]
-
+def play_match(board, player, max_moves, file_name=None):
     # Start the match!
     with open(GAME_RECORD_FILE, "w") as rec_file:
-        move_number = display_start(board, player, rec_file)
+        move_number = display_start(board, player, file_name, rec_file)
         # Initialize game variables.
         game_end = False
         player_quit = False
-        white_move_printed = False  # In case Black starts.
+        max_moves_played = False
         game_trace = game.Gametrace(board)
         # Main game loop.
         while not game_end:
             # Main loop of the full game.
             board.print_char()
             if player[board.turn].type == MACHINE_PLAYER:
-                # The machine plays this color.
+                # The MACHINE plays this color.
                 move, result, game_end, end_status, time_used = game.play(
                     board, params=player[board.turn].params, trace=game_trace)
                 # Print move metrics.
                 with open(GAME_METRICS_FILE, "a") as metrics_file:
-                    track_move_metrics(
+                    display_move_metrics(
                         board.turn, move, result,
-                        player[board.turn].params["max_depth"],
+                        player[board.turn].params,
                         time_used, game_trace, metrics_file
                         )
             else:
-                # The human plays this color.
+                # The HUMAN plays this color.
                 move, result = request_human_move(board)
                 if result is not None:
                     # Non-void value signals end.
                     player_quit = True
                     game_end = True
+            # Update moves count.
+            max_moves -= 1
+            if max_moves == 0:
+                game_end = True
+                max_moves_played = True
 
             if not game_end:
                 # Update board with move.
@@ -282,6 +315,41 @@ if __name__ == "__main__":
             else:
                 # End of the game.
                 if player_quit:
+                    # Human chose to quit.
                     display_quit_results(board, rec_file)
+                elif max_moves_played:
+                    # Max. number of moves requested reached.
+                    pass
                 else:
+                    # The game reached an end.
                     display_end_results(board, result, end_status, rec_file)
+
+
+if __name__ == "__main__":
+    # Handle possible arguments passed.
+    # Load indicated board position if any.
+    file_name = None if (len(sys.argv) == 1) else sys.argv[1]
+    board = bd.Board(file_name)
+    # Check limitation of moves to play.
+    max_moves = np.Infinity if (len(sys.argv) != 3) else int(sys.argv[2])
+
+    # Create array with the two players' configuration:
+    player_set = [
+        # White player:
+        types.SimpleNamespace(
+            name="Crowny-III",
+            type=MACHINE_PLAYER,
+            color=bd.WHITE,
+            params=game.PLY3_SEARCH_PARAMS
+        ),
+        # Black player:
+        types.SimpleNamespace(
+            name="Crowny-I",
+            type=MACHINE_PLAYER,
+            color=bd.BLACK,
+            params=game.PLY1_SEARCH_PARAMS
+        )
+    ]
+
+    # Start a match between two players.
+    play_match(board, player_set, max_moves, file_name)
