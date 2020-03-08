@@ -24,13 +24,13 @@ game_status_txt = (
     "Victory (no pieces left)",
     "Draw (no Princes left)",
     "Draw, (stalemate)",
-    "Draw, (three repetitions)"
+    "Draw, (repetitions)"
 )
 
 # Functions:
 
 
-def move_2_txt(move):  # TODO: check all calls.
+def move_2_txt(move):
     """
     Transform a move [coord1, coord2] into a string: "f1c6", "a1++", "None".
     """
@@ -44,7 +44,7 @@ def move_2_txt(move):  # TODO: check all calls.
     return move_txt
 
 
-def display_results(move, eval, game_end, game_status, f=None):  # TODO: check all calls.
+def display_results(move, eval, game_end, game_status, f=None):
     move_txt = move_2_txt(move)
     print("Move:       {} ({}) Finished: {}, Status: {}".format(
         move_txt, eval, game_end,
@@ -704,5 +704,3 @@ def calculate_kingdoms(n):
     kingdoms[0][white_k] = True
     kingdoms[1][black_k] = True
     return kingdoms
-
-

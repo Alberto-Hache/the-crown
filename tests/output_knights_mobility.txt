@@ -1,3 +1,45 @@
+Testing of position game_record_23F2020.cor:
+               .
+           13 /k\ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \K/ \ /K\ 
+       /---.---.---.---\
+    5 / \ / \ /s\ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ /s\ /s\ /S\ / \ / \ 
+   /---.---.---.---.---.---\
+1 /p\k/ \ / \ / \S/S\ / \ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+Knights mobility [WHITE]: 34
+Knights mobility [BLACK]: 31
+Testing of position game_record_23F2020b.cor:
+               .
+           13 /k\ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \K/K\ 
+       /---.---.---.---\
+    5 / \ / \ /s\ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ /s\ /s\ /S\ / \ / \ 
+   /---.---.---.---.---.---\
+1 /p\k/ \ / \ / \S/S\ / \ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+Knights mobility [WHITE]: 19
+Knights mobility [BLACK]: 30
 Testing of position strategy_01.cor:
                .
            13 / \ 

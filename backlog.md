@@ -3,16 +3,6 @@
 ## Bugs
 - BUG? Review null move in quiesce()
   - Review misvalued position in game game_record_23F2020.
-  - Rename to stand pat?
-
-## Environment and versioning
-
-- Enable vs code from CLI:
-export PATH="$PATH:/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin"
-
-- Lock first full version (0.0.0?) with:
-git tag v0.0.0
-git push --tags
 
 ## Game-play (v1)
 
@@ -37,6 +27,15 @@ git push --tags
     - Soldiers' structure?
   - Middle game situations depending on Knights' balance.
 
+## Environment and versioning
+
+- Enable vs code from CLI:
+export PATH="$PATH:/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin"
+
+- Lock first full version (0.0.0?) with:
+git tag v0.0.0
+git push --tags
+
 ## Tree search efficiency (v2)
 
 - Profiling of v1: bottlenecks?
@@ -60,3 +59,21 @@ git push --tags
 - position_attacked() with several return() points?
 - generate_pseudo_moves based on 'beams' - 'shadows'.
 - position_attacked() with itemgetter.
+
+
+## Research (v3)
+# ML agents.
+- TBD
+
+# Tree search optimization
+-  Explore refutation of null move in quiesce():
+    - Currently a node returns the best of:
+      - null move (if possible).
+      - all its dynamic moves (captures, checks, check-evasion, promotion/crowning)
+    - This misses non-quiescent positions with huge threats (e.g. test_quiesce_01, test_quiesce_03).
+    - The null_move could be corrected through opponent's refutations (in those refutation searches, null_move would be disabled).
+    - If the refutation is sufficiently severe (e.g. ≈ 1 Soldier), maybe the node is not quiet:
+      a) explore defenses as "dynamic" moves in main search?
+      b) full search one more level?
+      c) Evaluate minJ(null_move, refutation value)? [Wrong: too pessimistice; it assumes captures and other threats are unavoidable!]
+

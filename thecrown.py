@@ -221,13 +221,13 @@ if __name__ == "__main__":
     # Create array with the two players' configuration:
     player = [
         types.SimpleNamespace(
-            name="Crowny-II",
+            name="Crowny-I",
             type=MACHINE_PLAYER,
             color=bd.WHITE,
             params=game.PLY1_SEARCH_PARAMS
         ),
         types.SimpleNamespace(
-            name="Crowny-II",
+            name="Crowny-I (no null refut)",
             type=MACHINE_PLAYER,
             color=bd.BLACK,
             params=game.PLY1_SEARCH_PARAMS

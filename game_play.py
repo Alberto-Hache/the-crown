@@ -14,27 +14,27 @@ MOVE_METRICS_FILE = "output_game_metrics.txt"  # Used for single-move calls.
 # Tree search parameters:
 
 PLY1_SEARCH_PARAMS = {
-    "max_depth":            1,
-    "max_quiescence_depth": 4,
-    "randomness":           0
+    "max_depth":                1,
+    "max_check_quiesc_depth":   4,
+    "randomness":               0
 }
 
 PLY2_SEARCH_PARAMS = {
-    "max_depth":            2,
-    "max_quiescence_depth": 6,
-    "randomness":           0
+    "max_depth":                2,
+    "max_check_quiesc_depth":   6,
+    "randomness":               0
 }
 
 PLY3_SEARCH_PARAMS = {
-    "max_depth":            3,
-    "max_quiescence_depth": 6,
-    "randomness":           0
+    "max_depth":                3,
+    "max_check_quiesc_depth":   8,
+    "randomness":               0
 }
 
 PLY4_SEARCH_PARAMS = {
-    "max_depth":            4,
-    "max_quiescence_depth": 8,
-    "randomness":           0
+    "max_depth":                4,
+    "max_check_quiesc_depth":   10,
+    "randomness":               0
 }
 
 MINIMAL_SEARCH_PARAMS = PLY1_SEARCH_PARAMS
@@ -259,9 +259,9 @@ def minimax(
                         DRAW_THREE_REPETITIONS
     """
 
-    # If at max_depth, quiescence search takes care (null_move enabled).
+    # If at max_depth, quiescence search takes care.
     if depth == params["max_depth"]:
-        return quiesce(board, depth, alpha, beta, True, params, trace)
+        return quiesce(board, depth, alpha, beta, params, trace)
 
     # 0. Register searched node, checking repetitions.
     if trace is not None:
@@ -357,7 +357,7 @@ def minimax(
 
 def quiesce(
     board, depth, alpha, beta,
-    null_refutation_allowed, params=DEFAULT_SEARCH_PARAMS, trace=None
+    params=DEFAULT_SEARCH_PARAMS, trace=None
 ):
     """
     Evaluate a *legal* position exploring only DYNAMIC moves (or none).
@@ -370,11 +370,6 @@ def quiesce(
                         The window within which result is expected to fall. 
                         'alpha' is the value to maximize and return.
                         Search is prunned when alpha >= beta.
-        null_refutation_allowed:
-                        Boolean: whether the null_move can be dynamically
-                        corrected through opponent's refutations.
-                        - Enabled if in main dynamic moves search;
-                        - Disabled in null_move refutations and its recursions.
         params:         A dictionary with the search settings to follow:
                         max_depth, quiescence,randomness, (more to come).
         trace:          The structure tracking played / searched boards.
@@ -418,28 +413,7 @@ def quiesce(
         # Null move is possible; evaluate it.
         player_in_check = False
         best_move = None
-        result_null_move = evaluate_static(board, depth)
-
-        # Now, if allowed, correct it with opponent's dynamic replies.
-        # Disable null_refutation_allowed in this search.
-        if null_refutation_allowed:
-            # Flip turns temporarily.
-            board.turn = opponent_side
-            childs_move, result_null_move_reply, game_end_i, game_status_i = \
-                quiesce(
-                    board, depth + 1, -beta, -alpha,
-                    False, params, trace
-                )
-            # Restablish original turn and switch evaluation's view.
-            board.turn = player_side
-            result_null_move_reply = -float(result_null_move_reply)
-        else:
-            # If dynamic refutation is not allowed, confirm static value.
-            result_null_move_reply = result_null_move
-
-        # Final outcome of the null-move and its refutation.
-        result_i = min(result_null_move, result_null_move_reply)
-
+        result_i = evaluate_static(board, depth)
         # Check result of null_move vs alpha-beta window.
         if result_i >= beta:
             return None, beta, False, ON_GOING  # [fail hard beta cutoff]
@@ -478,12 +452,10 @@ def quiesce(
                         pass  # TODO: review / kill this code branch?
                     else:
                         # We need to recursively search this move deeper:
-                        # null_refutation_allowed enabled if in main search;
-                        # disabled during null_move refutations of main search.
                         childs_move, result_i, game_end_i, game_status_i = \
                             quiesce(
                                 new_board_i, depth + 1, -beta, -alpha,
-                                null_refutation_allowed, params, trace
+                                params, trace
                             )
                         result_i = -float(result_i)  # Switch to player's view.
                     if result_i >= beta:
@@ -518,11 +490,9 @@ def quiesce(
                 check_dynamic=True
             )
         # And the new board must be searched.
-        # null_refutation_allowed enabled if in main search;
-        # disabled during null_move refutations of main search.
         childs_move, result_i, game_end_i, game_status_i = \
             quiesce(
-                new_board_i, depth + 1, -beta, -alpha, null_refutation_allowed,
+                new_board_i, depth + 1, -beta, -alpha,
                 params, trace
             )
         alpha = -float(result_i)  # Switch to player's view.
@@ -809,7 +779,7 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
                     - Prince Crowning
                     - Soldier promotions
                     - Check evasion (no null move)
-                    - Checks [downto 'max_quiescence_depth']
+                    - Checks [downto 'max_check_quiesc_depth']
 
                     Conditions not checked:  TODO: check in some cases.
                     - Prince moves upwards (in absence of enemy Knights)?
@@ -879,7 +849,7 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
             # Check on 'new_board' if it produced a check to the opponent.
             opponent_prince = new_board.prince[new_board.turn]
             if opponent_prince is not None and \
-               not depth > params["max_quiescence_depth"]:
+               not depth > params["max_check_quiesc_depth"]:
                 is_dynamic = position_attacked(
                     new_board, opponent_prince.coord, moving_side
                 )

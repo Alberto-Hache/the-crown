@@ -22,14 +22,19 @@ class Test_game_play(unittest.TestCase):
         # - expected return from mini_max():
         #   best_move, result, game_end, game_status
 
-        TEST_SEARCH_PARAMS_4 = {
-            "max_depth":    4,
-            "max_quiescence_depth": 8,
-            "randomness":   0
-        }
-
+        TEST_SEARCH_PARAMS_4 = gp.PLY4_SEARCH_PARAMS
         # Go through all test cases, each on one board.
         test_cases = (
+            (
+                "test_minimax_10.cor",
+                TEST_SEARCH_PARAMS_4,
+                [33, 25], -9991, False, 0
+            ),
+            (
+                "test_minimax_10b.cor",
+                TEST_SEARCH_PARAMS_4,
+                [28, 26], 9994, False, 0
+            ),
             (
                 "test_minimax_01.cor",  # Position to play.
                 TEST_SEARCH_PARAMS_4,     # Search parameters.
@@ -74,16 +79,6 @@ class Test_game_play(unittest.TestCase):
                 "test_minimax_09.cor",
                 TEST_SEARCH_PARAMS_4,
                 [41, 45], 1.8, False, 0
-            ),
-            (
-                "test_minimax_10.cor",
-                TEST_SEARCH_PARAMS_4,
-                [26, 27], -9991, False, 0
-            ),
-            (
-                "test_minimax_10b.cor",
-                TEST_SEARCH_PARAMS_4,
-                [28, 26], 9994, False, 0
             )
         )
 
@@ -94,8 +89,8 @@ class Test_game_play(unittest.TestCase):
                     exp_move, exp_result, exp_end, exp_status = test
                 board = bd.Board(file_name)  # The board to put pieces on.
 
-                print("Testing position {}:".format(file_name), end="")
-                print("Analysis of position {}:".format(file_name), file=f)
+                print("Testing position {}: ".format(file_name), end="")
+                print("Analysis of position {}: ".format(file_name), file=f)
                 board.print_char(out_file=f)
 
                 # Call to mini_max.
@@ -109,7 +104,9 @@ class Test_game_play(unittest.TestCase):
                 )
 
                 # Display results.
-                utils.display_results(best_move, result, game_end, game_status, f)
+                utils.display_results(
+                    best_move, result, game_end, game_status, f
+                )
 
                 # And check vs. expected.
                 self.assertEqual(
@@ -125,18 +122,16 @@ class Test_game_play(unittest.TestCase):
         # - expected return from mini_max():
         #   best_move, result, game_end, game_status
 
-        TEST_SEARCH_PARAMS_4 = {
-            "max_depth":            4,
-            "max_quiescence_depth": 10,
-            "randomness":           0
-        }
+        TEST_SEARCH_PARAMS_4 = gp.PLY4_SEARCH_PARAMS
 
         # Go through all test cases, each on one board.
+        # WARNING: float values from 'result' are very sensitive to
+        # depth search parameters in TEST_SEARCH_PARAMS_4.
         test_cases = (
             (
                 "test_quiesce_01.cor",  # Position to play.
                 TEST_SEARCH_PARAMS_4,   # Search parameters.
-                None, -113.1, False, 0    # Move, result, end, status.
+                None, -11.899999999999999, False, 0    # Move, result, end, status.
             ),
             (
                 "test_quiesce_02.cor",
@@ -172,12 +167,12 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_minimax_01.cor",  # Position to play.
                 TEST_SEARCH_PARAMS_4,   # Search parameters.
-                None, 9996, True, 1    # Move, result, end, status.
+                None, 9996.0, True, 1    # Move, result, end, status.
             ),
             (
                 "test_minimax_02.cor",
                 TEST_SEARCH_PARAMS_4,
-                None, -9996, True, 2
+                None, -9996.0, True, 2
             ),
             (
                 "test_minimax_03.cor",
@@ -237,17 +232,25 @@ class Test_game_play(unittest.TestCase):
 
                 # Call to quiesce() with depth 'max_depth".
                 best_move, result, game_end, game_status = gp.quiesce(
-                    board, params["max_depth"], -np.Infinity, np.Infinity, True,
+                    board, params["max_depth"], -np.Infinity, np.Infinity,
                     params=params)
 
                 # Display results.
-                utils.display_results(best_move, result, game_end, game_status, f)
+                utils.display_results(
+                    best_move, result, game_end, game_status, f
+                )
 
                 # And check vs. expected.
                 self.assertEqual(
-                    (best_move, result, game_end, game_status),
-                    (exp_move, exp_result, exp_end, exp_status),
+                    (best_move, game_end, game_status),
+                    (exp_move, exp_end, exp_status),
                     "Position: {}".format(file_name)
+                )
+                self.assertAlmostEqual(
+                    (result),
+                    (exp_result),
+                    places=4,
+                    msg="Position: {}".format(file_name)
                 )
 
     def test_position_attacked(self):
@@ -313,7 +316,9 @@ class Test_game_play(unittest.TestCase):
                         for move_position in moves_i:
                             # Loop over each move.
                             display_board.include_piece(
-                                bd.TRACE, p_i.color, move_position, tracing=True)
+                                bd.TRACE, p_i.color, move_position,
+                                tracing=True
+                            )
                         print("piece = {} {} at {}: {} moves:".format(
                             bd.color_name[p_i.color], bd.piece_name[p_i.type],
                             p_i.coord, moves_count), file=f)
@@ -328,7 +333,9 @@ class Test_game_play(unittest.TestCase):
         # file_list = glob.glob(bd.GAMES_PATH + "position1.cor")
         file_list = [
             "strategy_01.cor",
-            "strategy_02.cor"
+            "strategy_02.cor",
+            "game_record_23F2020.cor",
+            "game_record_23F2020b.cor"
             ]
         file_list.sort()
 
@@ -344,9 +351,9 @@ class Test_game_play(unittest.TestCase):
                 # Test function.
                 moves_count_white = gp.knights_mobility(board, bd.WHITE)
                 moves_count_black = gp.knights_mobility(board, bd.BLACK)
-                print("Knights mobility [WHITE]: {}".\
+                print("Knights mobility [WHITE]: {}".
                       format(moves_count_white), file=f)
-                print("Knights mobility [BLACK]: {}".\
+                print("Knights mobility [BLACK]: {}".
                       format(moves_count_black), file=f)
 
         self.assertTrue(filecmp.cmp(
@@ -552,7 +559,8 @@ class Test_game_play(unittest.TestCase):
 
         with open("output.txt", "w") as f:
             for full_file_name in file_list:
-                file_name = full_file_name[len(bd.GAMES_PATH):]  # Remove rel. path.
+                # Remove rel. path.
+                file_name = full_file_name[len(bd.GAMES_PATH):]
                 board = bd.Board(file_name)  # The board to put pieces on.
 
                 print("Evaluation of position {}:".format(file_name), file=f)
@@ -562,17 +570,22 @@ class Test_game_play(unittest.TestCase):
                 best_move, eval, game_end, game_status = gp.evaluate_end(
                     board, depth=0)
                 # Display results.
-                utils.display_results(best_move, eval, game_end, game_status, f)
+                utils.display_results(
+                    best_move, eval, game_end, game_status, f
+                )
 
                 # Evaluate from the other side now.
                 board.turn = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
-                print("\n{} to move:".format(bd.color_name[board.turn]), file=f)
+                print(
+                    "\n{} to move:".format(bd.color_name[board.turn]), file=f
+                )
 
                 best_move, eval, game_end, game_status = gp.evaluate_end(
                     board, depth=0)
 
                 # Display results.
-                utils.display_results(best_move, eval, game_end, game_status, f)
+                utils.display_results(
+                    best_move, eval, game_end, game_status, f)
 
         self.assertTrue(filecmp.cmp(
             "output.txt",
