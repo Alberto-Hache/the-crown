@@ -36,14 +36,26 @@ def loop_generate_pseudomoves():
 
 def loop_minimax():
 
+    test_cases = (
+        "test_minimax_07.cor",
+        "test_minimax_08.cor",
+        "test_minimax_09.cor"
+    )
+
+    """
+    "test_minimax_10.cor",
+    "test_minimax_10b.cor"
+    """
+
     iterations = 1
 
-    board = bd.Board("test_minimax_10b.cor")
-    for _ in range(iterations):
-        _, _, _, _ = gp.minimax(
-            board, 0, -np.Infinity, np.Infinity,
-            params=gp.PLY4_SEARCH_PARAMS
-        )
+    for test in test_cases:
+        board = bd.Board(test)
+        for _ in range(iterations):
+            _, _, _, _ = gp.minimax(
+                board, 0, -np.Infinity, np.Infinity,
+                params=gp.PLY4_SEARCH_PARAMS
+            )
 
 
 if __name__ == '__main__':

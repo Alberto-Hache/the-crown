@@ -1,6 +1,6 @@
 # Backlog
 
-## Tree search efficiency (v2)
+## Tree search efficiency (v1)
 
 - Capture metrics of sample games in GAME_METRICS_FILE:
   - PLY1 vs PLY1
@@ -10,7 +10,10 @@
   - Positions from test_game_play_unittest.py
   - Report 
 - Profiling of v1: bottlenecks?
-
+- Optimizations:
+  - Remove board3d field from Board class.
+  - Calculate hash during make_move() and update .hash attribute?
+  - Change board copying for make/unmake moves.
 
 ## Game-play
 
@@ -63,26 +66,26 @@ git push --tags
 
 ## Optimizations (v2)
 
-- Remove board3d field from Board class.
-- Change board copying for make/turnback moves.
 - position_attacked() with several return() points?
 - generate_pseudo_moves based on 'beams' - 'shadows'.
 - position_attacked() with itemgetter.
 
 
 ## Research (v3)
-# ML agents.
+
+### ML agents.
+
 - TBD
 
-# Tree search optimization
--  Explore refutation of null move in quiesce():
-    - Currently a node returns the best of:
-      - null move (if possible).
-      - all its dynamic moves (captures, checks, check-evasion, promotion/crowning)
-    - This misses non-quiescent positions with huge threats (e.g. test_quiesce_01, test_quiesce_03).
-    - The null_move could be corrected through opponent's refutations (in those refutation searches, null_move would be disabled).
-    - If the refutation is sufficiently severe (e.g. ≈ 1 Soldier), maybe the node is not quiet:
-      a) explore defenses as "dynamic" moves in main search?
-      b) full search one more level?
-      c) Evaluate minJ(null_move, refutation value)? [Wrong: too pessimistice; it assumes captures and other threats are unavoidable!]
+### Tree search optimization
 
+- Explore refutation of null move in quiesce():
+  - Currently a node returns the best of:
+    - null move (if possible).
+    - all its dynamic moves (captures, checks, check-evasion, promotion/crowning)
+  - This misses non-quiescent positions with huge threats (e.g. test_quiesce_01, test_quiesce_03).
+  - The null_move could be corrected through opponent's refutations (in those refutation searches, null_move would be disabled).
+  - If the refutation is sufficiently severe (e.g. ≈ 1 Soldier), maybe the node is not quiet:
+    a) explore defenses as "dynamic" moves in main search?
+    b) full search one more level?
+    c) Evaluate minJ(null_move, refutation value)? [Wrong: too pessimistice; it assumes captures and other threats are unavoidable!]

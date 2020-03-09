@@ -26,16 +26,6 @@ class Test_game_play(unittest.TestCase):
         # Go through all test cases, each on one board.
         test_cases = (
             (
-                "test_minimax_10.cor",
-                TEST_SEARCH_PARAMS_4,
-                [33, 25], -9991, False, 0
-            ),
-            (
-                "test_minimax_10b.cor",
-                TEST_SEARCH_PARAMS_4,
-                [28, 26], 9994, False, 0
-            ),
-            (
                 "test_minimax_01.cor",  # Position to play.
                 TEST_SEARCH_PARAMS_4,     # Search parameters.
                 None, 10000, True, 1    # Move, result, end, status.
@@ -79,6 +69,16 @@ class Test_game_play(unittest.TestCase):
                 "test_minimax_09.cor",
                 TEST_SEARCH_PARAMS_4,
                 [41, 45], 1.8, False, 0
+            ),
+            (
+                "test_minimax_10.cor",
+                TEST_SEARCH_PARAMS_4,
+                [33, 25], -9991, False, 0
+            ),
+            (
+                "test_minimax_10b.cor",
+                TEST_SEARCH_PARAMS_4,
+                [28, 26], 9994, False, 0
             )
         )
 
