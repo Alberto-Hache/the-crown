@@ -80,11 +80,11 @@ class Board:
         # Pieces info.
         self.pieces = [[], []]  # Lists of pieces from 0=WHITE, 1=BLACK.
         self.piece_count = np.zeros((2, 3))  # 2 sides x 3 piece types.
-        self.prince = [None, None]
+        self.prince = [None, None]  # List with the Prince of each side.
 
         self.board1d = np.full((self.n_positions), None)
         self.boardcode = np.zeros(self.n_positions)
-        self.board3d = np.full((N_ROWS, N_ROWS, N_ROWS), None)
+        # self.board3d = np.full((N_ROWS, N_ROWS, N_ROWS), None)
 
         # Set position and sides.
         self.load_board(file_name)
@@ -123,6 +123,8 @@ class Board:
                           "Incorrect <piece><coord>: {}".format(
                             file_name, line))
                     sys.exit(1)
+
+        self.hash = self.calculate_hash()
 
         if not self.is_legal_board():
             print("Error: {} is not a legal board for 'The Crown'.".format(
@@ -183,8 +185,8 @@ class Board:
         self.pieces[color].append(piece)
         self.board1d[coord] = piece
         self.boardcode[coord] = piece.code
-        x1, x2, y = coord1to3[coord]
-        self.board3d[x1][x2][y] = piece
+        # x1, x2, y = coord1to3[coord]
+        # self.board3d[x1][x2][y] = piece
         # Update piece counts (unless just tracing for testing purposes).
         if not piece.tracing:
             self.piece_count[color][type] += 1
@@ -199,8 +201,8 @@ class Board:
         self.pieces[piece.color].remove(piece)
         self.board1d[coord] = None
         self.boardcode[coord] = 0
-        x1, x2, y = coord1to3[coord]
-        self.board3d[x1][x2][y] = None
+        # x1, x2, y = coord1to3[coord]
+        # self.board3d[x1][x2][y] = None
         # Update piece counts.
         if not piece.tracing:
             self.piece_count[piece.color][piece.type] -= 1
@@ -217,7 +219,7 @@ class Board:
 
         Input:
             coord1: int - initial position of the move.
-            coord2: int - final position of the move,
+            coord2: int - final position of the move (or None),
 
         Output:
             captured_piece: Piece - Opponent's piece captured at coord 2
@@ -252,14 +254,14 @@ class Board:
             # Move piece1.
             self.board1d[coord1] = None
             self.boardcode[coord1] = 0
-            x1, x2, y = coord1to3[coord1]
-            self.board3d[x1][x2][y] = None
+            # x1, x2, y = coord1to3[coord1]
+            # self.board3d[x1][x2][y] = None
 
             piece1.coord = coord2
             self.board1d[coord2] = piece1
             self.boardcode[coord2] = piece_code[piece1.color][piece1.type]
-            x1, x2, y = coord1to3[coord2]
-            self.board3d[x1][x2][y] = piece1
+            # x1, x2, y = coord1to3[coord2]
+            # self.board3d[x1][x2][y] = piece1
             # Manage possible Soldier's promotion.
             if coord2 == self.prince_position[piece1.color] and \
                piece1.type == SOLDIER:
@@ -277,13 +279,68 @@ class Board:
         # Change turns.
         self.turn = WHITE if self.turn == BLACK else BLACK
 
+        # Finally, refresh the board's hash.
+        self.hash = self.calculate_hash()
+
         return captured_piece, leaving_piece
 
+    def unmake_move(self, coord1, coord2, captured_piece, leaving_piece):
+        """
+        Execute all board updates required to revert a previous move
+        from coord1 to coord2, managing changes in pieces.
+
+        Input:
+            coord1: int - initial position of the original move.
+            coord2: int - final position of the original move (or None),
+            captured_piece: Piece - Opponent's piece captured at coord 2,
+                            restored now (or None).
+            leaving_piece:  Piece - Playing piece that left the board,
+                            (or None):
+                            a) Prince checkmated, now resurrected.
+                            b) Soldier promoted to Prince, now demoted.
+        Output:
+            (none)
+        """
+        assert self.board1d[coord2] is None, \
+            "Error: no piece found in {}" \
+            .format(utils.coord_2_algebraic[coord2])
+        assert self.board1d[coord1] is not None, \
+            "Error: unexpected piece found in {}" \
+            .format(utils.coord_2_algebraic[coord1])
+
+        # Obtain returning piece.
+        piece_to_retract = self.board1d[coord2] if leaving_piece is None \
+            else leaving_piece
+
+        if coord2 is not None:
+            # A normal move from coord1 to coord2 (to unmake).
+            if captured_piece is not None:
+                # The move was a capture.
+                pass
+            else:
+                # The move was NOT a capture.
+                pass
+        else:
+            # A checkmated Prince who was on coord1 must return.
+            pass
+
+        # Change turns.
+        pass
+
+        # Finally, refresh the board's hash.
+        self.hash = self.calculate_hash()
+
+
     def clear_board(self):
+        # Not tested. TODO: remove function?
+
+        # Remove all pieces.
         for piece in self.pieces[0] + self.pieces[1]:
             self.remove_piece(piece.coord)
+        # Finally, refresh the board's hash.
+        self.hash = self.calculate_hash()
 
-    def hash(self):
+    def calculate_hash(self):
         return hash(self.boardcode.tostring())
 
     def print_char(self, out_file=None, stylized=False):

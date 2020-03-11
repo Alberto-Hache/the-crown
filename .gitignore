@@ -1,6 +1,7 @@
 # Useless temporary files
-kk/
-benchmarkings/
+_kk/
+_benchmarkings/
+_profiling/
 *.txt
 
 # Visual Studio Code

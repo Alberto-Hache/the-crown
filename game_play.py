@@ -126,7 +126,7 @@ class Gametrace:
             repeated:       Boolean - whether this position had already
                             happenned in the game traced.
         """
-        board_hash = board.hash()
+        board_hash = board.hash
         # Update variables after search ended (or at start).
         self.current_board_ply += 1
         self.max_depth_searched = 0  # Reset max depth.
@@ -160,7 +160,7 @@ class Gametrace:
             repeated:       Boolean - whether this position had already
                             happenned in the game traced.
         """
-        board_hash = board.hash()
+        board_hash = board.hash
         ply_number = self.current_board_ply + depth  # idx in gral. game trace.
         # Update the tracing array.
         self.level_trace[ply_number, HASH] = board_hash

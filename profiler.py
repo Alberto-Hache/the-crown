@@ -37,14 +37,18 @@ def loop_generate_pseudomoves():
 def loop_minimax():
 
     test_cases = (
-        "test_minimax_07.cor",
-        "test_minimax_08.cor",
-        "test_minimax_09.cor"
+        "test_minimax_10.cor"
     )
 
     """
-    "test_minimax_10.cor",
-    "test_minimax_10b.cor"
+        "test_minimax_01.cor",
+        "test_minimax_02.cor",
+        "test_minimax_06.cor"
+        "test_minimax_07.cor",
+        "test_minimax_08.cor",
+        "test_minimax_09.cor"
+        "test_minimax_10.cor",
+        "test_minimax_10b.cor"
     """
 
     iterations = 1

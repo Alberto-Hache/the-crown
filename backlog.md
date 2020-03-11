@@ -2,17 +2,11 @@
 
 ## Tree search efficiency (v1)
 
-- Capture metrics of sample games in GAME_METRICS_FILE:
-  - PLY1 vs PLY1
-  - PLY1 vs PLY2
-  - PLY2 vs PLY2
-- Capture metrics of sample positions in MOVE_METRICS_FILE:
-  - Positions from test_game_play_unittest.py
-  - Report 
-- Profiling of v1: bottlenecks?
-- Optimizations:
+- Optimizations (I):
   - Remove board3d field from Board class.
-  - Calculate hash during make_move() and update .hash attribute?
+  - Make .hash a class attribute, not a function.
+
+- Optimizations (II):
   - Change board copying for make/unmake moves.
 
 ## Game-play
