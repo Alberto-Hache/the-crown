@@ -35,6 +35,12 @@ PLY4_SEARCH_PARAMS = {
     "randomness":               0
 }
 
+PLY5_SEARCH_PARAMS = {
+    "max_depth":                5,
+    "max_check_quiesc_depth":   11,
+    "randomness":               0
+}
+
 MINIMAL_SEARCH_PARAMS = PLY1_SEARCH_PARAMS
 DEFAULT_SEARCH_PARAMS = PLY4_SEARCH_PARAMS
 
