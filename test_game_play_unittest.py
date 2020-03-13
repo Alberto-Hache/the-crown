@@ -270,12 +270,12 @@ class Test_game_play(unittest.TestCase):
                         # Test function from that free position.
                         print("\nKnight attacks from position {}"
                               .format(position), file=f)
-                        board.include_piece(bd.KNIGHT, board.turn, position)
+                        board.include_new_piece(bd.KNIGHT, board.turn, position)
                         for position_2 in range(bd.N_POSITIONS):
                             if gp.position_attacked(
                                board, position_2, board.turn
                                ):
-                                display_board.include_piece(
+                                display_board.include_new_piece(
                                     bd.TRACE, board.turn, position_2,
                                     tracing=True)
                         board.print_char(out_file=f)
@@ -311,11 +311,11 @@ class Test_game_play(unittest.TestCase):
                     for piece_moves in moves:
                         # Loop over each instance of [piece, [move, move...]]
                         p_i, moves_i = piece_moves
-                        display_board.include_piece(
+                        display_board.include_new_piece(
                             p_i.type, p_i.color, p_i.coord)
                         for move_position in moves_i:
                             # Loop over each move.
-                            display_board.include_piece(
+                            display_board.include_new_piece(
                                 bd.TRACE, p_i.color, move_position,
                                 tracing=True
                             )
@@ -407,38 +407,41 @@ class Test_game_play(unittest.TestCase):
 
         test_cases = [
             # BOARD to test: test_make_pseudomove_01
+            # Test:
+            # move_to_make,
+            # is_legal, is_dynamic, result, game_end, game_status
             [
                 "test_make_pseudomove_01.cor",
                 "c8b7", True, False, None, False, 0
             ],
             [
                 "test_make_pseudomove_01.cor",
-                "c8c3", True, False, None, False, 0
+                "c8c3", True, True, None, False, 0
             ],
             [
                 "test_make_pseudomove_01.cor",
-                "c8a8", True, False, None, False, 0
+                "c8a8", True, True, None, False, 0
             ],
             [
                 "test_make_pseudomove_01.cor",
-                "e3e2", False, False, None, None, None
+                "e3e2", False, None, None, None, None
             ],
             # BOARD to test: test_make_pseudomove_02.cor
             [
                 "test_make_pseudomove_02.cor",
-                "b2e1", False, False, None, None, None
+                "b2e1", False, None, None, None, None
             ],
             [
                 "test_make_pseudomove_02.cor",
-                "a5a4", False, False, None, None, None
+                "a5a4", False, None, None, None, None
             ],
             [
                 "test_make_pseudomove_02.cor",
-                "a5a6", False, False, None, None, None
+                "a5a6", False, None, None, None, None
             ],
             [
                 "test_make_pseudomove_02.cor",
-                "b5b4", False, False, None, None, None
+                "b5b4", False, None, None, None, None
             ],
             [
                 "test_make_pseudomove_02.cor",
@@ -447,15 +450,15 @@ class Test_game_play(unittest.TestCase):
             # BOARD to test: test_make_pseudomove_03.cor
             [
                 "test_make_pseudomove_03.cor",
-                "a7b5", True, False, 1, True, 2
+                "a7b5", True, True, 9999.0, True, 2
             ],
             [
                 "test_make_pseudomove_03.cor",
-                "c5b6", False, False, None, None, None
+                "c5b6", False, None, None, None, None
             ],
             [
                 "test_make_pseudomove_03.cor",
-                "f1g1", False, False, None, None, None
+                "f1g1", False, None, None, None, None
             ],
             [
                 "test_make_pseudomove_03.cor",
@@ -468,56 +471,56 @@ class Test_game_play(unittest.TestCase):
             # BOARD to test: test_make_pseudomove_04.cor
             [
                 "test_make_pseudomove_04.cor",
-                "b1a1", True, False, None, False, 0
+                "b1a1", True, True, None, False, 0
             ],
             # BOARD to test: test_make_pseudomove_05.cor
             [
                 "test_make_pseudomove_05.cor",
-                "a3a1", True, False, None, False, 0
+                "a3a1", True, True, None, False, 0
             ],
             # BOARD to test: test_make_pseudomove_06.cor
             [
                 "test_make_pseudomove_06.cor",
-                "a3a1", False, False, None, None, None
+                "a3a1", False, None, None, None, None
             ],
             # BOARD to test: test_make_pseudomove_07.cor
             [
                 "test_make_pseudomove_07.cor",
-                "a3a1", False, False, None, None, None
+                "a3a1", False, None, None, None, None
             ],
             [
                 "test_make_pseudomove_07.cor",
-                "a12a13", True, False, 1, True, 1
+                "a12a13", True, True, 9999.0, True, 1
             ],
             # BOARD to test: test_make_pseudomove_11.cor
             [
                 "test_make_pseudomove_11.cor",
-                "a12a13", False, False, None, None, None
+                "a12a13", False, None, None, None, None
             ],
             [
                 "test_make_pseudomove_11.cor",
-                "a3a1", False, False, None, None, None
+                "a3a1", False, None, None, None, None
             ],
             [
                 "test_make_pseudomove_11.cor",
-                "a12b11", True, False, None, False, 0
+                "a12b11", True, True, None, False, 0
             ],
             [
                 "test_make_pseudomove_11.cor",
-                "b9a10", True, False, None, False, 0
+                "b9a10", True, True, None, False, 0
             ],
             # BOARD to test: test_make_pseudomove_12.cor
             [
                 "test_make_pseudomove_12.cor",
-                "b2e1", False, False, None, None, None
+                "b2e1", False, None, None, None, None
             ],
             [
                 "test_make_pseudomove_12.cor",
-                "a5a4", False, False, None, None, None
+                "a5a4", False, None, None, None, None
             ],
             [
                 "test_make_pseudomove_12.cor",
-                "a5a6", False, False, None, None, None
+                "a5a6", False, None, None, None, None
             ],
             [
                 "test_make_pseudomove_12.cor",
@@ -529,29 +532,70 @@ class Test_game_play(unittest.TestCase):
         for test_case in test_cases:
             file_name, test_move, res1, res2, res3, res4, res5 = test_case
             board = bd.Board(file_name)
+            board_orig = bd.Board(file_name)  # Reference for unmake tests.
             # Parse move.
             coord1, coord2, is_correct = \
                 utils.algebraic_move_2_coords(test_move)
             assert is_correct, "Error parsing move {}".format(test_move)
 
-            # Make the move and check results (ignoring 'new_board')
-            _, is_legal, is_dynamic, result, game_end, game_status = \
+            # Make the move and check results.
+            is_legal, is_dynamic, result, game_end, game_status, \
+                captured_piece, leaving_piece = \
                 gp.make_pseudomove(
                     board, coord1, coord2,
                     depth=0, params=gp.DEFAULT_SEARCH_PARAMS,
                     check_dynamic=True
-                    )
+                )
 
-        self.assertTrue(
-            (res1, res2, res3, res4, res5) == (
-                is_legal, is_dynamic, result, game_end, game_status),
-            "ERROR in position {}, move: {}:"
-            "Expected: {}, {}, {}, {}, {}\n"
-            "Received: {}, {}, {}, {}, {}".format(
-                file_name, test_move,
-                res1, res2, res3, res4, res5,
-                is_legal, is_dynamic, result, game_end, game_status
-            ))
+            self.assertTrue(
+                (res1, res2, res3, res4, res5) == (
+                    is_legal, is_dynamic, result, game_end, game_status),
+                "ERROR in position {}, move: {}:"
+                "Expected: {}, {}, {}, {}, {}\n"
+                "Received: {}, {}, {}, {}, {}".format(
+                    file_name, test_move,
+                    res1, res2, res3, res4, res5,
+                    is_legal, is_dynamic, result, game_end, game_status
+                ))
+
+            # Now 'unmake' the move and check against 'board_orig'.
+            board.unmake_move(coord1, coord2, captured_piece, leaving_piece)
+            # Check .turn, .hash
+            self.assertEqual(
+                (board.turn, board.hash),
+                (board_orig.turn, board_orig.hash),
+                "ERROR in position {}, after 'unmaking' move: {}: "
+                "Expected: {}, {}\n"
+                "Received: {}, {}".format(
+                    file_name, test_move,
+                    board.turn, board.hash,
+                    board_orig.turn, board_orig.hash
+                )
+            )
+            # Check .piece_count
+            self.assertTrue(
+                (board.piece_count == board_orig.piece_count).all(),
+                "ERROR in position {}, after 'unmaking' move: {}: "
+                ".piece_count differs".format(
+                    file_name, test_move
+                )
+            )
+            # Check .boardcode
+            self.assertTrue(
+                (board.boardcode == board_orig.boardcode).all(),
+                "ERROR in position {}, after 'unmaking' move: {}: "
+                ".boardcode differs.".format(
+                    file_name, test_move
+                )
+            )
+            # Check .board1d, all coordinates.
+            self.assertTrue(
+                (board.board1d == board_orig.board1d).all(),
+                "ERROR in position {}, after 'unmaking' move: {}: "
+                ".board1d differs.".format(
+                    file_name, test_move
+                )
+            )
 
     def test_evaluate(self):
         file_list = glob.glob(bd.GAMES_PATH + "position*.cor")

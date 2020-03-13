@@ -301,7 +301,7 @@ def play_match(board, player, max_moves, file_name=None):
             if not game_end:
                 # Update board with move.
                 coord1, coord2 = move
-                board.make_move(coord1, coord2)
+                _, _ = board.make_move(coord1, coord2)
                 # Update game trace.  TODO: include irreversible arg.
                 repetition = game_trace.register_played_board(board)
                 # Print move in game log.
@@ -337,10 +337,10 @@ if __name__ == "__main__":
     player_set = [
         # White player:
         types.SimpleNamespace(
-            name="Crowny-III",
+            name="Crowny-I",
             type=MACHINE_PLAYER,
             color=bd.WHITE,
-            params=game.PLY3_SEARCH_PARAMS
+            params=game.PLY1_SEARCH_PARAMS
         ),
         # Black player:
         types.SimpleNamespace(

@@ -9,9 +9,9 @@
 - Optimizations (II):
   - Change board copying for make/unmake moves.
 
-## Game-play
+  - Optimize position_attacked() [30% to 50% of time spent]
 
-### (v1)
+## Game-play (v1)
 
 - Define several playing styles.
   - Give Knight mobility a higher value.

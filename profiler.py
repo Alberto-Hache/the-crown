@@ -55,7 +55,7 @@ def loop_minimax():
         "test_minimax_09.cor"
         PLY4_SEARCH_PARAMS
 
-        "test_minimax_11.cor"
+        "test_minimax_11.cor",
         PLY5_SEARCH_PARAMS
     """
 

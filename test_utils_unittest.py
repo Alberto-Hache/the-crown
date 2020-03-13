@@ -80,10 +80,10 @@ class Test_utils(unittest.TestCase):
                       .format(position), file=f)
                 moves = simple_moves[position]
                 board.clear_board()
-                board.include_piece(bd.PRINCE, bd.WHITE, position)
+                board.include_new_piece(bd.PRINCE, bd.WHITE, position)
                 trace = 1
                 for position_2 in moves:
-                    board.include_piece(
+                    board.include_new_piece(
                         trace, bd.WHITE, position_2, tracing=True)
                     trace += 1
                 board.print_char(out_file=f)
@@ -100,7 +100,7 @@ class Test_utils(unittest.TestCase):
                 for position in range(bd.N_POSITIONS):
                     moves = soldier_moves[side][position]
                     board.clear_board()
-                    board.include_piece(bd.SOLDIER, side, position)
+                    board.include_new_piece(bd.SOLDIER, side, position)
                     if moves == []:
                         # Soldier on Prince's throne.
                         n_moves = 0
@@ -108,7 +108,7 @@ class Test_utils(unittest.TestCase):
                         if type(moves[0]) == int:
                             # Simple list out of kingdom.
                             for position_2 in moves:
-                                board.include_piece(
+                                board.include_new_piece(
                                     bd.TRACE, side, position_2, tracing=True)
                             n_moves = len(moves)
                         else:
@@ -117,7 +117,7 @@ class Test_utils(unittest.TestCase):
                             for moves_list in moves:
                                 moves_set = moves_set.union(moves_list)
                             for position_2 in moves_set:
-                                board.include_piece(
+                                board.include_new_piece(
                                     bd.TRACE, side, position_2, tracing=True)
                             n_moves = len(moves_set)
                     print("{} Soldier: {} moves from position {}"
@@ -139,10 +139,10 @@ class Test_utils(unittest.TestCase):
                 moves = knight_moves[position]
                 for direction in moves:
                     board.clear_board()
-                    board.include_piece(bd.KNIGHT, bd.WHITE, position)
+                    board.include_new_piece(bd.KNIGHT, bd.WHITE, position)
                     trace = 1
                     for position_2 in direction:
-                        board.include_piece(trace, bd.WHITE, position_2,
+                        board.include_new_piece(trace, bd.WHITE, position_2,
                                             tracing=True)
                         trace += 1
                     board.print_char(out_file=f)
@@ -158,11 +158,11 @@ class Test_utils(unittest.TestCase):
         with open("output.txt", "w") as f:
             positions = np.argwhere(kingdoms[0]).flatten()
             for position in positions:
-                board.include_piece(
+                board.include_new_piece(
                     bd.WHITE, bd.WHITE, position, tracing=True)
             positions = np.argwhere(kingdoms[1]).flatten()
             for position in positions:
-                board.include_piece(
+                board.include_new_piece(
                     bd.BLACK, bd.BLACK, position, tracing=True)
             board.print_char(out_file=f)
 
