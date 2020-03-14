@@ -1,17 +1,13 @@
 # Backlog
 
-## Tree search efficiency (v1)
-
-- Optimizations (I):
-  - Remove board3d field from Board class.
-  - Make .hash a class attribute, not a function.
-
+## Tree search efficiency (v2)
 - Optimizations (II):
-  - Change board copying for make/unmake moves.
-
+  - Study profiling...
   - Optimize position_attacked() [30% to 50% of time spent]
 
-## Game-play (v1)
+## Game-play
+
+### (v1)
 
 - Define several playing styles.
   - Give Knight mobility a higher value.
@@ -23,19 +19,22 @@
 - Extend quiescence search. Tactical moves:
   - Prince moves upwards (in absence of opponent's Knights)?
   - Soldier moves to throne (in absence of Prince)?
-  
+
+### (v2)
+- Detect THREE repetitions draw at play time (keeping x2 in tree search).
+
 ## Tree search (v1)
 
 - Improve evaluation function:
-  - End-game:
-    - Prince distance to crown
-    - Obstacles to crown?
   - Add small noise to leave nodes evaluation for diverse game.
+  - Middle game situations depending on Knights' balance.
+  - Encourage exchanging material when in advantage.
   - Middle game: (v2)
     - Prince's safety? (e.g. soldiers and prince in kingdom)
     - Soldiers' structure??
-  - Middle game situations depending on Knights' balance.
-  - Encourage exchanging material when in advantage.
+  - End-game:
+    - Prince distance to crown
+    - Obstacles to crown?
 
 ## Environment and versioning
 
@@ -50,7 +49,7 @@ git push --tags
 
 - Pre-evaluation of moves (extend make pseudo-move()?) for move sorting?
   - Static exchange evaluation?
-- Add hash-tables for repetitions.
+- Add hash-tables for transpositions.
 - Add killer-move heuristic? 
   - A single move
   - Extend to two moves?

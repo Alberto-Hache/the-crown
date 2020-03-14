@@ -344,10 +344,10 @@ if __name__ == "__main__":
         ),
         # Black player:
         types.SimpleNamespace(
-            name="Crowny-I",
+            name="Crowny-II",
             type=MACHINE_PLAYER,
             color=bd.BLACK,
-            params=game.PLY1_SEARCH_PARAMS
+            params=game.PLY2_SEARCH_PARAMS
         )
     ]
 
