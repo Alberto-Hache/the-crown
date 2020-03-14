@@ -183,7 +183,9 @@ def display_move_metrics(
     player_randomness = player_params["randomness"]
 
     move_txt = utils.move_2_txt(move)
-    nodes_count = game_trace.level_trace[:, game.NODE_COUNT].sum()
+    nodes_count = game_trace.level_trace[
+        game_trace.current_board_ply:, game.NODE_COUNT
+    ].sum()
 
     # On-SCREEN output:
     print(
