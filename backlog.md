@@ -1,14 +1,46 @@
 # Backlog
 
-## Tree search efficiency (v2)
-- Optimizations (II):
-  - Study profiling...
-  - Optimize position_attacked() [30% to 50% of time spent]
+## Bugs
+
+### A
+...
+
+### B
+- Node counts don't match in search trace (total ≠ full + quiesce.
+
+## Optimizations
+
+### (v1)
+- Avoid second call to hash() after unmake() [storing value in aux var]?
+- position_attacked() with several return() points?
+
+### (v2)
+- Detailed profiling to focus optimization points first.
+- Optimize position_attacked() [30% to 50% of time spent]
+  - Quick previous discards (e.g. Knight off-rank?, too far away Soldier/Prince?)
+  - Use beams?
+  - Use itemgetter?
+  ...
+- Generate_pseudo_moves based on 'beams' - 'shadows'.
+
+
+## Tree search efficiency
+
+### (v2)
+
+- Pre-evaluation of moves (extend make pseudo-move()?) for move sorting?
+  - Static exchange evaluation?
+- Add hash-tables for transpositions.
+- Add killer-move heuristic? 
+  - A single move
+  - Extend to two moves?
+- Add progressive depth search (based on hash tables).
+- Try "soft-fail" alpha beta pruning?
+
 
 ## Game-play
 
 ### (v1)
-
 - Define several playing styles.
   - Give Knight mobility a higher value.
   - Impatient Prince? (premature bonus for going up).
@@ -41,27 +73,9 @@
 - Enable vs code from CLI:
 export PATH="$PATH:/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin"
 
-- Lock first full version (0.0.0?) with:
-git tag v0.0.0
-git push --tags
-
-## Tree search efficiency (v2)
-
-- Pre-evaluation of moves (extend make pseudo-move()?) for move sorting?
-  - Static exchange evaluation?
-- Add hash-tables for transpositions.
-- Add killer-move heuristic? 
-  - A single move
-  - Extend to two moves?
-- Add progressive depth search (based on hash tables).
-- Try "soft-fail" alpha beta pruning?
 
 
-## Optimizations (v2)
 
-- position_attacked() with several return() points?
-- generate_pseudo_moves based on 'beams' - 'shadows'.
-- position_attacked() with itemgetter.
 
 
 ## Research (v3)
