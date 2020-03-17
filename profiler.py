@@ -16,57 +16,128 @@ class Profiler(unittest.TestCase):
         cProfile.run('loop_generate_pseudomoves()', sort='tottime')
         self.assertTrue(True)  # TODO: Add proper test (duration?)
 
-    def minimax(self):
-        cProfile.run('loop_minimax()', sort='tottime')
+    def minimax_depth_4(self):
+        test_cases = (
+            "01", "02", "03"
+        )
+        for test_case in test_cases:
+            command = "loop_minimax('{}')".format(test_case)
+            cProfile.run(command, sort='tottime')
+            self.assertTrue(True)  # TODO: Add proper test (duration?)
+
+    def minimax_depth_5(self):
+        test_cases = (
+            "04",
+        )
+        for test_case in test_cases:
+            command = "loop_minimax('{}')".format(test_case)
+            cProfile.run(command, sort='tottime')
+            self.assertTrue(True)  # TODO: Add proper test (duration?)
+
+    def position_attacked(self):
+        cProfile.run('loop_position_attacked()', sort='tottime')
         self.assertTrue(True)  # TODO: Add proper test (duration?)
 
 
-def loop_generate_pseudomoves():
-    iterations = 1000
-    time_0 = time.ctime()  # Start time.
-    print("{:<20}{}".format("- Started:", time_0))
-
-    board = bd.Board("test_make_pseudomove_01.cor")
-    for _ in range(iterations):
-        _, _ = gp.generate_pseudomoves(board)
-
-    time_end = time.ctime()  # End time.
-    print("{:<20}{}".format("- Ended:", time_end))
-
-
-def loop_minimax():
+def loop_position_attacked():
 
     test_cases = (
-        "test_minimax_11.cor",
-    )
-    test_params = gp.PLY5_SEARCH_PARAMS
-
-    """
-        "test_minimax_10b.cor",
-        PLY4_SEARCH_PARAMS
-
         "test_minimax_01.cor",
         "test_minimax_02.cor",
-        "test_minimax_06.cor"
-        PLY4_SEARCH_PARAMS
-
+        "test_minimax_03.cor",
+        "test_minimax_04.cor",
+        "test_minimax_05.cor",
+        "test_minimax_06.cor",
         "test_minimax_07.cor",
         "test_minimax_08.cor",
-        "test_minimax_09.cor"
-        PLY4_SEARCH_PARAMS
-
+        "test_minimax_09.cor",
+        "test_minimax_10.cor",
+        "test_minimax_10b.cor",
         "test_minimax_11.cor",
-        PLY5_SEARCH_PARAMS
-    """
+    )
+    iterations = 100
 
+    for test_board in test_cases:
+        board = bd.Board(test_board)
+        for coord in range(board.n_positions):
+            for color in [bd.WHITE, bd.BLACK]:
+                for _ in range(iterations):
+                    _ = gp.position_attacked(
+                        board, coord, color
+                    )
+
+
+def loop_generate_pseudomoves():
+
+    test_cases = (
+        "test_minimax_01.cor",
+        "test_minimax_02.cor",
+        "test_minimax_03.cor",
+        "test_minimax_04.cor",
+        "test_minimax_05.cor",
+        "test_minimax_06.cor",
+        "test_minimax_07.cor",
+        "test_minimax_08.cor",
+        "test_minimax_09.cor",
+        "test_minimax_10.cor",
+        "test_minimax_10b.cor",
+        "test_minimax_11.cor",
+    )
+    iterations = 10000
+
+    for test_board in test_cases:
+        board = bd.Board(test_board)
+        for color in [bd.WHITE, bd.BLACK]:
+            board.turn = color
+            for _ in range(iterations):
+                _, _ = gp.generate_pseudomoves(board)
+
+
+def loop_minimax(case_idx):
+
+    test_cases = {
+        # MAX DEPTH = 4
+        "01": (
+            (
+                "test_minimax_10b.cor",
+            ),
+            gp.PLY4_SEARCH_PARAMS
+        ),
+        "02": (
+            (
+                "test_minimax_01.cor",
+                "test_minimax_02.cor",
+                "test_minimax_06.cor"
+            ),
+            gp.PLY4_SEARCH_PARAMS
+        ),
+        "03": (
+            (
+                "test_minimax_07.cor",
+                "test_minimax_08.cor",
+                "test_minimax_09.cor"
+            ),
+            gp.PLY4_SEARCH_PARAMS
+        ),
+        # MAX DEPTH = 5
+        "04": (
+            (
+              "test_minimax_11.cor",
+            ),
+            gp.PLY5_SEARCH_PARAMS
+        )
+    }
+
+    test_boards, test_params = test_cases[case_idx]
     iterations = 1
 
-    for test in test_cases:
-        board = bd.Board(test)
+    for board_name in test_boards:
+        board = bd.Board(board_name)  # The board to play on.
+        game_trace = gp.Gametrace(board)  # Tracking repetitions.
         for _ in range(iterations):
             _, _, _, _ = gp.minimax(
                 board, 0, -np.Infinity, np.Infinity,
-                params=test_params
+                params=test_params, trace=game_trace
             )
 
 

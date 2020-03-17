@@ -360,7 +360,7 @@ class Board:
                 piece1.coord = coord1
                 self.board1d[coord1] = piece1
                 self.boardcode[coord1] = piece_code[piece1.color][piece1.type]
-                # Now restablish state at 'coord2'.
+                # Now restablish state at 'coord2'.  # TODO: Take this out of if/else?
                 if captured_piece is not None:
                     # It was a move with capture.
                     self.include_existing_piece(captured_piece, coord2)

@@ -6,21 +6,24 @@
 ...
 
 ### B
-- Node counts don't match in search trace (total ≠ full + quiesce.
+- Make Gametrace size flexible (not limited to DEFAULT_TRACE_LENGTH).
+- Regularize terminology: negamax (not minimax), value/score (not result), color / turn / side?
 
 ## Optimizations
 
 ### (v1)
-- Avoid second call to hash() after unmake() [storing value in aux var]?
-- position_attacked() with several return() points?
+
+...
 
 ### (v2)
 - Detailed profiling to focus optimization points first.
 - Optimize position_attacked() [30% to 50% of time spent]
-  - Quick previous discards (e.g. Knight off-rank?, too far away Soldier/Prince?)
-  - Use beams?
+  - position_attacked() with several return() points?
   - Use itemgetter?
+  - Use beams?
+  - Quick previous discards (e.g. Knight off-rank?, too far away Soldier/Prince?)
   ...
+- Avoid second call to hash() after unmake() [storing value in aux var]?
 - Generate_pseudo_moves based on 'beams' - 'shadows'.
 
 
@@ -28,9 +31,9 @@
 
 ### (v2)
 
+- Add hash-tables for transpositions.
 - Pre-evaluation of moves (extend make pseudo-move()?) for move sorting?
   - Static exchange evaluation?
-- Add hash-tables for transpositions.
 - Add killer-move heuristic? 
   - A single move
   - Extend to two moves?

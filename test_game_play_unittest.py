@@ -88,6 +88,7 @@ class Test_game_play(unittest.TestCase):
                 file_name, params, \
                     exp_move, exp_result, exp_end, exp_status = test
                 board = bd.Board(file_name)  # The board to put pieces on.
+                game_trace = gp.Gametrace(board)  # The game trace.
 
                 print("Testing position {}: ".format(file_name), end="")
                 print("Analysis of position {}: ".format(file_name), file=f)
@@ -97,7 +98,7 @@ class Test_game_play(unittest.TestCase):
                 t_start = time.time()
                 best_move, result, game_end, game_status = gp.minimax(
                     board, 0, -np.Infinity, np.Infinity,
-                    params=params)
+                    params=params, trace=game_trace)
                 t_end = time.time()
                 print("{}".format(
                     datetime.timedelta(seconds=t_end - t_start))
@@ -388,7 +389,7 @@ class Test_game_play(unittest.TestCase):
             "output.txt",
             "tests/output_count_knight_pseudomoves.txt"))
 
-    def test_make_pseudomove(self):
+    def test_make_unmake_pseudomove(self):
         # Definition of test cases to run:
         # - File to load.
         # - move to try...

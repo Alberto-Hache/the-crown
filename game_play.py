@@ -3,6 +3,7 @@ import copy
 import sys
 import types
 import time
+from operator import itemgetter
 
 import board as bd
 import utils
@@ -651,6 +652,13 @@ def position_attacked(board, pos, attacking_side):
     return attacked
 
 
+def position_attacked_new_UNFINISHED(board, pos, attacking_side):
+
+    position_lists = bd.knight_moves[pos]
+    board_slices = itemgetter(*position_lists)(board.board1d)
+    # TODO: Pending next steps...
+
+
 def generate_pseudomoves(board):
     """
     Generate a list of non-legally checked moves for the playing side.
@@ -1122,16 +1130,7 @@ if __name__ == '__main__':
         # Call  play().
         best_move, result, game_end, game_status, time_used = play(
             board, params=parameters, trace=game_trace)
-        # Print move metrics.
-        """
-        with open(MOVE_METRICS_FILE, "w") as metrics_file:
-            track_move_metrics(
-                board.turn, move, result,
-                parameters["max_depth"],
-                time_used, game_trace, metrics_file
-                )
 
-        """
         # Display results.
         utils.display_results(
             best_move, result, game_end, game_status
