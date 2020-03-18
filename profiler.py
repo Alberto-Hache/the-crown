@@ -88,7 +88,7 @@ def loop_generate_pseudomoves():
     for test_board in test_cases:
         board = bd.Board(test_board)
         for color in [bd.WHITE, bd.BLACK]:
-            board.turn = color
+            board.set_turn(color)
             for _ in range(iterations):
                 _, _ = gp.generate_pseudomoves(board)
 

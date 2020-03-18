@@ -83,12 +83,13 @@ class Board:
         self.prince = [None, None]  # List with the Prince of each side.
 
         self.board1d = np.full((self.n_positions), None)
-        self.boardcode = np.zeros(self.n_positions)
+        self.boardcode = np.zeros(self.n_positions + 1)  # Positions + turn.
 
         # Set position and sides.
         self.load_board(file_name)
 
     def load_board(self, file_name):
+        # TODO: Check file is valid, piece count, side (b/w)...
         if file_name is None:
             lines = initial_position
         else:
@@ -111,6 +112,7 @@ class Board:
             if line in ["w", "W", "b", "B"]:
                 end_line = True
                 self.turn = WHITE if (line in ["w", "W"]) else BLACK
+                self.boardcode[self.n_positions] = self.turn
             else:
                 try:
                     type, color = char_piece[line[0]]
@@ -302,7 +304,9 @@ class Board:
             self.remove_piece(coord1)
 
         # Change turns.
-        self.turn = WHITE if self.turn == BLACK else BLACK
+        self.flip_turn()
+        # self.turn = WHITE if self.turn == BLACK else BLACK
+        # self.boardcode[self.n_positions] = self.turn
 
         # Finally, refresh the board's hash.
         self.hash = self.calculate_hash()
@@ -377,10 +381,21 @@ class Board:
             self.include_existing_piece(leaving_piece, coord1)
 
         # Change turns.
-        self.turn = WHITE if self.turn == BLACK else BLACK
+        self.flip_turn()
+        # self.turn = WHITE if self.turn == BLACK else BLACK
+        # self.boardcode[self.n_positions] = self.turn
 
         # Finally, refresh the board's hash.
         self.hash = self.calculate_hash()
+
+    def set_turn(self, color):
+        self.turn = color
+        self.boardcode[self.n_positions] = self.turn
+
+    def flip_turn(self):
+        new_turn = WHITE if self.turn == BLACK else BLACK
+        self.turn = new_turn
+        self.boardcode[self.n_positions] = self.turn
 
     def clear_board(self):
         # Not tested. TODO: remove function?

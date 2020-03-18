@@ -184,7 +184,7 @@ def display_move_metrics(
 
     move_txt = utils.move_2_txt(move)
     nodes_count = game_trace.level_trace[
-        game_trace.current_board_ply:, game.NODE_COUNT
+        game_trace.current_board_ply:, game.NODE_COUNT_COL
     ].sum()
 
     # On-SCREEN output:
@@ -241,10 +241,10 @@ def display_move_metrics(
 
     # Full search nodes; quiescence search nodes.
     full_search_nodes = game_trace.level_trace[
-        ply:ply + player_max_depth, game.NODE_COUNT
+        ply:ply + player_max_depth, game.NODE_COUNT_COL
         ].sum()
     quiescence_search_nodes = game_trace.level_trace[
-        ply + player_max_depth:, game.NODE_COUNT
+        ply + player_max_depth:, game.NODE_COUNT_COL
         ].sum()
     print(
         "{:>12.0f} {:>12.0f}  ".format(
@@ -257,7 +257,7 @@ def display_move_metrics(
     # Top 20 levels.
     nodes_per_level = game_trace.level_trace[
         ply:ply+20,
-        game.NODE_COUNT
+        game.NODE_COUNT_COL
     ]
     with np.printoptions(formatter={'float': '{:>2.0f}'.format}):
         print("{}".format(nodes_per_level), file=metrics_file)

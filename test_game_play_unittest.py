@@ -271,7 +271,9 @@ class Test_game_play(unittest.TestCase):
                         # Test function from that free position.
                         print("\nKnight attacks from position {}"
                               .format(position), file=f)
-                        board.include_new_piece(bd.KNIGHT, board.turn, position)
+                        board.include_new_piece(
+                            bd.KNIGHT, board.turn, position
+                        )
                         for position_2 in range(bd.N_POSITIONS):
                             if gp.position_attacked(
                                board, position_2, board.turn
@@ -302,8 +304,8 @@ class Test_game_play(unittest.TestCase):
 
                 for turn in [bd.WHITE, bd.BLACK]:
                     # Try board for both side.
-                    board.turn = turn
-                    display_board.turn = turn
+                    board.set_turn(turn)
+                    display_board.set_turn(turn)
                     print("\nPseudo-moves for position: {}".
                           format(file_name), file=f)
                     board.print_char(out_file=f)
@@ -620,7 +622,7 @@ class Test_game_play(unittest.TestCase):
                 )
 
                 # Evaluate from the other side now.
-                board.turn = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
+                board.flip_turn()
                 print(
                     "\n{} to move:".format(bd.color_name[board.turn]), file=f
                 )

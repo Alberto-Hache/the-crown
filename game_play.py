@@ -86,10 +86,23 @@ DRAW_THREE_REPETITIONS = 5
 
 # Table used for game-tracing:
 DEFAULT_TRACE_LENGTH = 500  # Max depth supported by the program.
-HASH = 0            # Index of hash column.
-NODE_COUNT = 1      # Index of node_counter column.
-IRREVERSIBLE = 2    # Index of flag for board obtained after irreversible move.
+HASH_COL = 0            # Index of hash column.
+NODE_COUNT_COL = 1      # Index of node_counter column.
+IRREVERSIBLE_COL = 2    # Index of flag for board obtained after irreversible move.
 N_TRACE_COLS = 3    # Number of columns required for the above data.
+
+# Hash table used for transpositions.
+DEFAULT_HASH_SIZE = 65536   # Max. size of the hash table.
+
+TT_HASH_IDX = 0    # The full hash value of the position.
+TT_DEPTH_IDX = 1   # The depth at which the position was explored.
+TT_VALUE_IDX = 2   # The value found for the position.
+TT_FLAG_IDX = 3    # The type of value (EXACT / LOWERBOUND / UPPERBOUND).
+TT_MOVE_IDX = 4    # The best move found in the position.
+
+EXACT = 0
+LOWER_BOUND = 1
+UPPER_BOUND = 2
 
 
 class Gametrace:
@@ -138,13 +151,13 @@ class Gametrace:
         self.current_board_ply += 1
         self.max_depth_searched = 0  # Reset max depth.
         # Update the tracing array at the ply just played.
-        self.level_trace[self.current_board_ply, HASH] = board_hash
-        self.level_trace[self.current_board_ply, NODE_COUNT] = 0
-        self.level_trace[self.current_board_ply, IRREVERSIBLE] = irreversible
+        self.level_trace[self.current_board_ply, HASH_COL] = board_hash
+        self.level_trace[self.current_board_ply, NODE_COUNT_COL] = 0
+        self.level_trace[self.current_board_ply, IRREVERSIBLE_COL] = irreversible
         # Zero out the tracing array from current board onwards.
-        self.level_trace[self.current_board_ply + 1:, HASH] = 0
-        self.level_trace[self.current_board_ply + 1:, NODE_COUNT] = 0
-        self.level_trace[self.current_board_ply + 1:, IRREVERSIBLE] = False
+        self.level_trace[self.current_board_ply + 1:, HASH_COL] = 0
+        self.level_trace[self.current_board_ply + 1:, NODE_COUNT_COL] = 0
+        self.level_trace[self.current_board_ply + 1:, IRREVERSIBLE_COL] = False
 
         # Check if the board is repeated in past history.
         return self.board_repeated(board_hash, self.current_board_ply)
@@ -170,9 +183,9 @@ class Gametrace:
         board_hash = board.hash
         ply_number = self.current_board_ply + depth  # idx in gral. game trace.
         # Update the tracing array.
-        self.level_trace[ply_number, HASH] = board_hash
-        self.level_trace[ply_number, NODE_COUNT] += 1
-        self.level_trace[ply_number, IRREVERSIBLE] = irreversible
+        self.level_trace[ply_number, HASH_COL] = board_hash
+        self.level_trace[ply_number, NODE_COUNT_COL] += 1
+        self.level_trace[ply_number, IRREVERSIBLE_COL] = irreversible
 
         # Update internal variables.
         self.max_depth_searched = max(
@@ -200,7 +213,7 @@ class Gametrace:
         # For plies -3 to 0 relative to board:
         # check only 'irrevesible' flags for a fast False.
         min_idx = max(0, board_ply - 3)
-        if np.any(self.level_trace[min_idx:board_ply + 1, IRREVERSIBLE]):
+        if np.any(self.level_trace[min_idx:board_ply + 1, IRREVERSIBLE_COL]):
             return False
 
         # Search trace from the 4 plies above to ply 0.
@@ -208,14 +221,50 @@ class Gametrace:
         min_idx = max(0, board_ply - 4)
         for ply in range(min_idx, -1, -1):
             # If turns match, check hash.
-            if same_turn and self.level_trace[ply, HASH] == board_hash:
+            if same_turn and self.level_trace[ply, HASH_COL] == board_hash:
                 return True
             # Else, check if previous boards can be skipped.
-            if self.level_trace[ply, IRREVERSIBLE]:
+            if self.level_trace[ply, IRREVERSIBLE_COL]:
                 return False
             same_turn = not same_turn  # Flip turns for next node.
         # No match was found.
         return False
+
+
+class Transposition_table:
+    def __init__(self, size=DEFAULT_HASH_SIZE):
+        # Data:
+        self.size = size
+        self.table = {}
+        # Metrics:
+        self.hits = 0
+        self.collisions = 0
+
+    def insert(self, key, value):
+        hash_key = key % self.size
+        current_value = self.table.get(hash_key, None)
+        if current_value is None:
+            # Empty position: use it.
+            self.table[hash_key] = value
+        else:
+            # Collision: resolve by depth (root node has depth 0).
+            self.collisions += 1
+            if value[TT_DEPTH_IDX] < current_value[TT_DEPTH_IDX]:
+                # The new value was more deeply explored: replace.
+                self.table[hash_key] = value
+
+    def retrieve(self, key):
+        hash_key = key % self.size
+        current_value = self.table.get(hash_key, None)
+        if current_value is None:
+            # Empty position: use it.
+            self.hits += 1
+        return current_value
+
+    def clear(self):
+        self.table.clear()
+        self.hits = 0
+        self.collisions = 0
 
 
 def play(
@@ -421,11 +470,10 @@ def quiesce(
 
     # 2. Null-move: Perform static evaluation if it is legal.
     player_side = board.turn
-    opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
 
-    board.turn = opponent_side  # Flip turns temporarily.
+    board.flip_turn()  # Flip turns temporarily.
     player_in_check = not is_legal(board)
-    board.turn = player_side  # Restablish original turn.
+    board.flip_turn()  # Restablish original turn.
 
     if not player_in_check:
         # Null move is possible; evaluate it.
