@@ -16,21 +16,21 @@ class Profiler(unittest.TestCase):
         cProfile.run('loop_generate_pseudomoves()', sort='tottime')
         self.assertTrue(True)  # TODO: Add proper test (duration?)
 
-    def minimax_depth_4(self):
+    def negamax_depth_4(self):
         test_cases = (
             "01", "02", "03"
         )
         for test_case in test_cases:
-            command = "loop_minimax('{}')".format(test_case)
+            command = "loop_negamax('{}')".format(test_case)
             cProfile.run(command, sort='tottime')
             self.assertTrue(True)  # TODO: Add proper test (duration?)
 
-    def minimax_depth_5(self):
+    def negamax_depth_5(self):
         test_cases = (
             "04",
         )
         for test_case in test_cases:
-            command = "loop_minimax('{}')".format(test_case)
+            command = "loop_negamax('{}')".format(test_case)
             cProfile.run(command, sort='tottime')
             self.assertTrue(True)  # TODO: Add proper test (duration?)
 
@@ -93,7 +93,7 @@ def loop_generate_pseudomoves():
                 _, _ = gp.generate_pseudomoves(board)
 
 
-def loop_minimax(case_idx):
+def loop_negamax(case_idx):
 
     test_cases = {
         # MAX DEPTH = 4
@@ -134,10 +134,12 @@ def loop_minimax(case_idx):
     for board_name in test_boards:
         board = bd.Board(board_name)  # The board to play on.
         game_trace = gp.Gametrace(board)  # Tracking repetitions.
+        transp_table = gp.Transposition_table() \
+            if test_params["transposition_table"] else None
         for _ in range(iterations):
-            _, _, _, _ = gp.minimax(
+            _, _, _, _ = gp.negamax(
                 board, 0, -np.Infinity, np.Infinity,
-                params=test_params, trace=game_trace
+                params=test_params, t_table=transp_table, trace=game_trace
             )
 
 

@@ -143,7 +143,7 @@ class Test_utils(unittest.TestCase):
                     trace = 1
                     for position_2 in direction:
                         board.include_new_piece(trace, bd.WHITE, position_2,
-                                            tracing=True)
+                            tracing=True)
                         trace += 1
                     board.print_char(out_file=f)
 

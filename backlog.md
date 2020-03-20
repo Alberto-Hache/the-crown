@@ -7,7 +7,7 @@
 
 ### B
 - Make Gametrace size flexible (not limited to DEFAULT_TRACE_LENGTH).
-- Regularize terminology: negamax (not minimax), value/score (not result), color / turn / side?
+- Regularize terminology: value/score (not result), color / turn / side?
 
 ## Optimizations
 
@@ -39,6 +39,7 @@
   - Extend to two moves?
 - Add progressive depth search (based on hash tables).
 - Try "soft-fail" alpha beta pruning?
+- Try Aspiration windows (https://www.chessprogramming.org/Aspiration_Windows) ?
 
 
 ## Game-play

@@ -15,7 +15,7 @@ class Test_game_play(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_minimax(self):
+    def test_negamax(self):
         # Definition of test cases to run:
         # - File to load.
         # - move to try...
@@ -89,16 +89,18 @@ class Test_game_play(unittest.TestCase):
                     exp_move, exp_result, exp_end, exp_status = test
                 board = bd.Board(file_name)  # The board to put pieces on.
                 game_trace = gp.Gametrace(board)  # The game trace.
+                transp_table = gp.Transposition_table() \
+                    if params["transposition_table"] else None
 
                 print("Testing position {}: ".format(file_name), end="")
                 print("Analysis of position {}: ".format(file_name), file=f)
                 board.print_char(out_file=f)
 
-                # Call to mini_max.
+                # Call to negamax.
                 t_start = time.time()
-                best_move, result, game_end, game_status = gp.minimax(
+                best_move, result, game_end, game_status = gp.negamax(
                     board, 0, -np.Infinity, np.Infinity,
-                    params=params, trace=game_trace)
+                    params=params, t_table=transp_table, trace=game_trace)
                 t_end = time.time()
                 print("{}".format(
                     datetime.timedelta(seconds=t_end - t_start))
@@ -164,7 +166,7 @@ class Test_game_play(unittest.TestCase):
                 TEST_SEARCH_PARAMS_4,
                 None, -112.5, False, 0
             ),
-            #  Taken from minimax() unit tests.
+            #  Taken from negamax() unit tests.
             (
                 "test_minimax_01.cor",  # Position to play.
                 TEST_SEARCH_PARAMS_4,   # Search parameters.
@@ -227,6 +229,9 @@ class Test_game_play(unittest.TestCase):
                 file_name, params, \
                     exp_move, exp_result, exp_end, exp_status = test
                 board = bd.Board(file_name)  # The board to put pieces on.
+                # game_trace = gp.Gametrace(board)  # The game trace.
+                transp_table = gp.Transposition_table() \
+                    if params["transposition_table"] else None
 
                 print("\nAnalysis of position {}:".format(file_name), file=f)
                 board.print_char(out_file=f)
@@ -234,7 +239,7 @@ class Test_game_play(unittest.TestCase):
                 # Call to quiesce() with depth 'max_depth".
                 best_move, result, game_end, game_status = gp.quiesce(
                     board, params["max_depth"], -np.Infinity, np.Infinity,
-                    params=params)
+                    params=params, t_table=transp_table)
 
                 # Display results.
                 utils.display_results(

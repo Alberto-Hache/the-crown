@@ -15,30 +15,35 @@ import utils
 PLY1_SEARCH_PARAMS = {
     "max_depth":                1,
     "max_check_quiesc_depth":   4,
+    "transposition_table":      True,
     "randomness":               0
 }
 
 PLY2_SEARCH_PARAMS = {
     "max_depth":                2,
     "max_check_quiesc_depth":   6,
+    "transposition_table":      True,
     "randomness":               0
 }
 
 PLY3_SEARCH_PARAMS = {
     "max_depth":                3,
     "max_check_quiesc_depth":   8,
+    "transposition_table":      True,
     "randomness":               0
 }
 
 PLY4_SEARCH_PARAMS = {
     "max_depth":                4,
     "max_check_quiesc_depth":   10,
+    "transposition_table":      True,
     "randomness":               0
 }
 
 PLY5_SEARCH_PARAMS = {
     "max_depth":                5,
     "max_check_quiesc_depth":   11,
+    "transposition_table":      True,
     "randomness":               0
 }
 
@@ -256,15 +261,34 @@ class Transposition_table:
     def retrieve(self, key):
         hash_key = key % self.size
         current_value = self.table.get(hash_key, None)
-        if current_value is None:
-            # Empty position: use it.
+        if current_value is not None and current_value[TT_HASH_IDX] == key:
+            # Successful retrieval.
             self.hits += 1
-        return current_value
+            return current_value
+        else:
+            # Value not found.
+            return None
 
     def clear(self):
         self.table.clear()
         self.hits = 0
         self.collisions = 0
+
+
+def update_transp_table(
+    t_table, board, depth, value, alpha_orig, beta, move
+):
+    # Determine flag for the value.
+    if value <= alpha_orig:
+        flag = UPPER_BOUND
+    elif value >= beta:
+        flag = LOWER_BOUND
+    else:
+        flag = EXACT
+    # Update transposition table.
+    t_table.insert(
+        board.hash, (board.hash, depth, value, flag, move)
+    )
 
 
 def play(
@@ -274,21 +298,28 @@ def play(
     alpha, beta = [-float("inf"), float("inf")]
     depth = 0
 
-    time_0 = time.time()
     while not search_end:
-        move, result, game_end, game_status = minimax(
-            board, depth, alpha, beta, params, trace)
-        search_end = True  # No iterated search for now.
-    time_1 = time.time()
+        time_0 = time.time()
+        # Initiate move selection.
+        transp_table = Transposition_table() \
+            if params["transposition_table"] else None
+        move, result, game_end, game_status = negamax(
+            board, depth, alpha, beta, params, transp_table, trace)
+        transp_table.clear()
+        # End of move selection.
+        time_1 = time.time()
+        search_end = True  # No iterative deepening for now.
 
     return move, result, game_end, game_status, time_1 - time_0
 
 
-def minimax(
-    board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS, trace=None
+def negamax(
+    board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS,
+    t_table=None, trace=None
 ):
     """
     Given a *legal* position in the game-tree, find and evaluate the best move.
+    Algorithm: negamax alpha-beta, fail-hard (value within [alpha, beta]).
 
     Input:
         board:          Board - the position to play on.
@@ -299,6 +330,8 @@ def minimax(
                         Search is prunned when alpha >= beta.
         params:         A dictionary with the search settings to follow:
                         max_depth, quiescence,randomness, (more to come).
+        t_table:        The transposition table storing previously explored
+                        boards.
         trace:          The structure tracking played / searched boards.
 
     Output:
@@ -313,9 +346,16 @@ def minimax(
                         DRAW_THREE_REPETITIONS
     """
 
+    # Check in transposition table.
+    alpha_orig = alpha
+    value = t_table.retrieve(board.hash)
+    if value is not None:
+        # TODO: Check retrieved value.
+        pass
+
     # If at max_depth, quiescence search takes care.
     if depth == params["max_depth"]:
-        return quiesce(board, depth, alpha, beta, params, trace)
+        return quiesce(board, depth, alpha, beta, params, t_table, trace)
 
     # 0. Register searched node, checking repetitions.
     if trace is not None:
@@ -338,6 +378,7 @@ def minimax(
         "ERROR: No pseudomoves found despite game is not ended "\
         "and MAX_DEPTH has not been reached."
     best_move = None
+    best_result = -np.Infinity  # Value to store in transposition table.
     n_legal_moves_tried = 0
     for piece_moves in moves:  # [[piece_1, [13, 53...]], [piece_2, [...]]
         piece, pseudomoves_list = piece_moves  # piece_1, [13, 53...]
@@ -361,16 +402,22 @@ def minimax(
                 else:
                     # We need to recursively search this move deeper.
                     childs_move, result_i, game_end_i, game_status_i = \
-                        minimax(
+                        negamax(
                             board, depth + 1, -beta, -alpha,
-                            params, trace
+                            params, t_table, trace
                         )
                     result_i = -float(result_i)  # Switch to player's view.
+                    best_result = max(result_i, best_result)
                 # And 'unmake' the move.
                 board.unmake_move(
                     coord1, coord2, captured_piece, leaving_piece)
                 if result_i >= beta:
-                    # Ignore rest of pseudomoves [fail hard beta cutoff].
+                    # Ignore rest of pseudomoves [fail-hard beta cutoff].
+                    # Update transposition table with best result found.
+                    update_transp_table(
+                        t_table, board, depth, result_i, alpha_orig, beta,
+                        [coord1, coord2]
+                    )
                     return [coord1, coord2], beta, False, ON_GOING
                 if result_i > alpha:
                     # Update move choice with this better one for player.
@@ -382,7 +429,13 @@ def minimax(
 
     # Check exploration results.
     if n_legal_moves_tried > 0:
-        # A legal best move was found: return results.
+        # A legal best move was found.
+        # Update transposition table with best result found.
+        update_transp_table(
+            t_table, board, depth, best_result, alpha_orig, beta,
+            [coord1, coord2]
+        )
+        # Return results [fail-hard alpha cutoff].
         return best_move, alpha, False, ON_GOING
 
     # 3. No legal moves were found: check for player's Prince check.
@@ -397,7 +450,7 @@ def minimax(
         )
 
     if position_attacked(board, player_prince.coord, opponent_side):
-        # The player is checkmated, its Prince leaves and yields turn.
+        # The player is CHECKMATED, its Prince leaves and yields turn.
         coord1, coord2 = player_prince.coord, None  # Prince leaving move.
         best_move = [coord1, coord2]
         is_legal_i, is_dynamic_i, \
@@ -407,28 +460,37 @@ def minimax(
                 board, coord1, coord2, depth, params
             )
         # And the new board must be assessed.
-        childs_move, result_i, game_end_i, game_status_i = \
-            minimax(
+        childs_move, best_result, game_end_i, game_status_i = \
+            negamax(
                 board, depth + 1, -beta, -alpha,
-                params, trace
+                params, t_table, trace
             )
-        alpha = -float(result_i)  # Switch to player's view.
+        best_result = -float(best_result)  # Switch to player's view.
         # And 'unmake' the move.
         board.unmake_move(
             coord1, coord2, captured_piece, leaving_piece)
-        return best_move, alpha, False, ON_GOING
+        # Update transposition table with best result found.
+        update_transp_table(
+            t_table, board, depth, best_result, alpha_orig, beta,
+            [coord1, coord2]
+        )
+        # Return results.
+        return best_move, best_result, False, ON_GOING
 
-    # The player is stalemated.
+    # The player is STALEMATED.
+    update_transp_table(
+        t_table, board, depth, DRAW, alpha_orig, beta, None
+    )
     return None, DRAW, True, DRAW_STALEMATE
 
 
 def quiesce(
-    board, depth, alpha, beta,
-    params=DEFAULT_SEARCH_PARAMS, trace=None
+    board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS,
+    t_table=None, trace=None
 ):
     """
     Evaluate a *legal* position exploring only DYNAMIC moves (or none).
-    This is used instead of minimax() once MAX_DEPTH has been reached.
+    This is used instead of negamax() once MAX_DEPTH has been reached.
 
     Input:
         board:          Board - the position to play on.
@@ -439,6 +501,8 @@ def quiesce(
                         Search is prunned when alpha >= beta.
         params:         A dictionary with the search settings to follow:
                         max_depth, quiescence,randomness, (more to come).
+        t_table:        The transposition table storing previously explored
+                        boards.
         trace:          The structure tracking played / searched boards.
 
     Output:
@@ -452,6 +516,13 @@ def quiesce(
                         DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE /
                         DRAW_THREE_REPETITIONS
     """
+
+    # Check in transposition table.
+    alpha_orig = alpha
+    value = t_table.retrieve(board.hash)
+    if value is not None:
+        # TODO: Check retrieved value.
+        pass
 
     # 0. Register searched node, checking repetitions.
     if trace is not None:
@@ -493,6 +564,7 @@ def quiesce(
     assert(moves_count > 0),\
         "ERROR: No pseudomoves found despite game is not ended."
     best_move = None
+    best_result = -np.Infinity  # Value to store in transposition table.
     n_legal_moves_tried = 0
     n_legal_moves_found = 0
     for piece_moves in moves:  # [[piece_1, [13, 53...]], [piece_2, [...]]
@@ -523,14 +595,20 @@ def quiesce(
                         childs_move, result_i, game_end_i, game_status_i = \
                             quiesce(
                                 board, depth + 1, -beta, -alpha,
-                                params, trace
+                                params, t_table, trace
                             )
                         result_i = -float(result_i)  # Switch to player's view.
+                        best_result = max(result_i, best_result)
                     # And 'unmake' the move.
                     board.unmake_move(
                         coord1, coord2, captured_piece, leaving_piece)
                     if result_i >= beta:
                         # Ignore rest of pseudomoves [fail hard beta cutoff].
+                        # Update transposition table with best result found.
+                        update_transp_table(
+                            t_table, board, depth, result_i, alpha_orig, beta,
+                            [coord1, coord2]
+                        )
                         return [coord1, coord2], beta, False, ON_GOING
                     if result_i > alpha:
                         # Update move choice with this better one for player.
@@ -546,27 +624,32 @@ def quiesce(
 
     # 3.2. Check exploration results.
     if n_legal_moves_tried > 0:
-        # A legal best move was found: return results.
+        # A legal best move was found.
+        # Update transposition table with best result found.
+        update_transp_table(
+            t_table, board, depth, best_result, alpha_orig, beta,
+            [coord1, coord2]
+        )
+        # Return results [fail-hard alpha cutoff].
         return best_move, alpha, False, ON_GOING
 
     # 3.3. No legal moves were played: check for player's Prince check.
     player_prince = board.prince[player_side]
     if player_in_check:
-        # The player is checkmated, its Prince leaves and yields turn.
+        # The player is CHECKMATED, its Prince leaves and yields turn.
         coord1, coord2 = player_prince.coord, None  # Prince leaving move.
         best_move = [coord1, coord2]
-        is_legal_i, result_i, \
+        is_legal_i, is_dynamic_i, \
             result_i, game_end_i, game_status_i, \
             captured_piece, leaving_piece = \
             make_pseudomove(
-                board, coord1, coord2, depth, params,
-                check_dynamic=True
+                board, coord1, coord2, depth, params
             )
         # And the new board must be searched.
         childs_move, result_i, game_end_i, game_status_i = \
             quiesce(
                 board, depth + 1, -beta, -alpha,
-                params, trace
+                params, t_table, trace
             )
         alpha = -float(result_i)  # Switch to player's view.
         # And 'unmake' the move.
@@ -575,10 +658,16 @@ def quiesce(
         return best_move, alpha, False, ON_GOING
 
     if n_legal_moves_found == 0:
-        # The player is stalemated.
+        # The player is STALEMATED.
+        update_transp_table(
+            t_table, board, depth, DRAW, alpha_orig, beta, None
+        )
         return None, DRAW, True, DRAW_STALEMATE
     else:
         # The player has only non-dynamic moves.
+        update_transp_table(
+            t_table, board, depth, alpha, alpha_orig, beta, None
+        )
         return None, alpha, False, ON_GOING
 
 
