@@ -45,9 +45,39 @@ initial_position = (
     "w"
 )
 
+# UNIQUE CODES for each piece type and color.
 piece_code = (
     (1, 2, 3),
     (4, 5, 6)
+)
+"""
+piece_code = (
+    (-1867460808273329376,  3995699485648704360,  4745411207771199200),
+    (8221199580737440090, -7295070597297079618, -7731361002958750336)
+)
+"""
+# UNIQUE CODES for each blank position in the board.
+# It contains:
+#   49 random numbers for all possible positions.
+#   1 extra position for play turn (as a zero at start).
+blank_code = (
+        -9088651481146848243, -8855349128153530131, -8810015467789072901,
+        -6969240687819850220, -6194270590814140472, -5006770099410083973,
+        -3726881646789721546, -3648481645936877409, -3221267943829375437,
+        -2917313765371516614, -2899678296210031994, -1594264290829186238,
+        -1443291575828633405, -1197639518626920781, -1109689903746392267,
+        -903855454912118015,  -749687681068486285,  -741109209040901416,
+        -449628303921036933,  -286247203237073606,   522653663459264041,
+        785609664806346404,  1168615950622003214,  1249577880990087287,
+        1577283880948361883,  1803652120740141600,  1815306916945499909,
+        2327232863099424423,  2524031503258123754,  2703340257188424962,
+        2750334334905217624,  3274019476284186905,  3352771360837106367,
+        4145622072523130147,  4201445307565030652,  4264494623822836544,
+        4331001283995402330,  4432911650281339192,  4870922542412081639,
+        5760521634947045846,  5843023763999076946,  6128729254493198333,
+        6394393971372052813,  6727537295670578518,  7051349860854624922,
+        7188612692884288704,  8100545773234225341,  8638277434161417553,
+        8858287704278951656,  0
 )
 
 # Load precalculated tables:
@@ -84,6 +114,7 @@ class Board:
 
         self.board1d = np.full((self.n_positions), None)
         self.boardcode = np.zeros(self.n_positions + 1)  # Positions + turn.
+        # self.boardcode = np.array(blank_code)  # 49 positions + turn.
 
         # Set position and sides.
         self.load_board(file_name)
@@ -407,7 +438,8 @@ class Board:
         self.hash = self.calculate_hash()
 
     def calculate_hash(self):
-        return hash(self.boardcode.tostring())
+        return hash(self.boardcode.tostring())  # v1
+        # return hash(str(self.boardcode))  # v2: SLOOOOQW
 
     def print_char(self, out_file=None, stylized=False):
         current_pos = self.n_positions - 1

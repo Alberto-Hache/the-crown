@@ -97,7 +97,14 @@ IRREVERSIBLE_COL = 2    # Index of flag for board obtained after irreversible mo
 N_TRACE_COLS = 3    # Number of columns required for the above data.
 
 # Hash table used for transpositions.
-DEFAULT_HASH_SIZE = 65536   # Max. size of the hash table.
+HASH_SIZE_MIN = 13
+HASH_SIZE_1 = 65537
+HASH_SIZE_2 = 131071
+HASH_SIZE_3 = 262147
+HASH_SIZE_4 = 524287
+HASH_SIZE_5 = 1048573
+
+DEFAULT_HASH_SIZE = HASH_SIZE_5  # Max. size of the hash table.
 
 TT_HASH_IDX = 0    # The full hash value of the position.
 TT_DEPTH_IDX = 1   # The depth at which the position was explored.
@@ -237,6 +244,21 @@ class Gametrace:
 
 
 class Transposition_table:
+    """
+    Implements a hash-table of some limited size storing information about
+    board positions, identified by some key.
+
+    Board information is stored as a list:
+    - The full hash value of the position (in case it's cut to table's length).
+    - The depth at which the position was explored.
+    - The value found for the position.
+    - The type of value (EXACT / LOWERBOUND / UPPERBOUND).
+    - The best move found in the position.
+
+    Assumptions:
+        The key provided identifies uniquely a board position.
+        Python 3.7: Dictionary order is guaranteed to be insertion order. 
+    """
     def __init__(self, size=DEFAULT_HASH_SIZE):
         # Data:
         self.size = size
@@ -244,23 +266,25 @@ class Transposition_table:
         # Metrics:
         self.hits = 0
         self.collisions = 0
+        self.updates = 0
 
     def insert(self, key, value):
-        hash_key = key % self.size
-        current_value = self.table.get(hash_key, None)
+        current_value = self.table.get(key, None)
         if current_value is None:
             # Empty position: use it.
-            self.table[hash_key] = value
+            self.table[key] = value
+            # If max. size exceeded, pop oldest entry.
+            if len(self.table) > self.size:
+                self.table.pop(next(iter(self.table)))
         else:
-            # Collision: resolve by depth (root node has depth 0).
-            self.collisions += 1
+            # Collision or update: resolve by depth (root node has depth 0).
+            self.updates += 1
             if value[TT_DEPTH_IDX] < current_value[TT_DEPTH_IDX]:
                 # The new value was more deeply explored: replace.
-                self.table[hash_key] = value
+                self.table[key] = value
 
     def retrieve(self, key):
-        hash_key = key % self.size
-        current_value = self.table.get(hash_key, None)
+        current_value = self.table.get(key, None)
         if current_value is not None and current_value[TT_HASH_IDX] == key:
             # Successful retrieval.
             self.hits += 1
@@ -269,10 +293,17 @@ class Transposition_table:
             # Value not found.
             return None
 
+    def metrics(self):
+        return (
+            self.size, len(self.table), self.hits, self.collisions,
+            self.updates
+            )
+
     def clear(self):
         self.table.clear()
         self.hits = 0
         self.collisions = 0
+        self.updates = 0
 
 
 def update_transp_table(
@@ -301,16 +332,18 @@ def play(
     while not search_end:
         time_0 = time.time()
         # Initiate move selection.
-        transp_table = Transposition_table() \
+        t_table = Transposition_table() \
             if params["transposition_table"] else None
         move, result, game_end, game_status = negamax(
-            board, depth, alpha, beta, params, transp_table, trace)
-        transp_table.clear()
+            board, depth, alpha, beta, params, t_table, trace)
+        t_table_metrics = t_table.metrics()
+        t_table.clear()
         # End of move selection.
         time_1 = time.time()
         search_end = True  # No iterative deepening for now.
 
-    return move, result, game_end, game_status, time_1 - time_0
+    return move, result, game_end, game_status, \
+        time_1 - time_0, t_table_metrics
 
 
 def negamax(
@@ -350,8 +383,17 @@ def negamax(
     alpha_orig = alpha
     value = t_table.retrieve(board.hash)
     if value is not None:
-        # TODO: Check retrieved value.
-        pass
+        # Position found with enough depth; check value and flags.
+        if value[TT_DEPTH_IDX] <= depth:
+            if value[TT_FLAG_IDX] == EXACT:
+                return value[TT_MOVE_IDX], value[TT_VALUE_IDX], False, ON_GOING
+            elif value[TT_FLAG_IDX] == LOWER_BOUND:
+                alpha = max(alpha, value[TT_VALUE_IDX])
+            elif value[TT_FLAG_IDX] == UPPER_BOUND:
+                beta = min(beta, value[TT_VALUE_IDX])
+        # Check for alpha-beta cutoff.
+        if alpha >= beta:
+            return value[TT_MOVE_IDX], value[TT_VALUE_IDX], False, ON_GOING
 
     # If at max_depth, quiescence search takes care.
     if depth == params["max_depth"]:
@@ -521,8 +563,17 @@ def quiesce(
     alpha_orig = alpha
     value = t_table.retrieve(board.hash)
     if value is not None:
-        # TODO: Check retrieved value.
-        pass
+        # Position found with enough depth; check value and flags.
+        if value[TT_DEPTH_IDX] <= depth:
+            if value[TT_FLAG_IDX] == EXACT:
+                return value[TT_MOVE_IDX], value[TT_VALUE_IDX], False, ON_GOING
+            elif value[TT_FLAG_IDX] == LOWER_BOUND:
+                alpha = max(alpha, value[TT_VALUE_IDX])
+            elif value[TT_FLAG_IDX] == UPPER_BOUND:
+                beta = min(beta, value[TT_VALUE_IDX])
+        # Check for alpha-beta cutoff.
+        if alpha >= beta:
+            return value[TT_MOVE_IDX], value[TT_VALUE_IDX], False, ON_GOING
 
     # 0. Register searched node, checking repetitions.
     if trace is not None:
@@ -1265,8 +1316,10 @@ if __name__ == '__main__':
         board.print_char()
 
         # Call  play().
-        best_move, result, game_end, game_status, time_used = play(
-            board, params=parameters, trace=game_trace)
+        best_move, result, game_end, game_status, \
+            time_used, t_table_metrics = play(
+                board, params=parameters, trace=game_trace
+                )
 
         # Display results.
         utils.display_results(

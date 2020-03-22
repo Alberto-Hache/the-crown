@@ -91,8 +91,9 @@ def display_start(board, player, file_name, rec_file):
     with open(GAME_METRICS_FILE, "w") as metrics_file:
         print(
             "MAX_DPTH CHECK_DPTH  RAND "
-            "SIDE   MOVE       TIME  EVALUATION     DEPTH       "
-            "NODES    FULL_SRCH  QUIESC_SRCH  TOP_20_LEVELS",
+            "SIDE   MOVE       TIME  EVALUATION   DEPTH       "
+            "NODES   TT_SIZE    TT_USE   TT_HITS  TT_COLLS  TT_UPDT"
+            "   FULL_SRCH  QUIESC_SRCH  TOP_20_LEVELS",
             file=metrics_file
         )
 
@@ -164,7 +165,8 @@ def display_quit_results(board, rec_file):
 
 
 def display_move_metrics(
-    side, move, result, player_params, time_used, game_trace, metrics_file
+    side, move, result, player_params, time_used, tt_metrics,
+    game_trace, metrics_file
 ):
     """
     Display metrics of a move just produced by the program:
@@ -175,6 +177,11 @@ def display_move_metrics(
     - EVALuation (float).
     - MAX DEPTH reached (integer).
     - TOTAL NODES searched (integer).
+    - TT_USAGE
+    - TT_SIZE
+    - TT_HITS
+    - TT_COLLISIONS
+    - TT_UPDATES
     - Nodes searched in top 20 levels (list of integers).
     """
     # Variables and player's search parameters:
@@ -225,14 +232,17 @@ def display_move_metrics(
     )
     # Main search results:
     print(
-        "{:<5}  {:<6} {:>8.2f} {:>+11.5f} {:>9d}{:>12.0f} "
+        "{:<5}  {:<6} {:>8.2f} {:>+11.5f} {:>7d}{:>12.0f} "
+        "{:>9} {:>9} {:>9} {:>9} {:>9}"
         .format(
             bd.color_name[side],
             move_txt,
             time_used,
             result,
             game_trace.max_depth_searched,
-            nodes_count
+            nodes_count,
+            tt_metrics[0], tt_metrics[1], tt_metrics[2], tt_metrics[3],
+            tt_metrics[4]
         ),
         end="",
         file=metrics_file
@@ -278,14 +288,19 @@ def play_match(board, player, max_moves, file_name=None):
             board.print_char()
             if player[board.turn].type == MACHINE_PLAYER:
                 # The MACHINE plays this color.
-                move, result, game_end, end_status, time_used = game.play(
-                    board, params=player[board.turn].params, trace=game_trace)
+                move, result, game_end, end_status, time_used, tt_metrics =\
+                    game.play(
+                        board,
+                        params=player[board.turn].params,
+                        trace=game_trace
+                        )
                 # Print move metrics.
                 with open(GAME_METRICS_FILE, "a") as metrics_file:
                     display_move_metrics(
                         board.turn, move, result,
                         player[board.turn].params,
-                        time_used, game_trace, metrics_file
+                        time_used, tt_metrics,
+                        game_trace, metrics_file
                         )
             else:
                 # The HUMAN plays this color.
