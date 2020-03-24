@@ -379,7 +379,18 @@ def negamax(
                         DRAW_THREE_REPETITIONS
     """
 
-    # Check in transposition table.
+    # 0. If at max_depth, quiescence search takes care.
+    if depth == params["max_depth"]:
+        return quiesce(board, depth, alpha, beta, params, t_table, trace)
+
+    # 1. Register searched node, checking repetitions.
+    if trace is not None:
+        repetition = trace.register_searched_board(board, depth)
+        if repetition and depth != 0:
+            # The position already happenned in the game [excluding root node].
+            return None, DRAW, True, DRAW_THREE_REPETITIONS
+
+    # 2. Check in transposition table.
     alpha_orig = alpha
     value = t_table.retrieve(board.hash)
     if value is not None:
@@ -395,26 +406,14 @@ def negamax(
         if alpha >= beta:
             return value[TT_MOVE_IDX], value[TT_VALUE_IDX], False, ON_GOING
 
-    # If at max_depth, quiescence search takes care.
-    if depth == params["max_depth"]:
-        return quiesce(board, depth, alpha, beta, params, t_table, trace)
-
-    # 0. Register searched node, checking repetitions.
-    if trace is not None:
-        repetition = trace.register_searched_board(board, depth)
-        if repetition and depth != 0:
-            # The position already happenned in the game [excluding root node].
-            return None, DRAW, True, DRAW_THREE_REPETITIONS
-
-    # 1. Check for other end conditions:
+    # 3. Check for other end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
-    #   Otherwise, assume ON_GOING
     childs_move, result, game_end, game_status = evaluate_end(board, depth)
     if game_end:
         # End of game: no move is returned.
         return None, result, game_end, game_status  # TODO: Return beta?
 
-    # 2. Generate and explore existing pseudomoves.
+    # 4. Generate and explore existing pseudomoves.
     moves, moves_count = generate_pseudomoves(board)
     assert(moves_count > 0),\
         "ERROR: No pseudomoves found despite game is not ended "\
@@ -449,7 +448,9 @@ def negamax(
                             params, t_table, trace
                         )
                     result_i = -float(result_i)  # Switch to player's view.
-                    best_result = max(result_i, best_result)
+                    if result_i > best_result:
+                        best_move = [coord1, coord2]
+                        best_result = result_i
                 # And 'unmake' the move.
                 board.unmake_move(
                     coord1, coord2, captured_piece, leaving_piece)
@@ -475,12 +476,12 @@ def negamax(
         # Update transposition table with best result found.
         update_transp_table(
             t_table, board, depth, best_result, alpha_orig, beta,
-            [coord1, coord2]
+            best_move
         )
         # Return results [fail-hard alpha cutoff].
         return best_move, alpha, False, ON_GOING
 
-    # 3. No legal moves were found: check for player's Prince check.
+    # 5. No legal moves were found: check for player's Prince check.
     player_side = board.turn
     opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
     player_prince = board.prince[player_side]
@@ -502,12 +503,12 @@ def negamax(
                 board, coord1, coord2, depth, params
             )
         # And the new board must be assessed.
-        childs_move, best_result, game_end_i, game_status_i = \
+        childs_move, result_i, game_end_i, game_status_i = \
             negamax(
                 board, depth + 1, -beta, -alpha,
                 params, t_table, trace
             )
-        best_result = -float(best_result)  # Switch to player's view.
+        best_result = -float(result_i)  # Switch to player's view.
         # And 'unmake' the move.
         board.unmake_move(
             coord1, coord2, captured_piece, leaving_piece)
@@ -519,10 +520,7 @@ def negamax(
         # Return results.
         return best_move, best_result, False, ON_GOING
 
-    # The player is STALEMATED.
-    update_transp_table(
-        t_table, board, depth, DRAW, alpha_orig, beta, None
-    )
+    # 6. The player is STALEMATED.
     return None, DRAW, True, DRAW_STALEMATE
 
 
@@ -559,7 +557,14 @@ def quiesce(
                         DRAW_THREE_REPETITIONS
     """
 
-    # Check in transposition table.
+    # 1. Register searched node, checking repetitions.
+    if trace is not None:
+        repetition = trace.register_searched_board(board, depth)
+        if repetition:
+            # The position had already happenned in the game.
+            return None, DRAW, True, DRAW_THREE_REPETITIONS
+
+    # 2. Check in transposition table.
     alpha_orig = alpha
     value = t_table.retrieve(board.hash)
     if value is not None:
@@ -575,22 +580,14 @@ def quiesce(
         if alpha >= beta:
             return value[TT_MOVE_IDX], value[TT_VALUE_IDX], False, ON_GOING
 
-    # 0. Register searched node, checking repetitions.
-    if trace is not None:
-        repetition = trace.register_searched_board(board, depth)
-        if repetition:
-            # The position had already happenned in the game.
-            return None, DRAW, True, DRAW_THREE_REPETITIONS
-
-    # 1. Check for other end conditions:
+    # 3. Check for other end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
-    #   Otherwise, assume ON_GOING
     childs_move, result, game_end, game_status = evaluate_end(board, depth)
     if game_end:
         # End of game: no move is returned.
         return None, result, game_end, game_status  # TODO: Return beta?
 
-    # 2. Null-move: Perform static evaluation if it is legal.
+    # 4.1. Null-move: Perform static evaluation if it is legal.
     player_side = board.turn
 
     board.flip_turn()  # Flip turns temporarily.
@@ -609,8 +606,7 @@ def quiesce(
             # Update move choice with this better one for player.
             alpha = result_i
 
-    # 3. Run a recursive quiescence search.
-    # 3.1. Generate and explore dynamic pseudomoves.
+    # 4.2. Generate and explore dynamic pseudomoves.
     moves, moves_count = generate_pseudomoves(board)
     assert(moves_count > 0),\
         "ERROR: No pseudomoves found despite game is not ended."
@@ -649,7 +645,8 @@ def quiesce(
                                 params, t_table, trace
                             )
                         result_i = -float(result_i)  # Switch to player's view.
-                        best_result = max(result_i, best_result)
+                        if result_i > best_result:
+                            best_result = result_i
                     # And 'unmake' the move.
                     board.unmake_move(
                         coord1, coord2, captured_piece, leaving_piece)
@@ -673,18 +670,18 @@ def quiesce(
                 board.unmake_move(
                     coord1, coord2, captured_piece, leaving_piece)
 
-    # 3.2. Check exploration results.
+    # Check exploration results.
     if n_legal_moves_tried > 0:
         # A legal best move was found.
         # Update transposition table with best result found.
         update_transp_table(
             t_table, board, depth, best_result, alpha_orig, beta,
-            [coord1, coord2]
+            best_move
         )
         # Return results [fail-hard alpha cutoff].
         return best_move, alpha, False, ON_GOING
 
-    # 3.3. No legal moves were played: check for player's Prince check.
+    # 5. No legal moves were played: check for player's Prince check.
     player_prince = board.prince[player_side]
     if player_in_check:
         # The player is CHECKMATED, its Prince leaves and yields turn.
@@ -702,20 +699,23 @@ def quiesce(
                 board, depth + 1, -beta, -alpha,
                 params, t_table, trace
             )
-        alpha = -float(result_i)  # Switch to player's view.
+        best_result = -float(result_i)  # Switch to player's view.
         # And 'unmake' the move.
         board.unmake_move(
             coord1, coord2, captured_piece, leaving_piece)
-        return best_move, alpha, False, ON_GOING
+        # Update transposition table with best result found.
+        update_transp_table(
+            t_table, board, depth, best_result, alpha_orig, beta,
+            [coord1, coord2]
+        )
+        # Return results.
+        return best_move, best_result, False, ON_GOING
 
     if n_legal_moves_found == 0:
-        # The player is STALEMATED.
-        update_transp_table(
-            t_table, board, depth, DRAW, alpha_orig, beta, None
-        )
+        # 6. The player is STALEMATED.
         return None, DRAW, True, DRAW_STALEMATE
     else:
-        # The player has only non-dynamic moves.
+        # 4.3 [unexplored by 4.2] The player has only non-dynamic moves.
         update_transp_table(
             t_table, board, depth, alpha, alpha_orig, beta, None
         )
@@ -971,119 +971,6 @@ def count_knight_pseudomoves(board, position, color):
             moves = moves.union(moves_list)
 
     return len(moves)
-
-
-def make_pseudomove_OLD(board, coord1, coord2, depth, params, check_dynamic=False):
-    """
-    Given a *legal* position, try to make a pseudomove.
-    Detect if the move would be ilegal first.
-    If it's legal, detect some end of game conditions:
-    - Prince crowning
-    - Opponent is left with no pieces
-    If required, detect if it's a dynamic move.
-
-    Input:
-        board:          Board - the position to make the move on.
-        coord1:         int - initial position of pseudomove.
-        coord2:         int - final position of pseudomove,
-                        or None for a checkmated Prince leaving.
-        depth:          int - node depth before the pseudomove.
-        params:         A dictionary with the search settings to follow.
-        check_dynamic:  Boolean - whether dynamism of move must be
-                        assessed.
-
-    Output:
-        new_board:  Board - a new instance on which pseudomove was made.
-        is_legal:   Boolean - whether it was a legal move.
-        is_dynamic: Boolean - whether it was a dynamic move.
-                    Conditions checked:
-                    - Piece captures
-                    - Checkmated Prince leaves
-                    - Prince Crowning
-                    - Soldier promotions
-                    - Check evasion (no null move)
-                    - Checks [downto 'max_check_quiesc_depth']
-
-                    Conditions not checked:  TODO: check in some cases.
-                    - Prince moves upwards (in absence of enemy Knights)?
-                    - Soldier moves to throne (in absence of Prince)?
-
-        result:     float - an early evaluation of winner moves,
-                    from the moving side's perspective (+ is good)
-                    estimated as (PLAYER_WINS - depth),
-                    ONLY in these conditions:
-                    VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
-        game_end:   Boolean - whether the pseudomove ends the game.
-        game_status:int
-                    Conditions checked:
-                    ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT
-
-                    Conditions not checked:
-                    DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE /
-                    DRAW_THREE_REPETITIONS
-    """
-
-    if check_dynamic:
-        # Initialize vars. for later dynamism check before board changes.
-        moving_side = board.turn
-        opponent_side = bd.WHITE if moving_side == bd.BLACK else bd.BLACK
-        player_prince = board.prince[moving_side]
-        if player_prince is not None:
-            player_in_check = position_attacked(
-                board, player_prince.coord, opponent_side
-            )
-        else:
-            player_in_check = False
-
-    # Register type of moving piece before changes.
-    piece_type = board.board1d[coord1].type
-    # Create new board on which to try the move, getting pieces removed.
-    new_board = copy.deepcopy(board)
-    captured_piece, leaving_piece = \
-        new_board.make_move(coord1, coord2)  # Turns have switched here!
-    depth += 1  # Updated after making the move.
-
-    # Check if the move produced an illegal position.
-    if not is_legal(new_board):
-        return new_board, False, None, None, None, None
-
-    # Check if a Prince is crowning.
-    if (coord2 == new_board.crown_position) and \
-       (piece_type == bd.PRINCE):
-        # A Prince was legally moved onto the crown!
-        return new_board, True, True, PLAYER_WINS - depth*END_DEPTH_PENALTY,\
-            True, VICTORY_CROWNING
-
-    # Check if it was the capture of the last piece.
-    if new_board.piece_count[new_board.turn].sum() == 0:
-        return new_board, True, True, PLAYER_WINS - depth*END_DEPTH_PENALTY,\
-            True, VICTORY_NO_PIECES_LEFT
-
-    # Optionally, check dynamic conditions of the move.
-    is_dynamic = False
-    if check_dynamic:
-        # Checked: Piece captures, mated Prince leaves, Soldier promotion,
-        # Check, Check evasion.
-        # NOT checked:  Prince -> up, Soldier -> throne
-        if captured_piece is not None or leaving_piece is not None:
-            # Piece captured / mated Prince leaving / Soldier promotion.
-            is_dynamic = True
-        else:
-            # Check on 'new_board' if it produced a check to the opponent.
-            opponent_prince = new_board.prince[new_board.turn]
-            if opponent_prince is not None and \
-               not depth > params["max_check_quiesc_depth"]:
-                is_dynamic = position_attacked(
-                    new_board, opponent_prince.coord, moving_side
-                )
-            if not is_dynamic and player_in_check:
-                # Check if the move produced a check evasion.
-                is_dynamic = not position_attacked(
-                    new_board, player_prince.coord, moving_side
-                )
-
-    # Report as a legal move, the dynamism of the move and other conditions.
-    return new_board, True, is_dynamic, None, False, ON_GOING
 
 
 def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):

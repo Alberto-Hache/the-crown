@@ -3,7 +3,8 @@
 ## Bugs
 
 ### A
-...
+- negamax() calls checks in transposition table BEFORE calling quiesce(), which will check AGAIN!
+
 
 ### B
 - Make Gametrace size flexible (not limited to DEFAULT_TRACE_LENGTH).
@@ -16,27 +17,28 @@
 ...
 
 ### (v2)
-- Detailed profiling to focus optimization points first.
 - Optimize position_attacked() [30% to 50% of time spent]
-  - position_attacked() with several return() points?
   - Use itemgetter?
   - Use beams?
   - Quick previous discards (e.g. Knight off-rank?, too far away Soldier/Prince?)
   ...
 - Avoid second call to hash() after unmake() [storing value in aux var]?
+- Avoid using knights_mobility() or count_knight_pseudomoves() by making generate_pseudomoves() count mobility of Knights!
 - Generate_pseudo_moves based on 'beams' - 'shadows'.
 
 
 ## Tree search efficiency
 
-### (v2)
+### (v1)
 
 - Add hash-tables for transpositions.
+  - Value (exact, lower- / upper-bound) - DONE
+  - Best move
 - Pre-evaluation of moves (extend make pseudo-move()?) for move sorting?
   - Static exchange evaluation?
-- Add killer-move heuristic? 
-  - A single move
-  - Extend to two moves?
+- Add killer-move heuristic.
+
+### (v2)
 - Add progressive depth search (based on hash tables).
 - Try "soft-fail" alpha beta pruning?
 - Try Aspiration windows (https://www.chessprogramming.org/Aspiration_Windows) ?
