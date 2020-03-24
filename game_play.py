@@ -448,9 +448,9 @@ def negamax(
                             params, t_table, trace
                         )
                     result_i = -float(result_i)  # Switch to player's view.
-                    if result_i > best_result:
-                        best_move = [coord1, coord2]
-                        best_result = result_i
+                if result_i > best_result:
+                    best_move = [coord1, coord2]
+                    best_result = result_i
                 # And 'unmake' the move.
                 board.unmake_move(
                     coord1, coord2, captured_piece, leaving_piece)
@@ -645,8 +645,9 @@ def quiesce(
                                 params, t_table, trace
                             )
                         result_i = -float(result_i)  # Switch to player's view.
-                        if result_i > best_result:
-                            best_result = result_i
+                    if result_i > best_result:
+                        best_move = [coord1, coord2]
+                        best_result = result_i
                     # And 'unmake' the move.
                     board.unmake_move(
                         coord1, coord2, captured_piece, leaving_piece)

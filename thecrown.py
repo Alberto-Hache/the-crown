@@ -92,7 +92,7 @@ def display_start(board, player, file_name, rec_file):
         print(
             "MAX_DPTH CHECK_DPTH  RAND "
             "SIDE   MOVE       TIME  EVALUATION   DEPTH       "
-            "NODES   TT_SIZE    TT_USE   TT_HITS  TT_COLLS  TT_UPDT"
+            "NODES   TT_SIZE    TT_USE   TT_HITS  TT_COLLS   TT_UPDT"
             "   FULL_SRCH  QUIESC_SRCH  TOP_20_LEVELS",
             file=metrics_file
         )
