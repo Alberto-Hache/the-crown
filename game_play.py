@@ -421,10 +421,9 @@ def negamax(
     best_move = None
     best_result = -np.Infinity  # Value to store in transposition table.
     n_legal_moves_tried = 0
-    for piece_moves in moves:  # [[piece_1, [13, 53...]], [piece_2, [...]]
-        piece, pseudomoves_list = piece_moves  # piece_1, [13, 53...]
-        coord1 = piece.coord
-        for coord2 in pseudomoves_list:  # 13
+    for piece_moves in moves:  # [[24, [14, 13...]], [44, [...]]
+        coord1, pseudomoves_list = piece_moves  # 24, [14, 13...]
+        for coord2 in pseudomoves_list:  # 14
             # Try pseudomove 'i' on board;
             # if it leads to a game end, we can use result_i.
             is_legal_i, is_dynamic_i, \
@@ -614,10 +613,9 @@ def quiesce(
     best_result = -np.Infinity  # Value to store in transposition table.
     n_legal_moves_tried = 0
     n_legal_moves_found = 0
-    for piece_moves in moves:  # [[piece_1, [13, 53...]], [piece_2, [...]]
-        piece, pseudomoves_list = piece_moves  # piece_1, [13, 53...]
-        coord1 = piece.coord
-        for coord2 in pseudomoves_list:  # 13
+    for piece_moves in moves:  # [[24, [14, 13...]], [44, [...]]
+        coord1, pseudomoves_list = piece_moves  # 24, [14, 13...]
+        for coord2 in pseudomoves_list:  # 14
             # Try pseudomove 'i' on board;
             # if it leads to a game end, we can use result_i.
             is_legal_i, is_dynamic_i, \
@@ -856,7 +854,7 @@ def generate_pseudomoves(board):
         board:      Board - The game position to generate moves on.
 
     Output:
-        moves:      list of lists - [[piece_1, [13, 53...]], [piece_2, [...]]
+        moves:      list of lists - [[24, [14, 13...]], [44, [...]]
         moves_count:integer - the total number of pseudomoves.
     """
     moves = []
@@ -891,7 +889,7 @@ def generate_pseudomoves(board):
             )
 
         # Update main list.
-        moves.append((piece, list(new_moves)))
+        moves.append((piece.coord, list(new_moves)))
         moves_count += len(new_moves)
 
     return moves, moves_count
@@ -1144,16 +1142,16 @@ def is_legal_move(board, move):
             utils.coord_2_algebraic[coord1])
 
     # First, obtain pseudomoves for moving side, a list of lists:
-    # [[piece_1, [13, 53...]], [piece_2, [...]]
+    # [[24, [14, 13...]], [44, [...]]
     pseudo_moves, _ = generate_pseudomoves(board)
     # Loop over all pseudomoves found to:
     # 1. try to spot the one given.
     # 2. know if the player has any legal move.
     n_legal_pseudo_moves = 0
-    for pm_list in pseudo_moves:  # [piece_1, [13, 53...]]
-        pm_coord1 = pm_list[0].coord
+    for pm_list in pseudo_moves:  # [24, [14, 13...]]
+        pm_coord1 = pm_list[0]
         # Loop over all moves of the pm_list.
-        for pm_coord2 in pm_list[1]:  # [13, 53...]
+        for pm_coord2 in pm_list[1]:  # [14, 13...]
             # Check if the pm is legal by trying it [use default parameters].
             pseudo_move_legal, _, _, _, _, \
                 captured_piece, leaving_piece = make_pseudomove(

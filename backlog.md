@@ -3,8 +3,7 @@
 ## Bugs
 
 ### A
-- negamax() calls checks in transposition table BEFORE calling quiesce(), which will check AGAIN!
-
+...
 
 ### B
 - Make Gametrace size flexible (not limited to DEFAULT_TRACE_LENGTH).

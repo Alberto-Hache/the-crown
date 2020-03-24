@@ -317,8 +317,9 @@ class Test_game_play(unittest.TestCase):
                     # Generate pseudomoves to test.
                     moves, moves_count = gp.generate_pseudomoves(board)
                     for piece_moves in moves:
-                        # Loop over each instance of [piece, [move, move...]]
-                        p_i, moves_i = piece_moves
+                        # Loop over each instance of [coord_1, [move, move...]]
+                        coord1, moves_i = piece_moves
+                        p_i = board.board1d[coord1]
                         display_board.include_new_piece(
                             p_i.type, p_i.color, p_i.coord)
                         for move_position in moves_i:
