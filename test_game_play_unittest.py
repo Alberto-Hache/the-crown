@@ -308,7 +308,7 @@ class Test_game_play(unittest.TestCase):
                 display_board = bd.Board("empty.cor")  # Tracing board.
 
                 for turn in [bd.WHITE, bd.BLACK]:
-                    # Try board for both side.
+                    # Try board for both sides.
                     board.set_turn(turn)
                     display_board.set_turn(turn)
                     print("\nPseudo-moves for position: {}".
@@ -316,23 +316,35 @@ class Test_game_play(unittest.TestCase):
                     board.print_char(out_file=f)
                     # Generate pseudomoves to test.
                     moves, moves_count = gp.generate_pseudomoves(board)
-                    for piece_moves in moves:
-                        # Loop over each instance of [coord_1, [move, move...]]
-                        coord1, moves_i = piece_moves
-                        p_i = board.board1d[coord1]
+                    moves_count_check = 0
+                    # Loop over all pieces in the board.
+                    for p_i in board.pieces[turn]:
+                        coord1 = p_i.coord
                         display_board.include_new_piece(
                             p_i.type, p_i.color, p_i.coord)
-                        for move_position in moves_i:
-                            # Loop over each move.
-                            display_board.include_new_piece(
-                                bd.TRACE, p_i.color, move_position,
-                                tracing=True
-                            )
+                        # Spot the piece's moves in moves generated.
+                        for move_pair in moves:
+                            if move_pair[0] == coord1:
+                                moves_count_check += 1
+                                display_board.include_new_piece(
+                                    bd.TRACE, p_i.color, move_pair[1],
+                                    tracing=True
+                                )
+                        # Display moves of the piece.
                         print("piece = {} {} at {}: {} moves:".format(
                             bd.color_name[p_i.color], bd.piece_name[p_i.type],
                             p_i.coord, moves_count), file=f)
                         display_board.print_char(out_file=f)
                         display_board.clear_board()
+
+                    # Check total move counts for that side.
+                    self.assertEqual(
+                        moves_count,
+                        moves_count_check,
+                        "Error found in moves from {}.".format(
+                            bd.color_name[turn]
+                            )
+                    )
 
         self.assertTrue(filecmp.cmp(
             "output.txt",

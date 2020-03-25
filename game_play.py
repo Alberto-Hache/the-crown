@@ -393,6 +393,7 @@ def negamax(
     # 2. Check in transposition table.
     alpha_orig = alpha
     value = t_table.retrieve(board.hash)
+    hash_move = None
     if value is not None:
         # Position found with enough depth; check value and flags.
         if value[TT_DEPTH_IDX] <= depth:
@@ -405,6 +406,8 @@ def negamax(
         # Check for alpha-beta cutoff.
         if alpha >= beta:
             return value[TT_MOVE_IDX], value[TT_VALUE_IDX], False, ON_GOING
+        # Capture possibly registered move.
+        hash_move = value[TT_MOVE_IDX]
 
     # 3. Check for other end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
@@ -421,53 +424,53 @@ def negamax(
     best_move = None
     best_result = -np.Infinity  # Value to store in transposition table.
     n_legal_moves_tried = 0
-    for piece_moves in moves:  # [[24, [14, 13...]], [44, [...]]
-        coord1, pseudomoves_list = piece_moves  # 24, [14, 13...]
-        for coord2 in pseudomoves_list:  # 14
-            # Try pseudomove 'i' on board;
-            # if it leads to a game end, we can use result_i.
-            is_legal_i, is_dynamic_i, \
-                result_i, game_end_i, game_status_i, \
-                captured_piece, leaving_piece = \
-                make_pseudomove(
-                    board, coord1, coord2, depth, params
-                )
-            if is_legal_i:
-                # Assess the legal move.
-                n_legal_moves_tried += 1
-                if game_end_i:
-                    # The pseudomove led to a final position.
-                    # No search required, we know 'result_i'.
-                    pass  # TODO: review / kill this code branch?
-                else:
-                    # We need to recursively search this move deeper.
-                    childs_move, result_i, game_end_i, game_status_i = \
-                        negamax(
-                            board, depth + 1, -beta, -alpha,
-                            params, t_table, trace
-                        )
-                    result_i = -float(result_i)  # Switch to player's view.
-                if result_i > best_result:
-                    best_move = [coord1, coord2]
-                    best_result = result_i
-                # And 'unmake' the move.
-                board.unmake_move(
-                    coord1, coord2, captured_piece, leaving_piece)
-                if result_i >= beta:
-                    # Ignore rest of pseudomoves [fail-hard beta cutoff].
-                    # Update transposition table with best result found.
-                    update_transp_table(
-                        t_table, board, depth, result_i, alpha_orig, beta,
-                        [coord1, coord2]
-                    )
-                    return [coord1, coord2], beta, False, ON_GOING
-                if result_i > alpha:
-                    # Update move choice with this better one for player.
-                    best_move, alpha = [coord1, coord2], result_i
+    for pseudo_move in moves:  # [[24, 14], [24, 13]...]], [2, 3]...]
+        coord1, coord2 = pseudo_move  # [24, 14]
+        # Try pseudomove 'i' on board;
+        # if it leads to a game end, we can use result_i.
+        is_legal_i, is_dynamic_i, \
+            result_i, game_end_i, game_status_i, \
+            captured_piece, leaving_piece = \
+            make_pseudomove(
+                board, coord1, coord2, depth, params
+            )
+        # Check if it's legal.
+        if is_legal_i:
+            # Assess the legal move.
+            n_legal_moves_tried += 1
+            if game_end_i:
+                # The pseudomove led to a final position.
+                # No search required, we know 'result_i'.
+                pass  # TODO: review / kill this code branch?
             else:
-                # Simply 'unmake' the illegal move.
-                board.unmake_move(
-                    coord1, coord2, captured_piece, leaving_piece)
+                # We need to recursively search this move deeper.
+                childs_move, result_i, game_end_i, game_status_i = \
+                    negamax(
+                        board, depth + 1, -beta, -alpha,
+                        params, t_table, trace
+                    )
+                result_i = -float(result_i)  # Switch to player's view.
+            if result_i > best_result:
+                best_move = [coord1, coord2]
+                best_result = result_i
+            # And 'unmake' the move.
+            board.unmake_move(
+                coord1, coord2, captured_piece, leaving_piece)
+            if result_i >= beta:
+                # Ignore rest of pseudomoves [fail-hard beta cutoff].
+                # Update transposition table with best result found.
+                update_transp_table(
+                    t_table, board, depth, result_i, alpha_orig, beta,
+                    [coord1, coord2]
+                )
+                return [coord1, coord2], beta, False, ON_GOING
+            if result_i > alpha:
+                # Update move choice with this better one for player.
+                best_move, alpha = [coord1, coord2], result_i
+        else:
+            # Simply 'unmake' the illegal move.
+            board.unmake_move(
+                coord1, coord2, captured_piece, leaving_piece)
 
     # Check exploration results.
     if n_legal_moves_tried > 0:
@@ -613,61 +616,60 @@ def quiesce(
     best_result = -np.Infinity  # Value to store in transposition table.
     n_legal_moves_tried = 0
     n_legal_moves_found = 0
-    for piece_moves in moves:  # [[24, [14, 13...]], [44, [...]]
-        coord1, pseudomoves_list = piece_moves  # 24, [14, 13...]
-        for coord2 in pseudomoves_list:  # 14
-            # Try pseudomove 'i' on board;
-            # if it leads to a game end, we can use result_i.
-            is_legal_i, is_dynamic_i, \
-                result_i, game_end_i, game_status_i, \
-                captured_piece, leaving_piece = \
-                make_pseudomove(
-                    board, coord1, coord2, depth, params,
-                    check_dynamic=True)
-            # Check if it's legal.
-            if is_legal_i:
-                n_legal_moves_found += 1
-                # Check if it's a dynamic move or check evasion.
-                if is_dynamic_i or player_in_check:
-                    # A move worth searching in quiesce().
-                    n_legal_moves_tried += 1
-                    if game_end_i:
-                        # The pseudomove led to a final position.
-                        # No search required, we know 'result_i'.
-                        pass  # TODO: review / kill this code branch?
-                    else:
-                        # We need to recursively search this move deeper:
-                        childs_move, result_i, game_end_i, game_status_i = \
-                            quiesce(
-                                board, depth + 1, -beta, -alpha,
-                                params, t_table, trace
-                            )
-                        result_i = -float(result_i)  # Switch to player's view.
-                    if result_i > best_result:
-                        best_move = [coord1, coord2]
-                        best_result = result_i
-                    # And 'unmake' the move.
-                    board.unmake_move(
-                        coord1, coord2, captured_piece, leaving_piece)
-                    if result_i >= beta:
-                        # Ignore rest of pseudomoves [fail hard beta cutoff].
-                        # Update transposition table with best result found.
-                        update_transp_table(
-                            t_table, board, depth, result_i, alpha_orig, beta,
-                            [coord1, coord2]
-                        )
-                        return [coord1, coord2], beta, False, ON_GOING
-                    if result_i > alpha:
-                        # Update move choice with this better one for player.
-                        best_move, alpha = [coord1, coord2], result_i
+    for pseudo_move in moves:  # [[24, 14], [24, 13]...]], [2, 3]...]
+        coord1, coord2 = pseudo_move  # [24, 14]
+        # Try pseudomove 'i' on board;
+        # if it leads to a game end, we can use result_i.
+        is_legal_i, is_dynamic_i, \
+            result_i, game_end_i, game_status_i, \
+            captured_piece, leaving_piece = \
+            make_pseudomove(
+                board, coord1, coord2, depth, params,
+                check_dynamic=True)
+        # Check if it's legal.
+        if is_legal_i:
+            n_legal_moves_found += 1
+            # Check if it's a dynamic move or check evasion.
+            if is_dynamic_i or player_in_check:
+                # A move worth searching in quiesce().
+                n_legal_moves_tried += 1
+                if game_end_i:
+                    # The pseudomove led to a final position.
+                    # No search required, we know 'result_i'.
+                    pass  # TODO: review / kill this code branch?
                 else:
-                    # Simply 'unmake' the not-searched move.
-                    board.unmake_move(
-                        coord1, coord2, captured_piece, leaving_piece)
-            else:
-                # Simply 'unmake' the illegal move.
+                    # We need to recursively search this move deeper:
+                    childs_move, result_i, game_end_i, game_status_i = \
+                        quiesce(
+                            board, depth + 1, -beta, -alpha,
+                            params, t_table, trace
+                        )
+                    result_i = -float(result_i)  # Switch to player's view.
+                if result_i > best_result:
+                    best_move = [coord1, coord2]
+                    best_result = result_i
+                # And 'unmake' the move.
                 board.unmake_move(
                     coord1, coord2, captured_piece, leaving_piece)
+                if result_i >= beta:
+                    # Ignore rest of pseudomoves [fail hard beta cutoff].
+                    # Update transposition table with best result found.
+                    update_transp_table(
+                        t_table, board, depth, result_i, alpha_orig, beta,
+                        [coord1, coord2]
+                    )
+                    return [coord1, coord2], beta, False, ON_GOING
+                if result_i > alpha:
+                    # Update move choice with this better one for player.
+                    best_move, alpha = [coord1, coord2], result_i
+            else:
+                # Simply 'unmake' the not-searched move.
+                board.unmake_move(
+                    coord1, coord2, captured_piece, leaving_piece)
+        else:
+            # Simply 'unmake' the illegal move.
+            board.unmake_move(
+                coord1, coord2, captured_piece, leaving_piece)
 
     # Check exploration results.
     if n_legal_moves_tried > 0:
@@ -846,7 +848,7 @@ def position_attacked_new_UNFINISHED(board, pos, attacking_side):
     # TODO: Pending next steps...
 
 
-def generate_pseudomoves(board):
+def generate_pseudomoves_OLD(board):
     """
     Generate a list of non-legally checked moves for the playing side.
 
@@ -891,6 +893,58 @@ def generate_pseudomoves(board):
         # Update main list.
         moves.append((piece.coord, list(new_moves)))
         moves_count += len(new_moves)
+
+    return moves, moves_count
+
+
+def generate_pseudomoves(board):
+    """
+    Generate a list of (non-legally checked) moves for
+    the playing side.
+
+    Input:
+        board:      Board - The game position to generate moves on.
+
+    Output:
+        moves:      list of pairs of ['from', 'to'] int values,
+                    each being the two integer coordinates of a move.
+                    E. g. [[24, 14], [24, 13]...]], [2, 3]...]
+        moves_count:integer - the total number of pseudomoves.
+    """
+    moves = []
+    moves_count = 0
+    # Iterate over every piece from the moving side.
+    for piece in board.pieces[board.turn]:
+        # Obtain list with piece moves | lists of moves
+        p_moves = bd.piece_moves[piece.type][piece.color][piece.coord]
+        if type(p_moves[0]) == list:
+            # List of moves lists (K or S in kingdom): [[1, 2...], [13, 15...]]
+            new_moves = set()  # A set with the moves to find for this 'piece'.
+            for moves_list in p_moves:  # [1, 2, 3, 4,...]
+                # Get the closest piece in that direction and its distance.
+                pieces = board.board1d[moves_list]  # [None, None, piece_1,...]
+                try:
+                    piece_pos = np.where(pieces)[0][0]  # 2
+                    closest_piece = pieces[piece_pos]  # piece_1
+                    if closest_piece.color == piece.color:
+                        # Add moves till closest_piece [EXcluding it].
+                        new_moves = new_moves.union(moves_list[:piece_pos])
+                    else:
+                        # Add moves till closest_piece [INcluding it].
+                        new_moves = new_moves.union(moves_list[:piece_pos + 1])
+                except IndexError:
+                    # No pieces in that direction: add all moves.
+                    new_moves = new_moves.union(moves_list)
+            new_moves = list(new_moves)
+        else:
+            # List of moves (P, or S out of kingdom): [1, 2, 3...]
+            new_moves = [p for p in p_moves if board.board1d[p] is None
+                         or board.board1d[p].color != piece.color]
+
+        # Update main list.
+        piece_moves_list = [[piece.coord, x] for x in new_moves]
+        moves += piece_moves_list
+        moves_count += len(piece_moves_list)
 
     return moves, moves_count
 
@@ -1134,57 +1188,66 @@ def is_legal_move(board, move):
         explanation:string - the error cause, or "".
     """
     coord1, coord2 = move  # The coordinates of the move.
-    moving_piece = board.board1d[coord1]  # The moving piece.
 
     # Identify moving_piece.
+    moving_piece = board.board1d[coord1]  # The moving piece.
     if moving_piece is None:
         return False, "Error: No piece found at {}.".format(
             utils.coord_2_algebraic[coord1])
 
-    # First, obtain pseudomoves for moving side, a list of lists:
-    # [[24, [14, 13...]], [44, [...]]
+    # Obtain pseudomoves for moving side, a list of lists:
+    # [[24, 14], [24, 13]...]], [2, 3]...]
     pseudo_moves, _ = generate_pseudomoves(board)
-    # Loop over all pseudomoves found to:
-    # 1. try to spot the one given.
-    # 2. know if the player has any legal move.
-    n_legal_pseudo_moves = 0
-    for pm_list in pseudo_moves:  # [24, [14, 13...]]
-        pm_coord1 = pm_list[0]
-        # Loop over all moves of the pm_list.
-        for pm_coord2 in pm_list[1]:  # [14, 13...]
-            # Check if the pm is legal by trying it [use default parameters].
-            pseudo_move_legal, _, _, _, _, \
-                captured_piece, leaving_piece = make_pseudomove(
-                    board, pm_coord1, pm_coord2,
-                    depth=0, params=MINIMAL_SEARCH_PARAMS, check_dynamic=False
-                )
-            # And now, 'unmake' the move:
-            board.unmake_move(coord1, coord2, captured_piece, leaving_piece)
-            # Check results:
-            if pseudo_move_legal:
-                # The player has some legal moves.
-                n_legal_pseudo_moves += 1
-            if pm_list[0] == moving_piece and pm_coord2 == coord2:
-                # The move was found, return its legal value.
-                if pseudo_move_legal:
-                    return True, ""
-                else:
-                    return False, "Error: {}{} is an illegal move.".format(
-                        utils.coord_2_algebraic[coord1],
-                        utils.coord_2_algebraic[coord2]
-                    )
 
-    # Move not found in the pseudo_moves list; is it a mated Prince leave?
-    if (moving_piece.type == bd.PRINCE and
-            moving_piece.color == board.turn and
-            coord2 is None and
-            n_legal_pseudo_moves == 0):
-        # It's a legal Prince leave.
-        return True, ""
+    # Check for move in pseudo_moves.
+    if move in pseudo_moves:
+        # The move is at least a pseudo-move.
+        # Check if the pm is legal by trying it [use default parameters].
+        pseudo_move_legal, _, _, _, _, \
+            captured_piece, leaving_piece = make_pseudomove(
+                board, coord1, coord2,
+                depth=0, params=MINIMAL_SEARCH_PARAMS, check_dynamic=False
+            )
+        # And now, 'unmake' the move:
+        board.unmake_move(coord1, coord2, captured_piece, leaving_piece)
+        # Check results:
+        if pseudo_move_legal:
+            return True, ""
+        else:
+            return False, "Error: {}{} is an illegal move.".format(
+                utils.coord_2_algebraic[coord1],
+                utils.coord_2_algebraic[coord2]
+            )
     else:
-        # It's an incorrect move.
-        return False, \
-            "Error: wrong move from {} to {}.".format(
+        # Move not found in pseudo-moves list.
+        # Check if it's a leaving check-mated Prince.
+        opponent_side = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
+        if moving_piece.type == bd.PRINCE and \
+                moving_piece.color == board.turn and \
+                coord2 is None and \
+                position_attacked(board, coord1, opponent_side):
+            # It's a Prince in check leaving the Board. Really mated?
+            # Loop over all player's moves to confirm it's a mate
+            for move_coords in pseudo_moves:
+                pseudo_move_legal, _, _, _, _, \
+                    captured_piece, leaving_piece = make_pseudomove(
+                        board, move_coords[0], move_coords[1],
+                        depth=0, params=MINIMAL_SEARCH_PARAMS, check_dynamic=False
+                    )
+                # And now, 'unmake' the move:
+                board.unmake_move(
+                    coord1, coord2, captured_piece, leaving_piece)
+                if pseudo_move_legal:
+                    # The player has some legal moves.
+                    return False, "Error: Prince at {} " \
+                        "is not checkmated.".format(
+                            utils.coord_2_algebraic[coord1]
+                        )
+            # No legal pseudomove found: legal leave.
+            return True, ""
+        else:
+            # Not a pseudomove or a leaving mated Prince.
+            return False, "Error: {}{} is an illegal move.".format(
                 utils.coord_2_algebraic[coord1],
                 utils.coord_2_algebraic[coord2]
             )
