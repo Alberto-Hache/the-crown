@@ -3,7 +3,7 @@
 ## Bugs
 
 ### A
-...
+- Negamax / Quiesce should discount depth from DRAW score (?).
 
 ### B
 - Make Gametrace size flexible (not limited to DEFAULT_TRACE_LENGTH).
