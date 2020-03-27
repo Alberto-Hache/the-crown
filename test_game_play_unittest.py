@@ -134,7 +134,7 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_quiesce_01.cor",  # Position to play.
                 TEST_SEARCH_PARAMS_4,   # Search parameters.
-                None, -11.899999999999999, False, 0    # Move, result, end, status.
+                None, -11.5, False, 0    # Move, result, end, status.
             ),
             (
                 "test_quiesce_02.cor",
@@ -144,7 +144,7 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_quiesce_03.cor",
                 TEST_SEARCH_PARAMS_4,
-                None, -13.2, False, 0
+                None, -12.8, False, 0
             ),
             (
                 "test_quiesce_05.cor",
@@ -164,7 +164,7 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_quiesce_08.cor",
                 TEST_SEARCH_PARAMS_4,
-                None, -112.5, False, 0
+                None, -112.1, False, 0
             ),
             #  Taken from negamax() unit tests.
             (
@@ -215,7 +215,7 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_minimax_10.cor",
                 TEST_SEARCH_PARAMS_4,
-                None, -11.899999999999999, False, 0
+                None, -11.5, False, 0
             ),
             (
                 "test_minimax_10b.cor",
