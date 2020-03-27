@@ -106,11 +106,11 @@ HASH_SIZE_5 = 1048573
 
 DEFAULT_HASH_SIZE = HASH_SIZE_5  # Max. size of the hash table.
 
-TT_HASH_IDX = 0    # The full hash value of the position.
-TT_DEPTH_IDX = 1   # The depth at which the position was explored.
-TT_VALUE_IDX = 2   # The value found for the position.
-TT_FLAG_IDX = 3    # The type of value (EXACT / LOWERBOUND / UPPERBOUND).
-TT_MOVE_IDX = 4    # The best move found in the position.
+HASH_IDX = 0    # The full hash value of the position.
+DEPTH_IDX = 1   # The depth at which the position was explored.
+VALUE_IDX = 2   # The value found for the position.
+FLAG_IDX = 3    # The type of value (EXACT / LOWERBOUND / UPPERBOUND).
+MOVE_IDX = 4    # The best move found in the position.
 
 EXACT = 0
 LOWER_BOUND = 1
@@ -279,13 +279,13 @@ class Transposition_table:
         else:
             # Collision or update: resolve by depth (root node has depth 0).
             self.updates += 1
-            if value[TT_DEPTH_IDX] < current_value[TT_DEPTH_IDX]:
+            if value[DEPTH_IDX] < current_value[DEPTH_IDX]:
                 # The new value was more deeply explored: replace.
                 self.table[key] = value
 
     def retrieve(self, key):
         current_value = self.table.get(key, None)
-        if current_value is not None and current_value[TT_HASH_IDX] == key:
+        if current_value is not None and current_value[HASH_IDX] == key:
             # Successful retrieval.
             self.hits += 1
             return current_value
@@ -305,21 +305,25 @@ class Transposition_table:
         self.collisions = 0
         self.updates = 0
 
+    def update_values(
+        self, board, depth, value, alpha_orig, beta, move
+    ):
+        """
+        Update the transposition table with the board passed
+        and the values associated to it.
+        """
 
-def update_transp_table(
-    t_table, board, depth, value, alpha_orig, beta, move
-):
-    # Determine flag for the value.
-    if value <= alpha_orig:
-        flag = UPPER_BOUND
-    elif value >= beta:
-        flag = LOWER_BOUND
-    else:
-        flag = EXACT
-    # Update transposition table.
-    t_table.insert(
-        board.hash, (board.hash, depth, value, flag, move)
-    )
+        # Determine flag for the value.
+        if value <= alpha_orig:
+            flag = UPPER_BOUND
+        elif value >= beta:
+            flag = LOWER_BOUND
+        else:
+            flag = EXACT
+        # Update transposition table.
+        self.insert(
+            board.hash, (board.hash, depth, value, flag, move)
+        )
 
 
 def play(
@@ -390,24 +394,29 @@ def negamax(
             # The position already happenned in the game [excluding root node].
             return None, DRAW, True, DRAW_THREE_REPETITIONS
 
-    # 2. Check in transposition table.
+    # 2. Check position in transposition table.
     alpha_orig = alpha
     value = t_table.retrieve(board.hash)
     hash_move = None
     if value is not None:
         # Position found with enough depth; check value and flags.
-        if value[TT_DEPTH_IDX] <= depth:
-            if value[TT_FLAG_IDX] == EXACT:
-                return value[TT_MOVE_IDX], value[TT_VALUE_IDX], False, ON_GOING
-            elif value[TT_FLAG_IDX] == LOWER_BOUND:
-                alpha = max(alpha, value[TT_VALUE_IDX])
-            elif value[TT_FLAG_IDX] == UPPER_BOUND:
-                beta = min(beta, value[TT_VALUE_IDX])
+        if value[DEPTH_IDX] <= depth:
+            # Adjust 'stored_value' to current depth.
+            stored_value = correct_eval_from_to_depth(
+                value[VALUE_IDX], value[DEPTH_IDX], depth
+            )
+            # Adapt search to value flag.
+            if value[FLAG_IDX] == EXACT:
+                return value[MOVE_IDX], stored_value, False, ON_GOING
+            elif value[FLAG_IDX] == LOWER_BOUND:
+                alpha = max(alpha, stored_value)
+            elif value[FLAG_IDX] == UPPER_BOUND:
+                beta = min(beta, stored_value)
         # Check for alpha-beta cutoff.
         if alpha >= beta:
-            return value[TT_MOVE_IDX], value[TT_VALUE_IDX], False, ON_GOING
-        # Capture possibly registered move.
-        hash_move = value[TT_MOVE_IDX]
+            return value[MOVE_IDX], stored_value, False, ON_GOING
+        # Retrieve possibly registered move.
+        hash_move = value[MOVE_IDX]
 
     # 3. Check for other end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
@@ -459,8 +468,8 @@ def negamax(
             if result_i >= beta:
                 # Ignore rest of pseudomoves [fail-hard beta cutoff].
                 # Update transposition table with best result found.
-                update_transp_table(
-                    t_table, board, depth, result_i, alpha_orig, beta,
+                t_table.update_values(
+                    board, depth, result_i, alpha_orig, beta,
                     [coord1, coord2]
                 )
                 return [coord1, coord2], beta, False, ON_GOING
@@ -476,8 +485,8 @@ def negamax(
     if n_legal_moves_tried > 0:
         # A legal best move was found.
         # Update transposition table with best result found.
-        update_transp_table(
-            t_table, board, depth, best_result, alpha_orig, beta,
+        t_table.update_values(
+            board, depth, best_result, alpha_orig, beta,
             best_move
         )
         # Return results [fail-hard alpha cutoff].
@@ -515,8 +524,8 @@ def negamax(
         board.unmake_move(
             coord1, coord2, captured_piece, leaving_piece)
         # Update transposition table with best result found.
-        update_transp_table(
-            t_table, board, depth, best_result, alpha_orig, beta,
+        t_table.update_values(
+            board, depth, best_result, alpha_orig, beta,
             [coord1, coord2]
         )
         # Return results.
@@ -566,21 +575,26 @@ def quiesce(
             # The position had already happenned in the game.
             return None, DRAW, True, DRAW_THREE_REPETITIONS
 
-    # 2. Check in transposition table.
+    # 2. Check position in transposition table.
     alpha_orig = alpha
     value = t_table.retrieve(board.hash)
     if value is not None:
         # Position found with enough depth; check value and flags.
-        if value[TT_DEPTH_IDX] <= depth:
-            if value[TT_FLAG_IDX] == EXACT:
-                return value[TT_MOVE_IDX], value[TT_VALUE_IDX], False, ON_GOING
-            elif value[TT_FLAG_IDX] == LOWER_BOUND:
-                alpha = max(alpha, value[TT_VALUE_IDX])
-            elif value[TT_FLAG_IDX] == UPPER_BOUND:
-                beta = min(beta, value[TT_VALUE_IDX])
+        if value[DEPTH_IDX] <= depth:
+            # Adjust 'stored_value' to current depth.
+            stored_value = correct_eval_from_to_depth(
+                value[VALUE_IDX], value[DEPTH_IDX], depth
+            )
+            # Adapt search to value flag.
+            if value[FLAG_IDX] == EXACT:
+                return value[MOVE_IDX], stored_value, False, ON_GOING
+            elif value[FLAG_IDX] == LOWER_BOUND:
+                alpha = max(alpha, stored_value)
+            elif value[FLAG_IDX] == UPPER_BOUND:
+                beta = min(beta, stored_value)
         # Check for alpha-beta cutoff.
         if alpha >= beta:
-            return value[TT_MOVE_IDX], value[TT_VALUE_IDX], False, ON_GOING
+            return value[MOVE_IDX], stored_value, False, ON_GOING
 
     # 3. Check for other end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
@@ -654,8 +668,8 @@ def quiesce(
                 if result_i >= beta:
                     # Ignore rest of pseudomoves [fail hard beta cutoff].
                     # Update transposition table with best result found.
-                    update_transp_table(
-                        t_table, board, depth, result_i, alpha_orig, beta,
+                    t_table.update_values(
+                        board, depth, result_i, alpha_orig, beta,
                         [coord1, coord2]
                     )
                     return [coord1, coord2], beta, False, ON_GOING
@@ -675,8 +689,8 @@ def quiesce(
     if n_legal_moves_tried > 0:
         # A legal best move was found.
         # Update transposition table with best result found.
-        update_transp_table(
-            t_table, board, depth, best_result, alpha_orig, beta,
+        t_table.update_values(
+            board, depth, best_result, alpha_orig, beta,
             best_move
         )
         # Return results [fail-hard alpha cutoff].
@@ -705,8 +719,8 @@ def quiesce(
         board.unmake_move(
             coord1, coord2, captured_piece, leaving_piece)
         # Update transposition table with best result found.
-        update_transp_table(
-            t_table, board, depth, best_result, alpha_orig, beta,
+        t_table.update_values(
+            board, depth, best_result, alpha_orig, beta,
             [coord1, coord2]
         )
         # Return results.
@@ -717,8 +731,8 @@ def quiesce(
         return None, DRAW, True, DRAW_STALEMATE
     else:
         # 4.3 [unexplored by 4.2] The player has only non-dynamic moves.
-        update_transp_table(
-            t_table, board, depth, alpha, alpha_orig, beta, None
+        t_table.update_values(
+            board, depth, alpha, alpha_orig, beta, None
         )
         return None, alpha, False, ON_GOING
 
@@ -846,55 +860,6 @@ def position_attacked_new_UNFINISHED(board, pos, attacking_side):
     position_lists = bd.knight_moves[pos]
     board_slices = itemgetter(*position_lists)(board.board1d)
     # TODO: Pending next steps...
-
-
-def generate_pseudomoves_OLD(board):
-    """
-    Generate a list of non-legally checked moves for the playing side.
-
-    Input:
-        board:      Board - The game position to generate moves on.
-
-    Output:
-        moves:      list of lists - [[24, [14, 13...]], [44, [...]]
-        moves_count:integer - the total number of pseudomoves.
-    """
-    moves = []
-    moves_count = 0
-    # Iterate over every piece from the moving side.
-    for piece in board.pieces[board.turn]:
-        # Obtain list with piece moves | lists of moves
-        p_moves = bd.piece_moves[piece.type][piece.color][piece.coord]
-        if type(p_moves[0]) == list:
-            # List of moves lists (K or S in kingdom): [[1, 2...], [13, 15...]]
-            new_moves = set()  # A set with the moves to find for this 'piece'.
-            for moves_list in p_moves:  # [1, 2, 3, 4,...]
-                # Get the closest piece in that direction and its distance.
-                pieces = board.board1d[moves_list]  # [None, None, piece_1,...]
-                try:
-                    piece_pos = np.where(pieces)[0][0]  # 2
-                    closest_piece = pieces[piece_pos]  # piece_1
-                    if closest_piece.color == piece.color:
-                        # Add moves till closest_piece [EXCLUDING it].
-                        new_moves = new_moves.union(moves_list[:piece_pos])
-                    else:
-                        # Add moves till closest_piece [INCLUDING it].
-                        new_moves = new_moves.union(moves_list[:piece_pos + 1])
-                except IndexError:
-                    # No pieces in that direction: add all moves.
-                    new_moves = new_moves.union(moves_list)
-        else:
-            # List of moves (P, or S out of kingdom): [1, 2, 3...]
-            new_moves = set(
-                [p for p in p_moves if board.board1d[p] is None
-                    or board.board1d[p].color != piece.color]
-            )
-
-        # Update main list.
-        moves.append((piece.coord, list(new_moves)))
-        moves_count += len(new_moves)
-
-    return moves, moves_count
 
 
 def generate_pseudomoves(board):
@@ -1251,6 +1216,31 @@ def is_legal_move(board, move):
                 utils.coord_2_algebraic[coord1],
                 utils.coord_2_algebraic[coord2]
             )
+
+
+def correct_eval_from_to_depth(evaluation, from_depth, to_depth):
+    """
+    Adjust some previous 'evaluation' calculated at depth 'from_depth'
+    to new depth 'to_depth'.
+    It takes into account the two different depth penalties:
+    - END_DEPTH_PENALTY assumed for |evaluation| >= PLAYER_WINS - 100
+    - STATIC_DEPTH_PENALTY for any other evaluation.
+
+    Note: from_depth <= to_depth for evaluation to be worthy.
+    """
+
+    if from_depth != to_depth:
+        # Depth correction required.
+        depth_delta = to_depth - from_depth  # 4 - 2 = 2
+        delta_sign = -np.sign(evaluation)  # -1 for positive evals
+        if abs(evaluation) >= PLAYER_WINS - 100:
+            # An end-game evaluation.
+            evaluation += delta_sign * depth_delta * END_DEPTH_PENALTY
+        else:
+            # A middle-game evaluation.
+            evaluation += delta_sign * depth_delta * STATIC_DEPTH_PENALTY
+
+    return evaluation
 
 
 if __name__ == '__main__':

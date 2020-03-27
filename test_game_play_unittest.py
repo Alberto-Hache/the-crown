@@ -656,6 +656,38 @@ class Test_game_play(unittest.TestCase):
             "output.txt",
             "tests/output_test_evaluate.txt"))
 
+    def test_correct_eval_from_to_depth(self):
+        # Test cases are:
+        # ( evaluation, from_depth, to_depth,
+        #  expected_result )
+        test_cases = (
+            (
+                9990, 2, 4,
+                9988
+            ),
+            (
+                100, 2, 4,
+                99.9
+            ),
+            (
+                -9990, 2, 4,
+                -9988
+            ),
+            (
+                -100, 2, 4,
+                -99.9
+            )
+        )
+
+        for test in test_cases:
+            evaluation, from_depth, to_depth, correct_eval = test
+            new_eval = gp.correct_eval_from_to_depth(
+                evaluation, from_depth, to_depth
+            )
+            self.assertEqual(
+                new_eval, correct_eval
+            )
+
 
 if __name__ == '__main__':
     unittest.main()

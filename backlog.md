@@ -3,6 +3,7 @@
 ## Bugs
 
 ### A
+- Adapt values stored in hash to current depth vs stored depth.
 - Negamax / Quiesce should discount depth from DRAW score (?).
 
 ### B
@@ -35,11 +36,18 @@
   - Best move
 - Pre-evaluation of moves (extend make pseudo-move()?) for move sorting?
   - Static exchange evaluation?
+  - Adapt to game status (middle game | end game)?
 - Add killer-move heuristic.
+- Add principal variation (without progressive deepening?).
 
 ### (v2)
-- Add progressive depth search (based on hash tables).
+- Add progressive deepening:
+  - reusing hash table
+  - reusing principal variation
+  - reusing killer moves?
 - Try "soft-fail" alpha beta pruning?
+  - In search.
+  - In values stored in transposition table.
 - Try Aspiration windows (https://www.chessprogramming.org/Aspiration_Windows) ?
 
 
