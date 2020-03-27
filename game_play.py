@@ -758,7 +758,9 @@ def evaluate_static(board, depth):
         knights_mobility(board, player_side) -
         knights_mobility(board, opponent_side)
     ) * KNIGHT_MOVE_VALUE
-    other = - depth*STATIC_DEPTH_PENALTY
+
+    eval = material + positional
+    other = - depth*STATIC_DEPTH_PENALTY*np.sign(eval)
 
     return material + positional + other
 

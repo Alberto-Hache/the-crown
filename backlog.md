@@ -3,7 +3,6 @@
 ## Bugs
 
 ### A
-- Adapt values stored in hash to current depth vs stored depth.
 - Negamax / Quiesce should discount depth from DRAW score (?).
 
 ### B
