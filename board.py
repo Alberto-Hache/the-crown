@@ -260,8 +260,11 @@ class Board:
                             (or None):
                             a) Prince checkmated.
                             b) Soldier promoted to Prince.
+            old_hash:       int - hash value of the board BEFORE the move.
 
         """
+        # Keep old_hash before changes.
+        old_hash = self.hash
         # Obtain moving piece.
         piece1 = self.board1d[coord1]
         # Captured piece and leaving piece to detect:
@@ -313,9 +316,11 @@ class Board:
         # Finally, refresh the board's hash.
         self.hash = self.calculate_hash()
 
-        return captured_piece, leaving_piece
+        return captured_piece, leaving_piece, old_hash
 
-    def unmake_move(self, coord1, coord2, captured_piece, leaving_piece):
+    def unmake_move(
+        self, coord1, coord2, captured_piece, leaving_piece, old_hash
+    ):
         """
         Execute all board updates required to revert a previous move
         from coord1 to coord2, managing changes in pieces.
@@ -329,6 +334,8 @@ class Board:
                             (or None):
                             a) Prince checkmated, now resurrected.
                             b) Soldier promoted to Prince, now demoted.
+            old_hash:       int - hash value of the board BEFORE the move.
+
         Output:
             (none)
 
@@ -388,7 +395,8 @@ class Board:
         # self.boardcode[self.n_positions] = self.turn
 
         # Finally, refresh the board's hash.
-        self.hash = self.calculate_hash()
+        # self.hash = self.calculate_hash()
+        self.hash = old_hash
 
     def set_turn(self, color):
         self.turn = color

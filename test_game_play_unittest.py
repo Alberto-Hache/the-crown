@@ -561,7 +561,7 @@ class Test_game_play(unittest.TestCase):
 
             # Make the move and check results.
             is_legal, is_dynamic, result, game_end, game_status, \
-                captured_piece, leaving_piece = \
+                captured_piece, leaving_piece, old_hash = \
                 gp.make_pseudomove(
                     board, coord1, coord2,
                     depth=0, params=gp.DEFAULT_SEARCH_PARAMS,
@@ -580,7 +580,8 @@ class Test_game_play(unittest.TestCase):
                 ))
 
             # Now 'unmake' the move and check against 'board_orig'.
-            board.unmake_move(coord1, coord2, captured_piece, leaving_piece)
+            board.unmake_move(
+                coord1, coord2, captured_piece, leaving_piece, old_hash)
             # Check .turn, .hash
             self.assertEqual(
                 (board.turn, board.hash),
