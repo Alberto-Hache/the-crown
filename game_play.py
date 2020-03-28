@@ -668,7 +668,7 @@ def quiesce(
 
     if not player_in_check:
         # Null move is possible; evaluate it.
-        player_in_check = False
+        player_in_check = False  # TODO: this line is useless.
         best_move = None
         result_i = evaluate_static(board, depth)
         # Check result of null_move vs alpha-beta window.
@@ -693,7 +693,7 @@ def quiesce(
         # Assumption: it's legal.
         n_legal_moves_tried += 1
         n_legal_moves_found += 1
-        # Unless it led to a final postion, search the move.
+        # Unless it led to a final position, search the move.
         if not game_end_i:
             childs_move, result_i, game_end_i, game_status_i = \
                 quiesce(
@@ -797,7 +797,7 @@ def quiesce(
     player_prince = board.prince[player_side]
     if player_in_check:
         # The player is CHECKMATED, its Prince leaves and yields turn.
-        coord1, coord2 = player_prince.coord, None  # Prince leaving move.
+        coord1, coord2 = player_prince.coord, None  # Prince leaving move. BUG!
         best_move = [coord1, coord2]
         is_legal_i, is_dynamic_i, \
             result_i, game_end_i, game_status_i, \

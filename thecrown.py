@@ -343,28 +343,27 @@ def play_match(board, player, max_moves, file_name=None):
 
 
 if __name__ == "__main__":
-    # Handle possible arguments passed.
-    # Load indicated board position if any.
+    # Argument: starting position.
     file_name = None if (len(sys.argv) == 1) else sys.argv[1]
     board = bd.Board(file_name)
-    # Check limitation of moves to play.
+    # Argument: limitation of moves to play.
     max_moves = np.Infinity if (len(sys.argv) != 3) else int(sys.argv[2])
 
     # Create array with the two players' configuration:
     player_set = [
         # White player:
         types.SimpleNamespace(
-            name="Crowny-III",
+            name="Crowny-V",
             type=MACHINE_PLAYER,
             color=bd.WHITE,
-            params=game.PLY3_SEARCH_PARAMS
+            params=game.PLY5_SEARCH_PARAMS
         ),
         # Black player:
         types.SimpleNamespace(
-            name="Crowny-I",
+            name="Crowny-II",
             type=MACHINE_PLAYER,
             color=bd.BLACK,
-            params=game.PLY1_SEARCH_PARAMS
+            params=game.PLY2_SEARCH_PARAMS
         )
     ]
 

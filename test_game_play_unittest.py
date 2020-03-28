@@ -618,6 +618,56 @@ class Test_game_play(unittest.TestCase):
                     file_name, test_move
                 )
             )
+            # Check .prince for both colors.
+            if board.prince[bd.WHITE] is None:
+                white_prince_data_0 = (None, None, None, None, None)
+            else:
+                white_prince_data_0 = (
+                    board.prince[bd.WHITE].type,
+                    board.prince[bd.WHITE].color,
+                    board.prince[bd.WHITE].coord,
+                    board.prince[bd.WHITE].code,
+                    board.prince[bd.WHITE].tracing,
+                )
+            if board_orig.prince[bd.WHITE] is None:
+                white_prince_data_1 = (None, None, None, None, None)
+            else:
+                white_prince_data_1 = (
+                    board_orig.prince[bd.WHITE].type,
+                    board_orig.prince[bd.WHITE].color,
+                    board_orig.prince[bd.WHITE].coord,
+                    board_orig.prince[bd.WHITE].code,
+                    board_orig.prince[bd.WHITE].tracing,
+                )
+            if board.prince[bd.BLACK] is None:
+                black_prince_data_0 = (None, None, None, None, None)
+            else:
+                black_prince_data_0 = (
+                    board.prince[bd.BLACK].type,
+                    board.prince[bd.BLACK].color,
+                    board.prince[bd.BLACK].coord,
+                    board.prince[bd.BLACK].code,
+                    board.prince[bd.BLACK].tracing,
+                )
+            if board_orig.prince[bd.BLACK] is None:
+                black_prince_data_1 = (None, None, None, None, None)
+            else:
+                black_prince_data_1 = (
+                    board_orig.prince[bd.BLACK].type,
+                    board_orig.prince[bd.BLACK].color,
+                    board_orig.prince[bd.BLACK].coord,
+                    board_orig.prince[bd.BLACK].code,
+                    board_orig.prince[bd.BLACK].tracing,
+                )
+            self.assertEqual(
+                (white_prince_data_0, black_prince_data_0),
+                (white_prince_data_1, black_prince_data_1),
+                "ERROR in position {}, after 'unmaking' move {}: "
+                ".prince differs".format(
+                    file_name, test_move
+                )
+            )
+            # Check .pieces
 
     def test_evaluate(self):
         file_list = glob.glob(bd.GAMES_PATH + "position*.cor")

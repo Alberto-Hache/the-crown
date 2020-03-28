@@ -46,6 +46,7 @@ initial_position = (
 )
 
 # UNIQUE CODES for each piece type and color.
+# Order: Prince, Soldier, Knight
 piece_code = (
     (1, 2, 3),
     (4, 5, 6)
@@ -197,7 +198,13 @@ class Board:
             self.piece_count[color][type] += 1
         # If it's a Prince, update Princes' list.
         if type == PRINCE:
-            self.prince[color] = piece
+            if self.prince[color] is None:
+                # Update reference to newborn Prince.
+                self.prince[color] = piece
+                # If it's a second Prince for that color!
+                # Leave previous legitimate reference so that,
+                # once detected as illegal, the previous Prince
+                # remains referenced.
 
     def include_existing_piece(self, piece, coord):
         """
@@ -240,7 +247,9 @@ class Board:
             self.piece_count[piece.color][piece.type] -= 1
         # If it's a Prince, update Princes' list.
         if piece.type == PRINCE:
-            self.prince[piece.color] = None
+            # Remove reference only if it's the legitimate Prince.
+            if self.prince[piece.color] == piece:
+                self.prince[piece.color] = None
 
     def make_move(self, coord1, coord2):
         """

@@ -3,9 +3,12 @@
 ## Bugs
 
 ### A
-- Negamax / Quiesce should discount depth from DRAW score (?).
+- Fix bug when Soldier promotes illegaly.
+- Add test case to unit test for make_unmake_pseudomove().
 
 ### B
+
+- Negamax / Quiesce should discount depth from DRAW score (?).
 - Make Gametrace size flexible (not limited to DEFAULT_TRACE_LENGTH).
 - Regularize terminology: value/score (not result), color / turn / side?
 
@@ -29,9 +32,6 @@
 
 ### (v1)
 
-- Add hash-tables for transpositions.
-  - Value (exact, lower- / upper-bound) - DONE
-  - Best move
 - Pre-evaluation of moves (extend make pseudo-move()?) for move sorting?
   - Static exchange evaluation?
   - Adapt to game status (middle game | end game)?
