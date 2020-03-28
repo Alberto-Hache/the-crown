@@ -425,14 +425,60 @@ def negamax(
         # End of game: no move is returned.
         return None, result, game_end, game_status  # TODO: Return beta?
 
-    # 4. Generate and explore existing pseudomoves.
+    # Prepare for tree search.
+    best_move = None
+    best_result = -np.Infinity  # Value to store in transposition table.
+    n_legal_moves_tried = 0
+
+    # 4.1 Null-move: not tried in negamax()
+    pass
+
+    # 4.2 Try hash-move (before generating pseudo-moves).
+    if hash_move is not None:
+        coord1, coord2 = hash_move
+        # Try hash_move on board;
+        # if it leads to a game end, we can use result_i.
+        is_legal_i, is_dynamic_i, \
+            result_i, game_end_i, game_status_i, \
+            captured_piece, leaving_piece, old_hash = \
+            make_pseudomove(
+                board, coord1, coord2, depth, params
+            )
+        # Assumption: it's legal.
+        n_legal_moves_tried += 1
+        # Unless it led to a final postion, search the move.
+        if not game_end_i:
+            childs_move, result_i, game_end_i, game_status_i = \
+                negamax(
+                    board, depth + 1, -beta, -alpha,
+                    params, t_table, trace
+                )
+            result_i = -float(result_i)  # Switch to player's view.
+        # Assess results from final position or search.
+        if result_i > best_result:
+            best_move = [coord1, coord2]
+            best_result = result_i
+        # And 'unmake' the move.
+        board.unmake_move(
+            coord1, coord2, captured_piece, leaving_piece, old_hash)
+        if result_i >= beta:
+            # Ignore rest of moves [fail-hard beta cutoff].
+            # (No need to update transposition table with this known move.)
+            return [coord1, coord2], beta, False, ON_GOING
+        if result_i > alpha:
+            # Update move choice with this better one for player.
+            best_move, alpha = [coord1, coord2], result_i
+
+    # 4.3 Generate and explore existing pseudomoves.
     moves, moves_count = generate_pseudomoves(board)
     assert(moves_count > 0),\
         "ERROR: No pseudomoves found despite game is not ended "\
         "and MAX_DEPTH has not been reached."
-    best_move = None
-    best_result = -np.Infinity  # Value to store in transposition table.
-    n_legal_moves_tried = 0
+    # Remove already searched hash_move from pseudomoves list.
+    # Note: if hash_move is "Prince leaving", it won't be in 'moves'.
+    if hash_move is not None and hash_move[1] is not None:
+        moves.remove(hash_move)
+
     for pseudo_move in moves:  # [[24, 14], [24, 13]...]], [2, 3]...]
         coord1, coord2 = pseudo_move  # [24, 14]
         # Try pseudomove 'i' on board;
@@ -459,6 +505,7 @@ def negamax(
                         params, t_table, trace
                     )
                 result_i = -float(result_i)  # Switch to player's view.
+            # Assess results from final position or search.
             if result_i > best_result:
                 best_move = [coord1, coord2]
                 best_result = result_i
@@ -578,6 +625,7 @@ def quiesce(
     # 2. Check position in transposition table.
     alpha_orig = alpha
     value = t_table.retrieve(board.hash)
+    hash_move = None
     if value is not None:
         # Position found with enough depth; check value and flags.
         if value[DEPTH_IDX] <= depth:
@@ -595,6 +643,8 @@ def quiesce(
         # Check for alpha-beta cutoff.
         if alpha >= beta:
             return value[MOVE_IDX], stored_value, False, ON_GOING
+        # Retrieve possibly registered move.
+        hash_move = value[MOVE_IDX]
 
     # 3. Check for other end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
@@ -602,6 +652,12 @@ def quiesce(
     if game_end:
         # End of game: no move is returned.
         return None, result, game_end, game_status  # TODO: Return beta?
+
+    # Prepare for tree search.
+    best_move = None
+    best_result = -np.Infinity  # Value to store in transposition table.
+    n_legal_moves_tried = 0
+    n_legal_moves_found = 0
 
     # 4.1. Null-move: Perform static evaluation if it is legal.
     player_side = board.turn
@@ -622,14 +678,54 @@ def quiesce(
             # Update move choice with this better one for player.
             alpha = result_i
 
-    # 4.2. Generate and explore dynamic pseudomoves.
+    # 4.2 Try hash-move (before generating pseudo-moves),
+    # regardless of whether it's dynamic or not.
+    if hash_move is not None:
+        coord1, coord2 = hash_move
+        # Try hash_move on board;
+        # if it leads to a game end, we can use result_i.
+        is_legal_i, is_dynamic_i, \
+            result_i, game_end_i, game_status_i, \
+            captured_piece, leaving_piece, old_hash = \
+            make_pseudomove(
+                board, coord1, coord2, depth, params
+            )
+        # Assumption: it's legal.
+        n_legal_moves_tried += 1
+        n_legal_moves_found += 1
+        # Unless it led to a final postion, search the move.
+        if not game_end_i:
+            childs_move, result_i, game_end_i, game_status_i = \
+                quiesce(
+                    board, depth + 1, -beta, -alpha,
+                    params, t_table, trace
+                )
+            result_i = -float(result_i)  # Switch to player's view.
+        # Assess results from final position or search.
+        if result_i > best_result:
+            best_move = [coord1, coord2]
+            best_result = result_i
+        # And 'unmake' the move.
+        board.unmake_move(
+            coord1, coord2, captured_piece, leaving_piece, old_hash)
+        if result_i >= beta:
+            # Ignore rest of moves [fail-hard beta cutoff].
+            # (No need to update transposition table with this known move.)
+            return [coord1, coord2], beta, False, ON_GOING
+        if result_i > alpha:
+            # Update move choice with this better one for player.
+            best_move, alpha = [coord1, coord2], result_i
+
+    # 4.3. Generate and explore dynamic pseudomoves.
     moves, moves_count = generate_pseudomoves(board)
     assert(moves_count > 0),\
         "ERROR: No pseudomoves found despite game is not ended."
-    best_move = None
-    best_result = -np.Infinity  # Value to store in transposition table.
-    n_legal_moves_tried = 0
-    n_legal_moves_found = 0
+
+    # Remove already searched hash_move from list.
+    # Note: if hash_move is "Prince leaving", it won't be in 'moves'.
+    if hash_move is not None and hash_move[1] is not None:
+        moves.remove(hash_move)
+
     for pseudo_move in moves:  # [[24, 14], [24, 13]...]], [2, 3]...]
         coord1, coord2 = pseudo_move  # [24, 14]
         # Try pseudomove 'i' on board;
@@ -659,6 +755,7 @@ def quiesce(
                             params, t_table, trace
                         )
                     result_i = -float(result_i)  # Switch to player's view.
+                # Assess results from final position or search.
                 if result_i > best_result:
                     best_move = [coord1, coord2]
                     best_result = result_i
@@ -753,16 +850,18 @@ def evaluate_static(board, depth):
     player_side = board.turn
     opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
 
+    # Factors evaluated.
     material = np.multiply(board.piece_count, piece_weights[player_side]).sum()
     positional = (
         knights_mobility(board, player_side) -
         knights_mobility(board, opponent_side)
     ) * KNIGHT_MOVE_VALUE
 
-    eval = material + positional
-    other = - depth*STATIC_DEPTH_PENALTY*np.sign(eval)
+    # Other factors.
+    pre_eval = material + positional
+    other = - depth*STATIC_DEPTH_PENALTY*np.sign(pre_eval)
 
-    return material + positional + other
+    return pre_eval + other
 
 
 def evaluate_end(board, depth):
@@ -864,13 +963,14 @@ def position_attacked_new_UNFINISHED(board, pos, attacking_side):
     # TODO: Pending next steps...
 
 
-def generate_pseudomoves(board):
+def generate_pseudomoves(board, kill_moves=None):
     """
     Generate a list of (non-legally checked) moves for
     the playing side.
 
     Input:
         board:      Board - The game position to generate moves on.
+        kill_moves: TBA
 
     Output:
         moves:      list of pairs of ['from', 'to'] int values,
