@@ -18,18 +18,20 @@ class Profiler(unittest.TestCase):
 
     def negamax_depth_4(self):
         test_cases = (
-            "01", "02", "03"
+            "4.01", "4.02", "4.03", "4.04"
         )
         for test_case in test_cases:
+            print("\nProfiler.negamax_depth_4: Test case {}".format(test_case))
             command = "loop_negamax('{}')".format(test_case)
             cProfile.run(command, sort='tottime')
             self.assertTrue(True)  # TODO: Add proper test (duration?)
 
     def negamax_depth_5(self):
         test_cases = (
-            "04",
+            "5.01",
         )
         for test_case in test_cases:
+            print("\nProfiler.negamax_depth_5: Test case {}".format(test_case))
             command = "loop_negamax('{}')".format(test_case)
             cProfile.run(command, sort='tottime')
             self.assertTrue(True)  # TODO: Add proper test (duration?)
@@ -97,13 +99,13 @@ def loop_negamax(case_idx):
 
     test_cases = {
         # MAX DEPTH = 4
-        "01": (
+        "4.01": (
             (
                 "test_minimax_10b.cor",
             ),
             gp.PLY4_SEARCH_PARAMS
         ),
-        "02": (
+        "4.02": (
             (
                 "test_minimax_01.cor",
                 "test_minimax_02.cor",
@@ -111,7 +113,7 @@ def loop_negamax(case_idx):
             ),
             gp.PLY4_SEARCH_PARAMS
         ),
-        "03": (
+        "4.03": (
             (
                 "test_minimax_07.cor",
                 "test_minimax_08.cor",
@@ -119,8 +121,14 @@ def loop_negamax(case_idx):
             ),
             gp.PLY4_SEARCH_PARAMS
         ),
+        "4.04": (
+            (
+                "test_minimax_11.cor",
+            ),
+            gp.PLY4_SEARCH_PARAMS
+        ),
         # MAX DEPTH = 5
-        "04": (
+        "5.01": (
             (
               "test_minimax_11.cor",
             ),
