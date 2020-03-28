@@ -21,7 +21,6 @@
   - Use beams?
   - Quick previous discards (e.g. Knight off-rank?, too far away Soldier/Prince?)
   ...
-- Avoid second call to hash() after unmake() [storing value in aux var]?
 - Avoid using knights_mobility() or count_knight_pseudomoves() by making generate_pseudomoves() count mobility of Knights!
 - Generate_pseudo_moves based on 'beams' - 'shadows'.
 
