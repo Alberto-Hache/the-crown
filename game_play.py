@@ -54,14 +54,28 @@ DEFAULT_SEARCH_PARAMS = PLY4_SEARCH_PARAMS
 # Evaluation of static positions.
 
 # Material:
+PRINCE_WEIGHT = 100
+KNIGHT_WEIGHT = 10
+SOLDIER_WEIGHT = 1
+
+# Material for each code found in board.code[]
+piece_code_value = np.array(
+    [
+        0,
+        PRINCE_WEIGHT, SOLDIER_WEIGHT, KNIGHT_WEIGHT,
+        PRINCE_WEIGHT, SOLDIER_WEIGHT, KNIGHT_WEIGHT
+    ]
+)
+
+# Material from player's view, ordered by piece.code:
 piece_weights = np.array([
     [  # From White's point of view (Prince, Soldier, Knight).
-        [100, 1, 10],
-        [-100, -1, -10]
+        [PRINCE_WEIGHT, SOLDIER_WEIGHT, KNIGHT_WEIGHT],
+        [-PRINCE_WEIGHT, -SOLDIER_WEIGHT, -KNIGHT_WEIGHT]
     ],
     [  # From Black's point of view (Prince, Soldier, Knight).
-        [-100, -1, -10],
-        [100, 1, 10]
+        [-PRINCE_WEIGHT, -SOLDIER_WEIGHT, -KNIGHT_WEIGHT],
+        [PRINCE_WEIGHT, SOLDIER_WEIGHT, KNIGHT_WEIGHT]
     ]
 ])
 
@@ -74,6 +88,10 @@ KNIGHT_MOVE_VALUE = 0.1
 # TODO: fine tune mobility vs shortest wins.
 STATIC_DEPTH_PENALTY = 0.05  # Subtract to foster faster wins.
 END_DEPTH_PENALTY = 1  # Subtract to foster faster wins.
+
+########################################################################
+# Preevaluations
+
 
 ########################################################################
 # Possible end-game results
@@ -479,6 +497,10 @@ def negamax(
     if hash_move is not None and hash_move[1] is not None:
         moves.remove(hash_move)
 
+    # Preevaluate and sort pseudomoves.
+    moves = pre_evaluate_pseudomoves(board, moves)
+
+    # Explore each possible pseudomove.
     for pseudo_move in moves:  # [[24, 14], [24, 13]...]], [2, 3]...]
         coord1, coord2 = pseudo_move  # [24, 14]
         # Try pseudomove 'i' on board;
@@ -662,6 +684,8 @@ def quiesce(
     # 4.1. Null-move: Perform static evaluation if it is legal.
     player_side = board.turn
 
+    # If not legal, the player must be in check.
+    # (The other illegal case (>1 Princes) is not explored by calling method.)
     board.flip_turn()  # Flip turns temporarily.
     player_in_check = not is_legal(board)
     board.flip_turn()  # Restablish original turn.
@@ -726,6 +750,10 @@ def quiesce(
     if hash_move is not None and hash_move[1] is not None:
         moves.remove(hash_move)
 
+    # Preevaluate and sort pseudomoves.
+    moves = pre_evaluate_pseudomoves(board, moves)
+
+    # Explore each possible pseudomove.
     for pseudo_move in moves:  # [[24, 14], [24, 13]...]], [2, 3]...]
         coord1, coord2 = pseudo_move  # [24, 14]
         # Try pseudomove 'i' on board;
@@ -928,7 +956,7 @@ def evaluate_end(board, depth):
 
 
 def position_attacked(board, pos, attacking_side):
-
+    
     attacked = False
     # Loop over each of the up to 6 directions till attacked == True
     for positions in bd.knight_moves[pos]:  # [1, 2, 3, 4, 5, ...] for pos = 0
@@ -941,7 +969,7 @@ def position_attacked(board, pos, attacking_side):
             if closest_piece.color == attacking_side:
                 # Keep checking.
                 if closest_piece.type == bd.KNIGHT:  # A Knight.
-                    attacked = True
+                    return True
                 elif closest_piece.type == bd.SOLDIER:  # A Soldier
                     # Check proximity and position in its kingdom.
                     attacked = (piece_pos == 0) or \
@@ -950,7 +978,7 @@ def position_attacked(board, pos, attacking_side):
                 else:  # If it's a Prince; check if it's adjacent.
                     attacked = (piece_pos == 0)
             if attacked:
-                break  # No need to check the other directions.
+                return True  # No need to check the other directions.
         except IndexError:
             pass  # No pieces found in that direction; do nothing.
     return attacked
@@ -1014,6 +1042,57 @@ def generate_pseudomoves(board, kill_moves=None):
         moves_count += len(piece_moves_list)
 
     return moves, moves_count
+
+
+def pre_evaluate_pseudomoves(board, moves):
+    return moves
+
+
+def pre_evaluate_pseudomoves_WIP(board, moves):
+    """
+    TBA
+    """
+    # Extend array with columns for evaluations.
+    # - columns 0, 1: coord1 and coord2 of the move (coord2 is not None).
+    # - column 2: value of the piece captured (or 0).
+    # - column 3: value of capturing piece, if coord2 is attacked by opponent.
+    # - column 4: evaluation of the move.
+    ev_moves = np.zeros((len(moves), 5), dtype=np.intp)
+    ev_moves[:, 0:2] = moves  # E.g. [[26, 25, 0], [26, 27, 0], [1, 2, 0]...]
+
+    # Estimate the value captured by each move in column '2'.
+    # E.g. no capture / Knight / Sold [[26, 25, 0], [26, 27, 10], [1, 2, 1]...]
+    ev_moves[:, 2] = piece_code_value[
+        board.boardcode[ev_moves[:, 1]]
+    ]
+
+    # For capturing moves, detect defenses in column '3',
+    # checking whether the opponent defends the coord2.
+    attacking_side = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
+    v_position_attacked = np.vectorize(position_attacked)
+
+    ev_moves[:, 3] = np.where(
+        ev_moves[:, 2] > 0,  # Condition: some value is captured
+        v_position_attacked(  # Applied only to captures.
+            board, ev_moves[:, 1], attacking_side
+        ),
+        False  # No-captures are not evaluated.
+    )
+
+    # Evaluate moves in rows.
+    ev_moves[:, 4] = np.where(
+        ev_moves[:, 2] > 0,  # Condition: some value is captured
+        ev_moves[:, 2] - ev_moves[:, 3] * piece_code_value[
+            board.boardcode[ev_moves[:, 0]]],
+        -100
+    )
+
+    # Sort moves by higher evaluation.
+    ev_moves.view('i8, i8, i8, i8, i8').sort(order=['f4'], axis=0)
+    ev_moves = ev_moves[::-1]
+
+    # Discard evaluation columns and return as a list.
+    return np.intp(ev_moves[:, 0:2])
 
 
 def knights_mobility(board, color):
