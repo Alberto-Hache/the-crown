@@ -3,8 +3,8 @@
 ## Bugs
 
 ### A
-- Fix bug when Soldier promotes illegaly.
-- Add test case to unit test for make_unmake_pseudomove().
+...
+
 
 ### B
 

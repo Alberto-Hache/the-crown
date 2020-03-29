@@ -350,6 +350,21 @@ class Test_game_play(unittest.TestCase):
             "output.txt",
             "tests/output_generate_pseudomoves.txt"))
 
+    def test_evaluate_pseudomoves(self):
+        file_list = (
+            "test_minimax_10b.cor",
+            "test_minimax_13.cor",
+            "test_make_pseudomove_01.cor",
+            "test_make_pseudomove_03.cor",
+            "test_make_pseudomove_04.cor",
+            "test_make_pseudomove_07.cor"
+        )
+
+        for file_name in file_list:
+            board = bd.Board(file_name)
+            moves, moves_count = gp.generate_pseudomoves(board)
+            moves = gp.pre_evaluate_pseudomoves(board, moves)
+
     def test_knights_mobility(self):
         # file_list = glob.glob(bd.GAMES_PATH + "position1.cor")
         file_list = [

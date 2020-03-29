@@ -84,9 +84,10 @@ class Board:
         self.piece_count = np.zeros((2, 3))  # 2 sides x 3 piece types.
         self.prince = [None, None]  # List with the Prince of each side.
 
+        # References to the pieces from board coordinates.
         self.board1d = np.full((self.n_positions), None)
-        self.boardcode = np.zeros(self.n_positions + 1)  # Positions + turn.
-        # self.boardcode = np.array(blank_code)  # 49 positions + turn.
+        # Board view by content (piece.code value or 0 for empty).
+        self.boardcode = np.zeros(self.n_positions + 1, dtype=int)  # Positions + turn.
 
         # Set position and sides.
         self.load_board(file_name)

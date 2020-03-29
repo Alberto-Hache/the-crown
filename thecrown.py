@@ -353,17 +353,17 @@ if __name__ == "__main__":
     player_set = [
         # White player:
         types.SimpleNamespace(
-            name="Crowny-V",
+            name="Crowny-III",
             type=MACHINE_PLAYER,
             color=bd.WHITE,
-            params=game.PLY5_SEARCH_PARAMS
+            params=game.PLY3_SEARCH_PARAMS
         ),
         # Black player:
         types.SimpleNamespace(
-            name="Crowny-II",
+            name="Crowny-I",
             type=MACHINE_PLAYER,
             color=bd.BLACK,
-            params=game.PLY2_SEARCH_PARAMS
+            params=game.PLY1_SEARCH_PARAMS
         )
     ]
 
