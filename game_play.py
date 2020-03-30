@@ -956,7 +956,7 @@ def evaluate_end(board, depth):
 
 
 def position_attacked(board, pos, attacking_side):
-    
+
     attacked = False
     # Loop over each of the up to 6 directions till attacked == True
     for positions in bd.knight_moves[pos]:  # [1, 2, 3, 4, 5, ...] for pos = 0
@@ -1045,54 +1045,74 @@ def generate_pseudomoves(board, kill_moves=None):
 
 
 def pre_evaluate_pseudomoves(board, moves):
-    return moves
-
-
-def pre_evaluate_pseudomoves_WIP(board, moves):
     """
-    TBA
+    Given a list of pseudomoves on a board, sort them for optimal seach.
+
+    Input:
+        board:      Board - the position where moves will be searched.
+        moves:      an array of moves, e.g. [[1, 13], [1, 14], [26, 16]...]
+    
+    Output:
+        ev_moves:   a new array of moves, e.g. [[26, 16], [1, 13], [1, 14]...]
+
+    Heuristic implemented:
+    1.  Winning captures, sorted by decreasing expected gain:
+        1.a) if captured piece is not protected: full piece value.
+        1.b) if captured piece is protected: piece value - own piece value.
+    2.  Non capture moves (unsorted).
+    3.  Losing captures, sorted by increasing expected loss (same algorithm).
+
+    Missing:
+    -   Checks / checkmates.
+    -   Prince's crowning / approaching crown.
+    -   Soldier's promotion / approaching missing Prince's position.
     """
     # Extend array with columns for evaluations.
     # - columns 0, 1: coord1 and coord2 of the move (coord2 is not None).
     # - column 2: value of the piece captured (or 0).
     # - column 3: value of capturing piece, if coord2 is attacked by opponent.
     # - column 4: evaluation of the move.
-    ev_moves = np.zeros((len(moves), 5), dtype=np.intp)
-    ev_moves[:, 0:2] = moves  # E.g. [[26, 25, 0], [26, 27, 0], [1, 2, 0]...]
 
-    # Estimate the value captured by each move in column '2'.
-    # E.g. no capture / Knight / Sold [[26, 25, 0], [26, 27, 10], [1, 2, 1]...]
-    ev_moves[:, 2] = piece_code_value[
-        board.boardcode[ev_moves[:, 1]]
-    ]
+    if moves != []:
+        # Initialize array with moves on columns '0' and '1'.
+        ev_moves = np.zeros((len(moves), 5), dtype=np.intp)
+        ev_moves[:, 0:2] = moves
 
-    # For capturing moves, detect defenses in column '3',
-    # checking whether the opponent defends the coord2.
-    attacking_side = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
-    v_position_attacked = np.vectorize(position_attacked)
+        # Estimate the value captured by each move in column '2'.
+        ev_moves[:, 2] = piece_code_value[
+            board.boardcode[ev_moves[:, 1]]
+        ]
 
-    ev_moves[:, 3] = np.where(
-        ev_moves[:, 2] > 0,  # Condition: some value is captured
-        v_position_attacked(  # Applied only to captures.
-            board, ev_moves[:, 1], attacking_side
-        ),
-        False  # No-captures are not evaluated.
-    )
+        # For capturing moves, detect defenses in column '3',
+        # checking whether the opponent defends the coord2.
+        attacking_side = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
+        v_position_attacked = np.vectorize(position_attacked)
 
-    # Evaluate moves in rows.
-    ev_moves[:, 4] = np.where(
-        ev_moves[:, 2] > 0,  # Condition: some value is captured
-        ev_moves[:, 2] - ev_moves[:, 3] * piece_code_value[
-            board.boardcode[ev_moves[:, 0]]],
-        -100
-    )
+        ev_moves[:, 3] = np.where(
+            ev_moves[:, 2] > 0,  # Condition: some value is captured
+            v_position_attacked(  # Applied only to captures.
+                board, ev_moves[:, 1], attacking_side
+            ),
+            False  # No-captures are not evaluated.
+        )
 
-    # Sort moves by higher evaluation.
-    ev_moves.view('i8, i8, i8, i8, i8').sort(order=['f4'], axis=0)
-    ev_moves = ev_moves[::-1]
+        # Evaluate moves in rows.
+        ev_moves[:, 4] = np.where(
+            ev_moves[:, 2] > 0,  # Condition: some value is captured
+            (ev_moves[:, 2] - ev_moves[:, 3] * piece_code_value[
+                board.boardcode[ev_moves[:, 0]]]) * 10 + 1,
+            0
+        )
 
-    # Discard evaluation columns and return as a list.
-    return np.intp(ev_moves[:, 0:2])
+        # Sort moves by higher evaluation.
+        ev_moves.view('i8, i8, i8, i8, i8').sort(order=['f4'], axis=0)
+        ev_moves = ev_moves[::-1]
+
+        # Discard auxiliary columns and return as a list.
+        return np.intp(ev_moves[:, 0:2])
+
+    else:
+        return moves
 
 
 def knights_mobility(board, color):
