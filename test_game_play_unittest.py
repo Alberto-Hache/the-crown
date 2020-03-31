@@ -351,42 +351,59 @@ class Test_game_play(unittest.TestCase):
             "tests/output_generate_pseudomoves.txt"))
 
     def test_evaluate_pseudomoves(self):
+
         # Test cases.
-        board = bd.Board("test_captures_00.cor")
-        expected_moves = [
-            [1, 2],
-            [41, 44],
-            [28, 29],
-            [41, 48],
-            [41, 46],
-            [41, 45],
-            [41, 43],
-            [41, 42],
-            [41, 40],
-            [41, 36],
-            [41, 34],
-            [41, 33],
-            [41, 25],
-            [41, 24],
-            [41, 14],
-            [41, 13],
-            [28, 27],
-            [28, 18],
-            [26, 27],
-            [26, 25],
-            [26, 16],
-            [1, 14],
-            [1, 13],
-            [1, 0],
-            [41, 37]
-        ]
+        test_cases = (
+            (
+                "test_captures_00.cor",
+                [
+                    [1, 2],
+                    [41, 44],
+                    [28, 29],
+                    [41, 48],
+                    [41, 46],
+                    [41, 45],
+                    [41, 43],
+                    [41, 42],
+                    [41, 40],
+                    [41, 36],
+                    [41, 34],
+                    [41, 33],
+                    [41, 25],
+                    [41, 24],
+                    [41, 14],
+                    [41, 13],
+                    [28, 27],
+                    [28, 18],
+                    [26, 27],
+                    [26, 25],
+                    [26, 16],
+                    [1, 14],
+                    [1, 13],
+                    [1, 0],
+                    [41, 37]
+                ]
+            ),
+            (
+                "test_minimax_02.cor",
+                []
+            )
+        )
 
-        # Generate and sort moves.
-        moves, moves_count = gp.generate_pseudomoves(board)
-        moves = gp.pre_evaluate_pseudomoves(board, moves)
+        # Loop over all test cases.
+        for test in test_cases:
+            file_name, expected_moves = test
 
-        # Check results.
-        self.assertTrue((moves == expected_moves).all)
+            # Generate and sort moves.
+            board = bd.Board(file_name)
+            moves, moves_count = gp.generate_pseudomoves(board)
+            moves = gp.pre_evaluate_pseudomoves(board, moves)
+
+            # Check results.
+            self.assertTrue(
+                np.array_equal(moves, np.array(expected_moves)),
+                "Error found in position {}".format(file_name)
+            )
 
     def test_knights_mobility(self):
         # file_list = glob.glob(bd.GAMES_PATH + "position1.cor")
