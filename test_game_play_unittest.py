@@ -508,125 +508,126 @@ class Test_game_play(unittest.TestCase):
             # is_legal, is_dynamic, result, game_end, game_status
             [
                 "test_make_pseudomove_01.cor",
-                "c8b7", True, False, None, False, 0
+                "c8b7", True, False, None, False, 0, False
             ],
             [
                 "test_make_pseudomove_01.cor",
-                "c8c3", True, True, None, False, 0
+                "c8c3", True, True, None, False, 0, None
             ],
             [
                 "test_make_pseudomove_01.cor",
-                "c8a8", True, True, None, False, 0
+                "c8a8", True, True, None, False, 0, True
             ],
             [
                 "test_make_pseudomove_01.cor",
-                "e3e2", False, None, None, None, None
+                "e3e2", False, None, None, None, None, None
             ],
             # BOARD to test: test_make_pseudomove_02.cor
             [
                 "test_make_pseudomove_02.cor",
-                "b2e1", False, None, None, None, None
+                "b2e1", False, None, None, None, None, None
             ],
             [
                 "test_make_pseudomove_02.cor",
-                "a5a4", False, None, None, None, None
+                "a5a4", False, None, None, None, None, None
             ],
             [
                 "test_make_pseudomove_02.cor",
-                "a5a6", False, None, None, None, None
+                "a5a6", False, None, None, None, None, None
             ],
             [
                 "test_make_pseudomove_02.cor",
-                "b5b4", False, None, None, None, None
+                "b5b4", False, None, None, None, None, None
             ],
             [
                 "test_make_pseudomove_02.cor",
-                "b5a6", True, False, None, False, 0
+                "b5a6", True, False, None, False, 0, False
             ],
             # BOARD to test: test_make_pseudomove_03.cor
             [
                 "test_make_pseudomove_03.cor",
-                "a7b5", True, True, 9999.0, True, 2
+                "a7b5", True, True, 9999.0, True, 2, None
             ],
             [
                 "test_make_pseudomove_03.cor",
-                "c5b6", False, None, None, None, None
+                "c5b6", False, None, None, None, None, None
             ],
             [
                 "test_make_pseudomove_03.cor",
-                "f1g1", False, None, None, None, None
+                "f1g1", False, None, None, None, None, None
             ],
             [
                 "test_make_pseudomove_03.cor",
-                "c5c4", True, False, None, False, 0
+                "c5c4", True, False, None, False, 0, None
             ],
             [
                 "test_make_pseudomove_03.cor",
-                "f1f2", True, False, None, False, 0
+                "f1f2", True, False, None, False, 0, None
             ],
             # BOARD to test: test_make_pseudomove_04.cor
             [
                 "test_make_pseudomove_04.cor",
-                "b1a1", True, True, None, False, 0
+                "b1a1", True, True, None, False, 0, None
             ],
             # BOARD to test: test_make_pseudomove_05.cor
             [
                 "test_make_pseudomove_05.cor",
-                "a3a1", True, True, None, False, 0
+                "a3a1", True, True, None, False, 0, None
             ],
             # BOARD to test: test_make_pseudomove_06.cor
             [
                 "test_make_pseudomove_06.cor",
-                "a3a1", False, None, None, None, None
+                "a3a1", False, None, None, None, None, None
             ],
             # BOARD to test: test_make_pseudomove_07.cor
             [
                 "test_make_pseudomove_07.cor",
-                "a3a1", False, None, None, None, None
+                "a3a1", False, None, None, None, None, None
             ],
             [
                 "test_make_pseudomove_07.cor",
-                "a12a13", True, True, 9999.0, True, 1
+                "a12a13", True, True, 9999.0, True, 1, None
             ],
             # BOARD to test: test_make_pseudomove_11.cor
             [
                 "test_make_pseudomove_11.cor",
-                "a12a13", False, None, None, None, None
+                "a12a13", False, None, None, None, None, None
             ],
             [
                 "test_make_pseudomove_11.cor",
-                "a3a1", False, None, None, None, None
+                "a3a1", False, None, None, None, None, None
             ],
             [
                 "test_make_pseudomove_11.cor",
-                "a12b11", True, False, None, False, 0
+                "a12b11", True, False, None, False, 0, False
             ],
             [
                 "test_make_pseudomove_11.cor",
-                "b9a10", True, False, None, False, 0
+                "b9a10", True, False, None, False, 0, False
             ],
             # BOARD to test: test_make_pseudomove_12.cor
             [
                 "test_make_pseudomove_12.cor",
-                "b2e1", False, None, None, None, None
+                "b2e1", False, None, None, None, None, None
             ],
             [
                 "test_make_pseudomove_12.cor",
-                "a5a4", False, None, None, None, None
+                "a5a4", False, None, None, None, None, None
             ],
             [
                 "test_make_pseudomove_12.cor",
-                "a5a6", False, None, None, None, None
+                "a5a6", False, None, None, None, None, None
             ],
             [
                 "test_make_pseudomove_12.cor",
-                "a5++", True, True, None, False, 0
+                "a5++", True, True, None, False, 0, None
             ]
         ]
 
         # Go through all test cases, each on one board.
         for test_case in test_cases:
-            file_name, test_move, res1, res2, res3, res4, res5 = test_case
+            file_name, test_move, res1, res2, res3, res4, res5, res6 = \
+                test_case
             board = bd.Board(file_name)
             board_orig = bd.Board(file_name)  # Reference for unmake tests.
             # Parse move.
@@ -636,7 +637,7 @@ class Test_game_play(unittest.TestCase):
 
             # Make the move and check results.
             is_legal, is_dynamic, result, game_end, game_status, \
-                captured_piece, leaving_piece, old_hash = \
+                captured_piece, leaving_piece, old_hash, opponent_in_check = \
                 gp.make_pseudomove(
                     board, coord1, coord2,
                     depth=0, params=gp.DEFAULT_SEARCH_PARAMS,
@@ -644,14 +645,16 @@ class Test_game_play(unittest.TestCase):
                 )
 
             self.assertTrue(
-                (res1, res2, res3, res4, res5) == (
-                    is_legal, is_dynamic, result, game_end, game_status),
+                (res1, res2, res3, res4, res5, res6) == (
+                    is_legal, is_dynamic, result, game_end, 
+                    game_status, opponent_in_check),
                 "ERROR in position {}, move: {}:"
-                "Expected: {}, {}, {}, {}, {}\n"
-                "Received: {}, {}, {}, {}, {}".format(
+                "Expected: {}, {}, {}, {}, {}, {}\n"
+                "Received: {}, {}, {}, {}, {}, {}".format(
                     file_name, test_move,
-                    res1, res2, res3, res4, res5,
-                    is_legal, is_dynamic, result, game_end, game_status
+                    res1, res2, res3, res4, res5, res6,
+                    is_legal, is_dynamic, result, game_end, game_status,
+                    opponent_in_check
                 ))
 
             # Now 'unmake' the move and check against 'board_orig'.

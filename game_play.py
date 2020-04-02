@@ -458,7 +458,8 @@ def negamax(
         # if it leads to a game end, we can use result_i.
         is_legal_i, is_dynamic_i, \
             result_i, game_end_i, game_status_i, \
-            captured_piece, leaving_piece, old_hash = \
+            captured_piece, leaving_piece, old_hash, \
+            opponent_in_check = \
             make_pseudomove(
                 board, coord1, coord2, depth, params
             )
@@ -507,7 +508,8 @@ def negamax(
         # if it leads to a game end, we can use result_i.
         is_legal_i, is_dynamic_i, \
             result_i, game_end_i, game_status_i, \
-            captured_piece, leaving_piece, old_hash = \
+            captured_piece, leaving_piece, old_hash, \
+            opponent_in_check = \
             make_pseudomove(
                 board, coord1, coord2, depth, params
             )
@@ -578,7 +580,7 @@ def negamax(
         best_move = [coord1, coord2]
         is_legal_i, is_dynamic_i, \
             result_i, game_end_i, game_status_i, \
-            captured_piece, leaving_piece, old_hash = \
+            captured_piece, leaving_piece, old_hash, opponent_in_check = \
             make_pseudomove(
                 board, coord1, coord2, depth, params
             )
@@ -606,7 +608,7 @@ def negamax(
 
 def quiesce(
     board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS,
-    t_table=None, trace=None
+    t_table=None, trace=None, player_in_check=None
 ):
     """
     Evaluate a *legal* position exploring only DYNAMIC moves (or none).
@@ -624,6 +626,9 @@ def quiesce(
         t_table:        The transposition table storing previously explored
                         boards.
         trace:          The structure tracking played / searched boards.
+        player_in_check:
+                        Boolean or None. A possible early detection of
+                        the moving Prince being in check.
 
     Output:
         best_move:      A list [coord1, coord2], or None.
@@ -685,11 +690,13 @@ def quiesce(
     player_side = board.turn
     opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
 
-    # If not legal, the player must be in check.
-    # (The other illegal case (>1 Princes) is not explored by calling method.)
-    board.turn = opponent_side  # Flip turns temporarily.
-    player_in_check = not is_legal(board)
-    board.turn = player_side  # Restablish original turn.
+    # Detect if  player is in check (unless it's already passed as argument).
+    if player_in_check is None:
+        # See if board is not legal (would mean the player is in check).
+        # The other case (>1 Princes) is not explored by calling method.
+        board.turn = opponent_side  # Flip turns temporarily.
+        player_in_check = not is_legal(board)
+        board.turn = player_side  # Restablish original turn.
 
     if not player_in_check:
         # Null move is possible; evaluate it.
@@ -710,7 +717,8 @@ def quiesce(
         # if it leads to a game end, we can use result_i.
         is_legal_i, is_dynamic_i, \
             result_i, game_end_i, game_status_i, \
-            captured_piece, leaving_piece, old_hash = \
+            captured_piece, leaving_piece, old_hash, \
+            opponent_in_check = \
             make_pseudomove(
                 board, coord1, coord2, depth, params
             )
@@ -760,7 +768,8 @@ def quiesce(
         # if it leads to a game end, we can use result_i.
         is_legal_i, is_dynamic_i, \
             result_i, game_end_i, game_status_i, \
-            captured_piece, leaving_piece, old_hash = \
+            captured_piece, leaving_piece, old_hash, \
+            opponent_in_check = \
             make_pseudomove(
                 board, coord1, coord2, depth, params,
                 check_dynamic=not(player_in_check))
@@ -780,7 +789,8 @@ def quiesce(
                     childs_move, result_i, game_end_i, game_status_i = \
                         quiesce(
                             board, depth + 1, -beta, -alpha,
-                            params, t_table, trace
+                            params, t_table, trace,
+                            player_in_check=opponent_in_check
                         )
                     result_i = -float(result_i)  # Switch to player's view.
                 # Assess results from final position or search.
@@ -829,7 +839,7 @@ def quiesce(
         best_move = [coord1, coord2]
         is_legal_i, is_dynamic_i, \
             result_i, game_end_i, game_status_i, \
-            captured_piece, leaving_piece, old_hash = \
+            captured_piece, leaving_piece, old_hash, opponent_in_check = \
             make_pseudomove(
                 board, coord1, coord2, depth, params
             )
@@ -1247,11 +1257,17 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
                         a) Prince checkmated.
                         b) Soldier promoted to Prince.
         old_hash:       int - hash value of the board BEFORE the move.
+        opponent_in_check:
+                        Boolean or None.
+                        Early detection of Prince in check only when
+                        check_dynamic is True and is_dynamic becomes True
+                        because the move is a check.
     """
 
     # Initialize vars. for later dynamism check before board changes.
     moving_side = board.turn
     piece_type = board.board1d[coord1].type
+    opponent_in_check = None
 
     # And now, make the move.
     captured_piece, leaving_piece, old_hash = board.make_move(coord1, coord2)
@@ -1260,19 +1276,21 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
     # Check if the move produced an illegal position.
     if not is_legal(board):
         return False, None, None, None, None, \
-            captured_piece, leaving_piece, old_hash
+            captured_piece, leaving_piece, old_hash, opponent_in_check
 
     # Check if a Prince is crowning.
     if (coord2 == board.crown_position) and \
        (piece_type == bd.PRINCE):
         # A Prince was legally moved onto the crown!
         return True, True, PLAYER_WINS - depth*END_DEPTH_PENALTY, True, \
-            VICTORY_CROWNING, captured_piece, leaving_piece, old_hash
+            VICTORY_CROWNING, captured_piece, leaving_piece, \
+            old_hash, opponent_in_check
 
     # Check if it was the capture of the last piece.
     if board.piece_count[board.turn].sum() == 0:
         return True, True, PLAYER_WINS - depth*END_DEPTH_PENALTY, True, \
-            VICTORY_NO_PIECES_LEFT, captured_piece, leaving_piece, old_hash
+            VICTORY_NO_PIECES_LEFT, captured_piece, leaving_piece, \
+            old_hash, opponent_in_check
 
     # Optionally, check dynamic conditions of the move.
     is_dynamic = False
@@ -1289,13 +1307,16 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
             opponent_prince = board.prince[board.turn]
             if opponent_prince is not None and \
                not depth > params["max_check_quiesc_depth"]:
+                # The move produces a check to the opponent, now to move.
                 is_dynamic = position_attacked(
                     board, opponent_prince.coord, moving_side
                 )
+                # Flag check detection.
+                opponent_in_check = is_dynamic
 
     # Report as a legal move, the dynamism of the move and other conditions.
     return True, is_dynamic, None, False, ON_GOING, \
-        captured_piece, leaving_piece, old_hash
+        captured_piece, leaving_piece, old_hash, opponent_in_check
 
 
 def is_legal(board):
@@ -1357,12 +1378,14 @@ def is_legal_move(board, move):
         # The move is at least a pseudo-move.
         # Check if the pm is legal by trying it [use default parameters].
         pseudo_move_legal, _, _, _, _, \
-            captured_piece, leaving_piece, old_hash = make_pseudomove(
+            captured_piece, leaving_piece, old_hash, opponent_in_check = \
+            make_pseudomove(
                 board, coord1, coord2,
                 depth=0, params=MINIMAL_SEARCH_PARAMS, check_dynamic=False
             )
         # And now, 'unmake' the move:
-        board.unmake_move(coord1, coord2, captured_piece, leaving_piece, old_hash)
+        board.unmake_move(
+            coord1, coord2, captured_piece, leaving_piece, old_hash)
         # Check results:
         if pseudo_move_legal:
             return True, ""
@@ -1383,7 +1406,9 @@ def is_legal_move(board, move):
             # Loop over all player's moves to confirm it's a mate
             for move_coords in pseudo_moves:
                 pseudo_move_legal, _, _, _, _, \
-                    captured_piece, leaving_piece, old_hash = make_pseudomove(
+                    captured_piece, leaving_piece, old_hash, \
+                    opponent_in_check = \
+                    make_pseudomove(
                         board, move_coords[0], move_coords[1],
                         depth=0, params=MINIMAL_SEARCH_PARAMS,
                         check_dynamic=False
