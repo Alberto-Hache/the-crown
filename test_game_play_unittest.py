@@ -63,7 +63,7 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_minimax_08.cor",
                 TEST_SEARCH_PARAMS_4,
-                [32, 46], 9998.0, False, 0
+                [[32, 46], [32, 48]], 9998.0, False, 0
             ),
             (
                 "test_minimax_09.cor",
@@ -112,9 +112,19 @@ class Test_game_play(unittest.TestCase):
                 )
 
                 # And check vs. expected.
+                if exp_move is not None and type(exp_move[0]) == list:
+                    self.assertTrue(
+                        best_move in exp_move,
+                        "Position: {}".format(file_name)
+                    )
+                else:
+                    self.assertEqual(
+                        best_move, exp_move,
+                        "Position: {}".format(file_name)
+                    )
                 self.assertEqual(
-                    (best_move, result, game_end, game_status),
-                    (exp_move, exp_result, exp_end, exp_status),
+                    (result, game_end, game_status),
+                    (exp_result, exp_end, exp_status),
                     "Position: {}".format(file_name)
                 )
 
@@ -205,7 +215,7 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_minimax_08.cor",
                 TEST_SEARCH_PARAMS_4,
-                [32, 46], 9994.0, False, 0
+                [[32, 46], [32, 48]], 9994.0, False, 0
             ),
             (
                 "test_minimax_09.cor",
@@ -247,9 +257,19 @@ class Test_game_play(unittest.TestCase):
                 )
 
                 # And check vs. expected.
+                if exp_move is not None and type(exp_move[0]) == list:
+                    self.assertTrue(
+                        best_move in exp_move,
+                        "Position: {}".format(file_name)
+                    )
+                else:
+                    self.assertEqual(
+                        best_move, exp_move,
+                        "Position: {}".format(file_name)
+                    )
                 self.assertEqual(
-                    (best_move, game_end, game_status),
-                    (exp_move, exp_end, exp_status),
+                    (game_end, game_status),
+                    (exp_end, exp_status),
                     "Position: {}".format(file_name)
                 )
                 self.assertAlmostEqual(
@@ -579,11 +599,11 @@ class Test_game_play(unittest.TestCase):
             ],
             [
                 "test_make_pseudomove_11.cor",
-                "a12b11", True, True, None, False, 0
+                "a12b11", True, False, None, False, 0
             ],
             [
                 "test_make_pseudomove_11.cor",
-                "b9a10", True, True, None, False, 0
+                "b9a10", True, False, None, False, 0
             ],
             # BOARD to test: test_make_pseudomove_12.cor
             [

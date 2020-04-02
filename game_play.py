@@ -683,16 +683,16 @@ def quiesce(
 
     # 4.1. Null-move: Perform static evaluation if it is legal.
     player_side = board.turn
+    opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
 
     # If not legal, the player must be in check.
     # (The other illegal case (>1 Princes) is not explored by calling method.)
-    board.flip_turn()  # Flip turns temporarily.
+    board.turn = opponent_side  # Flip turns temporarily.
     player_in_check = not is_legal(board)
-    board.flip_turn()  # Restablish original turn.
+    board.turn = player_side  # Restablish original turn.
 
     if not player_in_check:
         # Null move is possible; evaluate it.
-        player_in_check = False  # TODO: this line is useless.
         best_move = None
         result_i = evaluate_static(board, depth)
         # Check result of null_move vs alpha-beta window.
@@ -763,7 +763,7 @@ def quiesce(
             captured_piece, leaving_piece, old_hash = \
             make_pseudomove(
                 board, coord1, coord2, depth, params,
-                check_dynamic=True)
+                check_dynamic=not(player_in_check))
         # Check if it's legal.
         if is_legal_i:
             n_legal_moves_found += 1
@@ -1249,19 +1249,8 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
         old_hash:       int - hash value of the board BEFORE the move.
     """
 
-    if check_dynamic:
-        # Initialize vars. for later dynamism check before board changes.
-        moving_side = board.turn
-        opponent_side = bd.WHITE if moving_side == bd.BLACK else bd.BLACK
-        player_prince = board.prince[moving_side]
-        if player_prince is not None:
-            player_in_check = position_attacked(
-                board, player_prince.coord, opponent_side
-            )
-        else:
-            player_in_check = False
-
-    # Register type of moving piece before changes.
+    # Initialize vars. for later dynamism check before board changes.
+    moving_side = board.turn
     piece_type = board.board1d[coord1].type
 
     # And now, make the move.
@@ -1290,7 +1279,8 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
     if check_dynamic:
         # Checked: Piece captures, mated Prince leaves, Soldier promotion,
         # check, check evasion.
-        # NOT checked:  Prince -> up, Soldier -> throne
+        # NOT checked: Prince -> up, Soldier -> throne
+        # NOT checked: check evasion (calling node must search all moves)
         if captured_piece is not None or leaving_piece is not None:
             # Piece captured / mated Prince leaving / Soldier promotion.
             is_dynamic = True
@@ -1301,11 +1291,6 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
                not depth > params["max_check_quiesc_depth"]:
                 is_dynamic = position_attacked(
                     board, opponent_prince.coord, moving_side
-                )
-            if not is_dynamic and player_in_check:
-                # Check if the move produced a check evasion.
-                is_dynamic = not position_attacked(
-                    board, player_prince.coord, moving_side
                 )
 
     # Report as a legal move, the dynamism of the move and other conditions.
