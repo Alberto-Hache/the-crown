@@ -15,8 +15,7 @@
 ## Optimizations
 
 ### (v1)
-
-- ...
+...
 
 ### (v2)
 - Optimize position_attacked() [30% to 50% of time spent]
