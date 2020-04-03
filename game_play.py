@@ -1072,7 +1072,7 @@ def pre_evaluate_pseudomoves(board, moves):
     2.  Non capture moves (unsorted).
     3.  Losing captures, sorted by increasing expected loss (same algorithm).
 
-    Missing:
+    Not covered:
     -   Checks / checkmates.
     -   Prince's crowning / approaching crown.
     -   Soldier's promotion / approaching missing Prince's position.
@@ -1085,7 +1085,7 @@ def pre_evaluate_pseudomoves(board, moves):
 
     if moves != []:
         # Initialize array with moves on columns '0' and '1'.
-        ev_moves = np.zeros((len(moves), 5), dtype=np.intp)
+        ev_moves = np.zeros((len(moves), 3), dtype=np.intp)
         ev_moves[:, 0:2] = moves
 
         # Estimate the value captured by each move in column '2'.
@@ -1093,29 +1093,23 @@ def pre_evaluate_pseudomoves(board, moves):
             board.boardcode[ev_moves[:, 1]]
         ]
 
-        # For capturing moves, detect defenses in column '3',
+        # For capturing moves, estimate outcome in column '3',
         # checking whether the opponent defends the coord2.
         attacking_side = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
         v_position_attacked = np.vectorize(position_attacked)
 
-        ev_moves[:, 3] = np.where(
+        ev_moves[:, 2] = np.where(
             ev_moves[:, 2] > 0,  # Condition: some value is captured
-            v_position_attacked(  # Applied only to captures.
-                board, ev_moves[:, 1], attacking_side
-            ),
-            False  # No-captures are not evaluated.
-        )
-
-        # Evaluate moves in rows.
-        ev_moves[:, 4] = np.where(
-            ev_moves[:, 2] > 0,  # Condition: some value is captured
-            (ev_moves[:, 2] - ev_moves[:, 3] * piece_code_value[
-                board.boardcode[ev_moves[:, 0]]]) * 10 + 1,
-            0
+            (  # Full value - capturer's value if coord2 is defended.
+                ev_moves[:, 2] -
+                v_position_attacked(board, ev_moves[:, 1], attacking_side) *
+                piece_code_value[board.boardcode[ev_moves[:, 0]]]
+            )*10 + 1,
+            ev_moves[:, 2]  # No-captures are left untouched.
         )
 
         # Sort moves by higher evaluation.
-        ev_moves.view('i8, i8, i8, i8, i8').sort(order=['f4'], axis=0)
+        ev_moves.view('i8, i8, i8').sort(order=['f2'], axis=0)
         ev_moves = ev_moves[::-1]
 
         # Discard auxiliary columns and return as a list.

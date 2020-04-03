@@ -40,6 +40,29 @@ class Profiler(unittest.TestCase):
         cProfile.run('loop_position_attacked()', sort='tottime')
         self.assertTrue(True)  # TODO: Add proper test (duration?)
 
+    def pre_evaluate_pseudomoves(self):
+        cProfile.run('loop_pre_evaluate_pseudomoves()', sort='tottime')
+        self.assertTrue(True)  # TODO: Add proper test (duration?)
+
+
+def loop_pre_evaluate_pseudomoves():
+
+    test_cases = (
+        "test_captures_00.cor",
+        "game_record_23F2020.cor",
+        "test_make_pseudomove_01.cor",
+        "test_minimax_13.cor"
+    )
+    iterations = 1000
+
+    for test_board in test_cases:
+        board = bd.Board(test_board)
+        for color in [bd.WHITE, bd.BLACK]:
+            board.set_turn(color)
+            moves, _ = gp.generate_pseudomoves(board)
+            for _ in range(iterations):
+                _ = gp.pre_evaluate_pseudomoves(board, moves)
+
 
 def loop_position_attacked():
 

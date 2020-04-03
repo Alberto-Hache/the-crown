@@ -370,7 +370,7 @@ class Test_game_play(unittest.TestCase):
             "output.txt",
             "tests/output_generate_pseudomoves.txt"))
 
-    def test_evaluate_pseudomoves(self):
+    def test_pre_evaluate_pseudomoves(self):
 
         # Test cases.
         test_cases = (

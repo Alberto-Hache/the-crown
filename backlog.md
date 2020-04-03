@@ -15,17 +15,8 @@
 ## Optimizations
 
 ### (v1)
-- Reuse check detection cases:
-  - make_pseudomove(), called by:
-    - negamax()
-    - quiesce()
-    - ...
-  - is_legal(), called by: DONE
-    - ... (NO BENEFIT)
-  - is_legal_move(), called by: DONE
-    - thecrown.py (NO BENEFIT)
 
-- pre_evaluate_pseudomoves(): Simplify process to use fewer columns?
+- ...
 
 ### (v2)
 - Optimize position_attacked() [30% to 50% of time spent]
