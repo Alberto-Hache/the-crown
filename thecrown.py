@@ -7,10 +7,36 @@ import numpy as np
 import board as bd
 import game_play as game
 import utils
+from collections import namedtuple
 
 # Local constants.
 HUMAN_PLAYER = "Human"
 MACHINE_PLAYER = "Computer"
+
+# Player as a named tuple:
+Player = namedtuple('Player', 'name, type, side, params')
+
+# Players set.
+crown_players = {
+    "human": Player(
+        "Human", HUMAN_PLAYER, None, None
+    ),
+    "crowny-i": Player(
+        "Crowny-I", MACHINE_PLAYER, None, game.PLY1_SEARCH_PARAMS
+    ),
+    "crowny-ii": Player(
+        "Crowny-II", MACHINE_PLAYER, None, game.PLY2_SEARCH_PARAMS
+    ),
+    "crowny-iii": Player(
+        "Crowny-III", MACHINE_PLAYER, None, game.PLY3_SEARCH_PARAMS
+    ),
+    "crowny-iv": Player(
+        "Crowny-IV", MACHINE_PLAYER, None, game.PLY4_SEARCH_PARAMS
+    ),
+    "crowny-v": Player(
+        "Crowny-V", MACHINE_PLAYER, None, game.PLY5_SEARCH_PARAMS
+    )
+}
 
 # Output files.
 GAME_METRICS_FILE = "output_game_metrics.txt"
@@ -287,7 +313,7 @@ def play_match(board, player, max_moves, file_name=None):
             # Main loop of the full game.
             board.print_char()
             if player[board.turn].type == MACHINE_PLAYER:
-                # The MACHINE plays this color.
+                # A MACHINE plays this side.
                 move, result, game_end, end_status, time_used, tt_metrics =\
                     game.play(
                         board,
@@ -303,7 +329,7 @@ def play_match(board, player, max_moves, file_name=None):
                         game_trace, metrics_file
                         )
             else:
-                # The HUMAN plays this color.
+                # A HUMAN plays this side.
                 move, result = request_human_move(board)
                 if result is not None:
                     # Non-void value signals end.
@@ -342,29 +368,47 @@ def play_match(board, player, max_moves, file_name=None):
                     display_end_results(board, result, end_status, rec_file)
 
 
+# Main program.
 if __name__ == "__main__":
-    # Argument: starting position.
-    file_name = None if (len(sys.argv) == 1) else sys.argv[1]
-    board = bd.Board(file_name)
-    # Argument: limitation of moves to play.
-    max_moves = np.Infinity if (len(sys.argv) != 3) else int(sys.argv[2])
+    DEFAULT_WHITE_PLAYER = "crowny-iii"
+    DEFAULT_BLACK_PLAYER = "human"
 
-    # Create array with the two players' configuration:
+    # Initialize arguments.
+    file_name = None
+    white_player, black_player = None, None
+    max_moves = np.Infinity
+
+    # Check args passd
+    arg_list = sys.argv[1:]
+    for arg in arg_list:
+        if str.isdigit(arg):
+            # Limitation of number of moves to play.
+            max_moves = int(arg)
+        else:
+            # Check if it's the name of a player.
+            arg = str.lower(arg)
+            player = crown_players.get(arg)  # Check if it's a player.
+            if player:
+                # It's a known player.
+                if white_player is None:
+                    white_player = arg
+                elif black_player is None:
+                    black_player = arg
+            else:
+                # It must be a file_name to load.
+                file_name = arg
+
+    # Assign default players to missing sides.
+    board = bd.Board(file_name)
+    if white_player is None:
+        white_player = DEFAULT_WHITE_PLAYER
+    if black_player is None:
+        black_player = DEFAULT_BLACK_PLAYER
+
+    # And now retrieve them from known 'crown_players' dict.
     player_set = [
-        # White player:
-        types.SimpleNamespace(
-            name="Crowny-III",
-            type=MACHINE_PLAYER,
-            color=bd.WHITE,
-            params=game.PLY3_SEARCH_PARAMS
-        ),
-        # Black player:
-        types.SimpleNamespace(
-            name="Crowny-I",
-            type=MACHINE_PLAYER,
-            color=bd.BLACK,
-            params=game.PLY1_SEARCH_PARAMS
-        )
+        crown_players[white_player],
+        crown_players[black_player]
     ]
 
     # Start a match between two players.

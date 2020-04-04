@@ -35,10 +35,10 @@
   - Static exchange evaluation (plyx2) - DONE
   - Adapt to game status (middle game | end game)?
 - Add killer-move heuristic.
-- Add principal variation (without progressive deepening?).
+- Add principal variation (without iterative deepening?).
 
 ### (v2)
-- Add progressive deepening:
+- Add iterative deepening:
   - reusing hash table
   - reusing principal variation
   - reusing killer moves?

@@ -45,13 +45,6 @@ initial_position = (
     "w"
 )
 
-# UNIQUE CODES for each piece type and color.
-# Order: Prince, Soldier, Knight
-piece_code = (
-    (1, 2, 3),
-    (4, 5, 6)
-)
-
 # Load precalculated tables:
 coord1to3 = utils.calculate_coord1to3(N_ROWS)  # TODO: move to utils.py
 kingdoms = utils.calculate_kingdoms(N_POSITIONS)
@@ -68,6 +61,17 @@ piece_moves = (
     (soldier_moves[0], soldier_moves[1]),
     # 2: KNIGHT; both sides have the same moves.
     (knight_moves, knight_moves)
+)
+
+# UNIQUE CODES for each piece type and color.
+# Order: Prince, Soldier, Knight
+piece_code = (
+    (1, 2, 3),
+    (4, 5, 6)
+)
+piece_moves_by_code = (
+    (simple_moves, soldier_moves[0], knight_moves),
+    (simple_moves, soldier_moves[1], knight_moves)
 )
 
 

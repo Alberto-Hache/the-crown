@@ -16,6 +16,7 @@ PLY1_SEARCH_PARAMS = {
     "max_depth":                1,
     "max_check_quiesc_depth":   4,
     "transposition_table":      True,
+    "iterative_deepening":      False,
     "randomness":               0
 }
 
@@ -23,6 +24,7 @@ PLY2_SEARCH_PARAMS = {
     "max_depth":                2,
     "max_check_quiesc_depth":   6,
     "transposition_table":      True,
+    "iterative_deepening":      True,
     "randomness":               0
 }
 
@@ -30,6 +32,7 @@ PLY3_SEARCH_PARAMS = {
     "max_depth":                3,
     "max_check_quiesc_depth":   8,
     "transposition_table":      True,
+    "iterative_deepening":      False,
     "randomness":               0
 }
 
@@ -37,6 +40,7 @@ PLY4_SEARCH_PARAMS = {
     "max_depth":                4,
     "max_check_quiesc_depth":   10,
     "transposition_table":      True,
+    "iterative_deepening":      True,
     "randomness":               0
 }
 
@@ -44,6 +48,7 @@ PLY5_SEARCH_PARAMS = {
     "max_depth":                5,
     "max_check_quiesc_depth":   11,
     "transposition_table":      True,
+    "iterative_deepening":      True,
     "randomness":               0
 }
 
@@ -125,7 +130,7 @@ HASH_SIZE_5 = 1048573
 DEFAULT_HASH_SIZE = HASH_SIZE_5  # Max. size of the hash table.
 
 HASH_IDX = 0    # The full hash value of the position.
-DEPTH_IDX = 1   # The depth at which the position was explored.
+DEPTH_IDX = 1   # The depth from which the position was explored.
 VALUE_IDX = 2   # The value found for the position.
 FLAG_IDX = 3    # The type of value (EXACT / LOWERBOUND / UPPERBOUND).
 MOVE_IDX = 4    # The best move found in the position.
@@ -268,7 +273,7 @@ class Transposition_table:
 
     Board information is stored as a list:
     - The full hash value of the position (in case it's cut to table's length).
-    - The depth at which the position was explored.
+    - The depth from which the position was explored.
     - The value found for the position.
     - The type of value (EXACT / LOWERBOUND / UPPERBOUND).
     - The best move found in the position.
@@ -317,6 +322,16 @@ class Transposition_table:
             self.updates
             )
 
+    def update_after_iteration(self, delta=1):
+        """
+        NOTE: Use after each iteration of "iterative deepening".
+        Adapt positions stored in the table for a new iteration of higher
+        depth. All positions get their depth artificially increased to reflect
+        a shallower search from previous, shallower iteration.
+        """
+        for val in self.table.values():
+            val[DEPTH_IDX] += delta
+
     def clear(self):
         self.table.clear()
         self.hits = 0
@@ -340,29 +355,60 @@ class Transposition_table:
             flag = EXACT
         # Update transposition table.
         self.insert(
-            board.hash, (board.hash, depth, value, flag, move)
+            board.hash, [board.hash, depth, value, flag, move]
         )
 
 
 def play(
-    board, params=DEFAULT_SEARCH_PARAMS, trace=None
+    board, params=DEFAULT_SEARCH_PARAMS, trace=None, max_time=float("inf")
 ):
-    search_end = False
+    # Capture initial time for time keeping.
+    time_0 = time.time()
+
+    # Register maximal depth set in parameters.
+    params_copy = params.copy()  # Original parameters to keep untouched.
+    do_iterative_deepening = params_copy["iterative_deepening"]
+    max_depth = params_copy["max_depth"]
+    max_quiesc_depth = params_copy["max_check_quiesc_depth"]
+    quiesc_depth_delta = max_quiesc_depth - max_depth
+    initial_depth = 1
+    depth_step = 1
+
+    # Initialize depth parameters for iterative deepening.
+    if do_iterative_deepening:
+        params_copy["max_depth"] = initial_depth
+        params_copy["max_check_quiesc_depth"] = \
+            initial_depth + quiesc_depth_delta
+
+    # Initiate loop arguments and Transposition Table.
+    keep_iterating = True
     alpha, beta = [-float("inf"), float("inf")]
     depth = 0
+    t_table = Transposition_table() \
+        if params_copy["transposition_table"] else None
 
-    while not search_end:
-        time_0 = time.time()
-        # Initiate move selection.
-        t_table = Transposition_table() \
-            if params["transposition_table"] else None
+    # Iterative deepening loop.
+    while keep_iterating:
+
+        # Run search for move selection.
         move, result, game_end, game_status = negamax(
-            board, depth, alpha, beta, params, t_table, trace)
-        t_table_metrics = t_table.metrics()
-        t_table.clear()
-        # End of move selection.
+            board, depth, alpha, beta, params_copy, t_table, trace)
+
+        # Update iteration parameters.
+        params_copy["max_depth"] += depth_step
+        params_copy["max_check_quiesc_depth"] += depth_step
         time_1 = time.time()
-        search_end = True  # No iterative deepening for now.
+        t_table.update_after_iteration(depth_step)
+
+        # Check conditions for new iteration.
+        keep_iterating = \
+            do_iterative_deepening and \
+            params_copy["max_depth"] <= max_depth and \
+            time_1 - time_0 < max_time
+
+    # Get Transposition Table's metrics and clear.
+    t_table_metrics = t_table.metrics()
+    t_table.clear()
 
     return move, result, game_end, game_status, \
         time_1 - time_0, t_table_metrics
@@ -1453,24 +1499,26 @@ def correct_eval_from_to_depth(evaluation, from_depth, to_depth):
     return evaluation
 
 
+# Main program.
 if __name__ == '__main__':
-    # Main program.
-    if len(sys.argv) > 0:
-        file_name = sys.argv[1]
-        board = bd.Board(file_name)
-        game_trace = Gametrace(board)
-        parameters = PLY3_SEARCH_PARAMS
+    # Manage arguments.
+    file_name = None if (len(sys.argv) == 1) else sys.argv[1]
 
-        print("\nPlaying position: {}".format(file_name))
-        board.print_char()
+    # Initializations.
+    board = bd.Board(file_name)
+    game_trace = Gametrace(board)
+    parameters = PLY4_SEARCH_PARAMS
 
-        # Call  play().
-        best_move, result, game_end, game_status, \
-            time_used, t_table_metrics = play(
-                board, params=parameters, trace=game_trace
-                )
+    print("\nPlaying position: {}".format(file_name))
+    board.print_char()
 
-        # Display results.
-        utils.display_results(
-            best_move, result, game_end, game_status
-        )
+    # Call  play().
+    best_move, result, game_end, game_status, \
+        time_used, t_table_metrics = play(
+            board, params=parameters, trace=game_trace
+            )
+
+    # Display results.
+    utils.display_results(
+        best_move, result, game_end, game_status
+    )
