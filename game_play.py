@@ -1455,7 +1455,8 @@ def is_legal_move(board, move):
                     )
                 # And now, 'unmake' the move:
                 board.unmake_move(
-                    coord1, coord2, captured_piece, leaving_piece, old_hash)
+                    move_coords[0], move_coords[1], captured_piece,
+                    leaving_piece, old_hash)
                 if pseudo_move_legal:
                     # The player has some legal moves.
                     return False, "Error: Prince at {} " \
