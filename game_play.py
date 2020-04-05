@@ -371,7 +371,7 @@ def play(
     max_depth = params_copy["max_depth"]
     max_quiesc_depth = params_copy["max_check_quiesc_depth"]
     quiesc_depth_delta = max_quiesc_depth - max_depth
-    initial_depth = 1
+    initial_depth = min(2, max_depth)
     depth_step = 1
 
     # Initialize depth parameters for iterative deepening.
