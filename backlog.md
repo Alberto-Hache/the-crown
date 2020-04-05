@@ -20,6 +20,19 @@
 ### (v2)
 - Optimize position_attacked() [30% to 50% of time spent]
   - Use itemgetter?
+  - Use special version of knight_moves[], even_knight_moves[]
+    - even-shaped vectors => parallelism
+    - even_knight_moves.reshape -> 1 x N shape
+    - use .boardcode[even_knight_moves[reshaped_even_knight_moves]]
+    - reshape to original?
+      [
+        [None, None, 4, ...],
+        [None, 1, ...],
+        [2, None, ...]
+        [None, None, ...]
+      ]
+    - Capture first per row and detect attack. (how?)
+    - ...
   - Use beams?
   - Quick previous discards (e.g. Knight off-rank?, too far away Soldier/Prince?)
   ...
@@ -35,11 +48,10 @@
   - Static exchange evaluation (plyx2) - DONE
   - Adapt to game status (middle game | end game)?
 - Add killer-move heuristic.
-- Add principal variation (without iterative deepening?).
 
 ### (v2)
+- Add principal variation (without iterative deepening?).
 - Add iterative deepening:
-  - reusing hash table
   - reusing principal variation
   - reusing killer moves?
 - Try "soft-fail" alpha beta pruning?
@@ -51,12 +63,11 @@
 ## Game-play
 
 ### (v1)
-- Define several playing styles.
+- Define several playing styles:
   - Give Knight mobility a higher value.
   - Impatient Prince? (premature bonus for going up).
+  - Highly offensive (e.g. Soldiers attack?)
   - ...
-
-- Allow starting game from some playing level/style.
   
 - Extend quiescence search. Tactical moves:
   - Prince moves upwards (in absence of opponent's Knights)?
