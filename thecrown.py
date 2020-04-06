@@ -308,6 +308,8 @@ def play_match(board, player, max_moves, file_name=None):
         player_quit = False
         max_moves_played = False
         game_trace = game.Gametrace(board)
+        # Initialize one transposition table per side.
+        t_table = [game.Transposition_table(), game.Transposition_table()]
         # Main game loop.
         while not game_end:
             # Main loop of the full game.
@@ -318,7 +320,7 @@ def play_match(board, player, max_moves, file_name=None):
                     game.play(
                         board,
                         params=player[board.turn].params,
-                        trace=game_trace
+                        trace=game_trace, t_table=t_table[board.turn]
                         )
                 # Print move metrics.
                 with open(GAME_METRICS_FILE, "a") as metrics_file:

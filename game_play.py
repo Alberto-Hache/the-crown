@@ -32,7 +32,7 @@ PLY3_SEARCH_PARAMS = {
     "max_depth":                3,
     "max_check_quiesc_depth":   8,
     "transposition_table":      True,
-    "iterative_deepening":      False,
+    "iterative_deepening":      True,
     "randomness":               0
 }
 
@@ -134,6 +134,7 @@ DEPTH_IDX = 1   # The depth from which the position was explored.
 VALUE_IDX = 2   # The value found for the position.
 FLAG_IDX = 3    # The type of value (EXACT / LOWERBOUND / UPPERBOUND).
 MOVE_IDX = 4    # The best move found in the position.
+DEPTH_SRCH_IDX = 5  # The depth with whith the position was searched.
 
 EXACT = 0
 LOWER_BOUND = 1
@@ -273,14 +274,17 @@ class Transposition_table:
 
     Board information is stored as a list:
     - The full hash value of the position (in case it's cut to table's length).
-    - The depth from which the position was explored.
+    - The depth from which the position was explored (plys from root).
     - The value found for the position.
     - The type of value (EXACT / LOWERBOUND / UPPERBOUND).
     - The best move found in the position.
+    - The depth with whith the position was searched:
+        a) full search:         plyes to max-depth
+        b) quiescence search:   0
 
     Assumptions:
         The key provided identifies uniquely a board position.
-        Python 3.7: Dictionary order is guaranteed to be insertion order. 
+        Python 3.7: Dictionary order is guaranteed to be insertion order.
     """
     def __init__(self, size=DEFAULT_HASH_SIZE):
         # Data:
@@ -302,8 +306,8 @@ class Transposition_table:
         else:
             # Collision or update: resolve by depth (root node has depth 0).
             self.updates += 1
-            if value[DEPTH_IDX] < current_value[DEPTH_IDX]:
-                # The new value was more deeply explored: replace.
+            if value[DEPTH_SRCH_IDX] >= current_value[DEPTH_SRCH_IDX]:
+                # The new value was more deeply explored, or is newer: replace.
                 self.table[key] = value
 
     def retrieve(self, key):
@@ -322,16 +326,6 @@ class Transposition_table:
             self.updates
             )
 
-    def update_after_iteration(self, delta=1):
-        """
-        NOTE: Use after each iteration of "iterative deepening".
-        Adapt positions stored in the table for a new iteration of higher
-        depth. All positions get their depth artificially increased to reflect
-        a shallower search from previous, shallower iteration.
-        """
-        for val in self.table.values():
-            val[DEPTH_IDX] += delta
-
     def clear(self):
         self.table.clear()
         self.hits = 0
@@ -339,7 +333,7 @@ class Transposition_table:
         self.updates = 0
 
     def update_values(
-        self, board, depth, value, alpha_orig, beta, move
+        self, board, depth, value, alpha_orig, beta, move, depth_searched
     ):
         """
         Update the transposition table with the board passed
@@ -355,12 +349,13 @@ class Transposition_table:
             flag = EXACT
         # Update transposition table.
         self.insert(
-            board.hash, [board.hash, depth, value, flag, move]
+            board.hash, [board.hash, depth, value, flag, move, depth_searched]
         )
 
 
 def play(
-    board, params=DEFAULT_SEARCH_PARAMS, trace=None, max_time=float("inf")
+    board, params=DEFAULT_SEARCH_PARAMS, trace=None, max_time=float("inf"),
+    t_table=None
 ):
     # Capture initial time for time keeping.
     time_0 = time.time()
@@ -384,8 +379,8 @@ def play(
     keep_iterating = True
     alpha, beta = [-float("inf"), float("inf")]
     depth = 0
-    t_table = Transposition_table() \
-        if params_copy["transposition_table"] else None
+    if params_copy["transposition_table"] and t_table is None:
+        t_table = Transposition_table()
 
     # Iterative deepening loop.
     while keep_iterating:
@@ -398,7 +393,6 @@ def play(
         params_copy["max_depth"] += depth_step
         params_copy["max_check_quiesc_depth"] += depth_step
         time_1 = time.time()
-        t_table.update_after_iteration(depth_step)
 
         # Check conditions for new iteration.
         keep_iterating = \
@@ -406,9 +400,9 @@ def play(
             params_copy["max_depth"] <= max_depth and \
             time_1 - time_0 < max_time
 
-    # Get Transposition Table's metrics and clear.
+    # Get Transposition Table's metrics.
     t_table_metrics = t_table.metrics()
-    t_table.clear()
+    # t_table.clear()
 
     return move, result, game_end, game_status, \
         time_1 - time_0, t_table_metrics
@@ -464,7 +458,7 @@ def negamax(
     hash_move = None
     if value is not None:
         # Position found with enough depth; check value and flags.
-        if value[DEPTH_IDX] <= depth:
+        if value[DEPTH_SRCH_IDX] >= params["max_depth"] - depth:
             # Adjust 'stored_value' to current depth.
             stored_value = correct_eval_from_to_depth(
                 value[VALUE_IDX], value[DEPTH_IDX], depth
@@ -587,7 +581,7 @@ def negamax(
                 # Update transposition table with best result found.
                 t_table.update_values(
                     board, depth, result_i, alpha_orig, beta,
-                    [coord1, coord2]
+                    [coord1, coord2], params["max_depth"] - depth
                 )
                 return [coord1, coord2], beta, False, ON_GOING
             if result_i > alpha:
@@ -604,7 +598,7 @@ def negamax(
         # Update transposition table with best result found.
         t_table.update_values(
             board, depth, best_result, alpha_orig, beta,
-            best_move
+            best_move, params["max_depth"] - depth
         )
         # Return results [fail-hard alpha cutoff].
         return best_move, alpha, False, ON_GOING
@@ -643,7 +637,7 @@ def negamax(
         # Update transposition table with best result found.
         t_table.update_values(
             board, depth, best_result, alpha_orig, beta,
-            [coord1, coord2]
+            [coord1, coord2], params["max_depth"] - depth
         )
         # Return results.
         return best_move, best_result, False, ON_GOING
@@ -700,19 +694,19 @@ def quiesce(
     value = t_table.retrieve(board.hash)
     hash_move = None
     if value is not None:
-        # Position found with enough depth; check value and flags.
-        if value[DEPTH_IDX] <= depth:
-            # Adjust 'stored_value' to current depth.
-            stored_value = correct_eval_from_to_depth(
-                value[VALUE_IDX], value[DEPTH_IDX], depth
-            )
-            # Adapt search to value flag.
-            if value[FLAG_IDX] == EXACT:
-                return value[MOVE_IDX], stored_value, False, ON_GOING
-            elif value[FLAG_IDX] == LOWER_BOUND:
-                alpha = max(alpha, stored_value)
-            elif value[FLAG_IDX] == UPPER_BOUND:
-                beta = min(beta, stored_value)
+        # Position found; check value and flags.
+        # No check on hash postion's depth: quiesce() has no limit.
+        # Adjust 'stored_value' to current depth.
+        stored_value = correct_eval_from_to_depth(
+            value[VALUE_IDX], value[DEPTH_IDX], depth
+        )
+        # Adapt search to value flag.
+        if value[FLAG_IDX] == EXACT:
+            return value[MOVE_IDX], stored_value, False, ON_GOING
+        elif value[FLAG_IDX] == LOWER_BOUND:
+            alpha = max(alpha, stored_value)
+        elif value[FLAG_IDX] == UPPER_BOUND:
+            beta = min(beta, stored_value)
         # Check for alpha-beta cutoff.
         if alpha >= beta:
             return value[MOVE_IDX], stored_value, False, ON_GOING
@@ -851,7 +845,7 @@ def quiesce(
                     # Update transposition table with best result found.
                     t_table.update_values(
                         board, depth, result_i, alpha_orig, beta,
-                        [coord1, coord2]
+                        [coord1, coord2], depth_searched=0
                     )
                     return [coord1, coord2], beta, False, ON_GOING
                 if result_i > alpha:
@@ -872,7 +866,7 @@ def quiesce(
         # Update transposition table with best result found.
         t_table.update_values(
             board, depth, best_result, alpha_orig, beta,
-            best_move
+            best_move, depth_searched=0
         )
         # Return results [fail-hard alpha cutoff].
         return best_move, alpha, False, ON_GOING
@@ -902,7 +896,7 @@ def quiesce(
         # Update transposition table with best result found.
         t_table.update_values(
             board, depth, best_result, alpha_orig, beta,
-            [coord1, coord2]
+            [coord1, coord2], depth_searched=0
         )
         # Return results.
         return best_move, best_result, False, ON_GOING
@@ -913,7 +907,7 @@ def quiesce(
     else:
         # 4.3 [unexplored by 4.2] The player has only non-dynamic moves.
         t_table.update_values(
-            board, depth, alpha, alpha_orig, beta, None
+            board, depth, alpha, alpha_orig, beta, None, depth_searched=0
         )
         return None, alpha, False, ON_GOING
 
