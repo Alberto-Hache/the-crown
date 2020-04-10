@@ -151,7 +151,7 @@ UPPER_BOUND = 2
 
 ########################################################################
 # Killer moves.
-MAX_DEPTH_KILLER_MOVES = 10  # Will be ignored beyond this depth.
+MAX_DEPTH_KILLER_MOVES = 20  # Will be ignored beyond this depth.
 
 
 class Gametrace:
