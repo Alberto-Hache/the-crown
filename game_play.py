@@ -16,7 +16,8 @@ PLY1_SEARCH_PARAMS = {
     "max_depth":                1,
     "max_check_quiesc_depth":   4,
     "transposition_table":      True,
-    "iterative_deepening":      False,
+    "iterative_deepening":      False,  # Needles here.
+    "killer_moves":             True,
     "randomness":               0
 }
 
@@ -25,6 +26,7 @@ PLY2_SEARCH_PARAMS = {
     "max_check_quiesc_depth":   6,
     "transposition_table":      True,
     "iterative_deepening":      True,
+    "killer_moves":             True,
     "randomness":               0
 }
 
@@ -33,22 +35,25 @@ PLY3_SEARCH_PARAMS = {
     "max_check_quiesc_depth":   8,
     "transposition_table":      True,
     "iterative_deepening":      True,
+    "killer_moves":             True,
     "randomness":               0
 }
 
 PLY4_SEARCH_PARAMS = {
     "max_depth":                4,
-    "max_check_quiesc_depth":   10,
+    "max_check_quiesc_depth":   14,  # 5 plies below max depth.
     "transposition_table":      True,
     "iterative_deepening":      True,
+    "killer_moves":             True,
     "randomness":               0
 }
 
 PLY5_SEARCH_PARAMS = {
     "max_depth":                5,
-    "max_check_quiesc_depth":   11,
+    "max_check_quiesc_depth":   13,
     "transposition_table":      True,
     "iterative_deepening":      True,
+    "killer_moves":             True,
     "randomness":               0
 }
 
@@ -94,9 +99,6 @@ KNIGHT_MOVE_VALUE = 0.1
 STATIC_DEPTH_PENALTY = 0.05  # Subtract to foster faster wins.
 END_DEPTH_PENALTY = 1  # Subtract to foster faster wins.
 
-########################################################################
-# Preevaluations
-
 
 ########################################################################
 # Possible end-game results
@@ -112,15 +114,22 @@ DRAW_NO_PRINCES_LEFT = 3
 DRAW_STALEMATE = 4
 DRAW_THREE_REPETITIONS = 5
 
+########################################################################
 # Table used for game-tracing:
-DEFAULT_TRACE_LENGTH = 500  # Max depth supported by the program.
-HASH_COL = 0            # Index of hash column.
-NODE_COUNT_COL = 1      # Index of node_counter column.
-IRREVERSIBLE_COL = 2    # Index of flag for board obtained after irreversible move.
+# Max initial depth dimensioned for trace.
+DEFAULT_TRACE_LENGTH = 500
+# Extension applied to depth every time current lenth is exceeded.
+DEFAULT_TRACE_EXTENSION = int(DEFAULT_TRACE_LENGTH/10)
+
+HASH_COL = 0            # Index of hash column: id of the position.
+NODE_COUNT_COL = 1      # Index of node_counter column: nodes explored at
+                        # that depth.
+IRREVERSIBLE_COL = 2    # Index of flag for board obtained after irreversible
+                        # move (no possible repetitions above).
 N_TRACE_COLS = 3    # Number of columns required for the above data.
 
+########################################################################
 # Hash table used for transpositions.
-HASH_SIZE_MIN = 13
 HASH_SIZE_1 = 65537
 HASH_SIZE_2 = 131071
 HASH_SIZE_3 = 262147
@@ -140,6 +149,10 @@ EXACT = 0
 LOWER_BOUND = 1
 UPPER_BOUND = 2
 
+########################################################################
+# Killer moves.
+MAX_DEPTH_KILLER_MOVES = 10  # Will be ignored beyond this depth.
+
 
 class Gametrace:
     def __init__(self, first_board, max_length=DEFAULT_TRACE_LENGTH):
@@ -152,8 +165,7 @@ class Gametrace:
         TODO:
         - Update an 'irreversible' boolean for each ply.
           to cut repetition search above plies labelled as "True".
-        - Manage overflow beyond DEFAULT_TRACE_LENGTH.
-        - Store moves sequence from start to self.current_board_ply.
+        - Store match: moves sequence from start to self.current_board_ply.
         """
         # Initialize the tracing array.
         self.level_trace = np.zeros((max_length, N_TRACE_COLS))
@@ -172,6 +184,8 @@ class Gametrace:
         """
         Register a board that has just been actually played
         (not just searched).
+        Assumption: max. length overflow not checked here; expected to be
+        handled by register_searched_board() during search.
 
         Input:
             board:          Board - the position to register.
@@ -189,7 +203,9 @@ class Gametrace:
         # Update the tracing array at the ply just played.
         self.level_trace[self.current_board_ply, HASH_COL] = board_hash
         self.level_trace[self.current_board_ply, NODE_COUNT_COL] = 0
-        self.level_trace[self.current_board_ply, IRREVERSIBLE_COL] = irreversible
+        self.level_trace[
+            self.current_board_ply, IRREVERSIBLE_COL
+            ] = irreversible
         # Zero out the tracing array from current board onwards.
         self.level_trace[self.current_board_ply + 1:, HASH_COL] = 0
         self.level_trace[self.current_board_ply + 1:, NODE_COUNT_COL] = 0
@@ -218,6 +234,12 @@ class Gametrace:
         """
         board_hash = board.hash
         ply_number = self.current_board_ply + depth  # idx in gral. game trace.
+        if ply_number >= self.level_trace.shape[0]:  # pylint: disable=E1136  # pylint/issues/3139
+            # Max depth exceeded: extend array.
+            trace_patch = np.zeros((DEFAULT_TRACE_EXTENSION, N_TRACE_COLS))
+            self.level_trace = np.concatenate(
+                (self.level_trace, trace_patch), axis=0
+                )
         # Update the tracing array.
         self.level_trace[ply_number, HASH_COL] = board_hash
         self.level_trace[ply_number, NODE_COUNT_COL] += 1
@@ -279,7 +301,7 @@ class Transposition_table:
     - The type of value (EXACT / LOWERBOUND / UPPERBOUND).
     - The best move found in the position.
     - The depth with whith the position was searched:
-        a) full search:         plyes to max-depth
+        a) full search:         plies to max-depth
         b) quiescence search:   0
 
     Assumptions:
@@ -349,13 +371,66 @@ class Transposition_table:
             flag = EXACT
         # Update transposition table.
         self.insert(
-            board.hash, [board.hash, depth, value, flag, move, depth_searched]
+            board.hash, (board.hash, depth, value, flag, move, depth_searched)
         )
+
+
+class Killer_Moves:
+    """
+    A list of moves indexed by ply or level of the search.
+    (Killer moves = quiet moves that caused a beta-cutoff in a sibling node,
+    to be tried in other positions at the same depth.)
+    Capacity:
+    - Two moves maximum per ply.
+    - Limited depth: moves beyond certain depth are not stored.
+    """
+    def __init__(self, size=MAX_DEPTH_KILLER_MOVES):
+        self.size = size
+        self.killer_list = [[None, None] for _ in range(size)]
+
+    def insert(self, move, ply):
+        # Insert a move that just created a cut-off.
+        # If both slots are full, the oldest one is dropped.
+        if ply < self.size:
+            if self.killer_list[ply][0] is None:
+                self.killer_list[ply][0] = move
+            else:
+                self.killer_list[ply][1] = self.killer_list[ply][0]
+                self.killer_list[ply][0] = move
+
+    def retrieve(self, ply):
+        # Simply return content of list,
+        # or an empty list if the ply exceeds capacity.
+        try:
+            list = self.killer_list[ply]
+            return list
+        except IndexError:
+            return [None, None]
+
+    def shift_plies(self, n_plies=2):
+        # Adapt list after a move has been actually played in the game
+        # so it can be reused in next move search. Each shift removes
+        # first move and adds an empty one at the end.
+        # (Default shift is 2, as next board will be two plies ahead.)
+        for _ in range(n_plies):
+            self.killer_list.pop(0)
+            self.killer_list.append([None, None])
+
+
+def is_killer(m1, m2, k1, k2, k3, k4):
+    """
+    Check if the move [m1, m2] is contained in killer moves list:
+    [[k1, k2], [k3, k4]].
+    This function is vectorized a v_is_killer() for use within
+    np.where(...) in numpy arrays.
+    """
+    res = [m1, m2] == [k1, k2] or [m1, m2] == [k3, k4]
+    return res
 
 
 def play(
     board, params=DEFAULT_SEARCH_PARAMS, trace=None, max_time=float("inf"),
-    t_table=None
+    t_table=None, killer_list=None
 ):
     # Capture initial time for time keeping.
     time_0 = time.time()
@@ -375,21 +450,26 @@ def play(
         params_copy["max_check_quiesc_depth"] = \
             initial_depth + quiesc_depth_delta
 
-    # Initiate loop arguments and Transposition Table.
+    # Initiate loop arguments, Transposition Table and Killer moves.
     keep_iterating = True
     alpha, beta = [-float("inf"), float("inf")]
     depth = 0
     if params_copy["transposition_table"] and t_table is None:
         t_table = Transposition_table()
+    if params_copy["killer_moves"] and killer_list is None:
+        killer_list = Killer_Moves()
 
     # Iterative deepening loop.
     while keep_iterating:
 
         # Run search for move selection.
+        # Reuse: transposition table, killer moves.
         move, result, game_end, game_status = negamax(
-            board, depth, alpha, beta, params_copy, t_table, trace)
+            board, depth, alpha, beta, params_copy,
+            t_table, trace, killer_list
+            )
 
-        # Update iteration parameters.
+        # Update iteration parameters (not needed for TT).
         params_copy["max_depth"] += depth_step
         params_copy["max_check_quiesc_depth"] += depth_step
         time_1 = time.time()
@@ -399,6 +479,9 @@ def play(
             do_iterative_deepening and \
             params_copy["max_depth"] <= max_depth and \
             time_1 - time_0 < max_time
+
+    # Adapt killer moves list for next move to play (2 plies fwd).
+    killer_list.shift_plies()
 
     # Get Transposition Table's metrics.
     t_table_metrics = t_table.metrics()
@@ -410,7 +493,7 @@ def play(
 
 def negamax(
     board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS,
-    t_table=None, trace=None
+    t_table=None, trace=None, killer_list=None
 ):
     """
     Given a *legal* position in the game-tree, find and evaluate the best move.
@@ -428,6 +511,8 @@ def negamax(
         t_table:        The transposition table storing previously explored
                         boards.
         trace:          The structure tracking played / searched boards.
+        killer_list     A list of moves indexed by ply that worked well in
+                        sibling nodes (may not be possible or even legal).
 
     Output:
         best_move:      A list [coord1, coord2], or None.
@@ -443,7 +528,9 @@ def negamax(
 
     # 0. If at max_depth, quiescence search takes care.
     if depth == params["max_depth"]:
-        return quiesce(board, depth, alpha, beta, params, t_table, trace)
+        return quiesce(
+            board, depth, alpha, beta, params, t_table, trace
+            )
 
     # 1. Register searched node, checking repetitions.
     if trace is not None:
@@ -510,7 +597,7 @@ def negamax(
             childs_move, result_i, game_end_i, game_status_i = \
                 negamax(
                     board, depth + 1, -beta, -alpha,
-                    params, t_table, trace
+                    params, t_table, trace, killer_list
                 )
             result_i = -float(result_i)  # Switch to player's view.
         # Assess results from final position or search.
@@ -523,6 +610,9 @@ def negamax(
         if result_i >= beta:
             # Ignore rest of moves [fail-hard beta cutoff].
             # (No need to update transposition table with this known move.)
+            # Update the list of killer moves if it's no capture.
+            if board.board1d[coord2] is None:
+                killer_list.insert([coord1, coord2], depth)
             return [coord1, coord2], beta, False, ON_GOING
         if result_i > alpha:
             # Update move choice with this better one for player.
@@ -539,7 +629,8 @@ def negamax(
         moves.remove(hash_move)
 
     # Preevaluate and sort pseudomoves.
-    moves = pre_evaluate_pseudomoves(board, moves)
+    k_moves = killer_list.retrieve(depth)
+    moves = pre_evaluate_pseudomoves(board, moves, k_moves)
 
     # Explore each possible pseudomove.
     for pseudo_move in moves:  # [[24, 14], [24, 13]...]], [2, 3]...]
@@ -566,7 +657,7 @@ def negamax(
                 childs_move, result_i, game_end_i, game_status_i = \
                     negamax(
                         board, depth + 1, -beta, -alpha,
-                        params, t_table, trace
+                        params, t_table, trace, killer_list
                     )
                 result_i = -float(result_i)  # Switch to player's view.
             # Assess results from final position or search.
@@ -583,6 +674,9 @@ def negamax(
                     board, depth, result_i, alpha_orig, beta,
                     [coord1, coord2], params["max_depth"] - depth
                 )
+                # Update the list of killer moves if it's no capture.
+                if board.board1d[coord2] is None:
+                    killer_list.insert([coord1, coord2], depth)
                 return [coord1, coord2], beta, False, ON_GOING
             if result_i > alpha:
                 # Update move choice with this better one for player.
@@ -600,6 +694,9 @@ def negamax(
             board, depth, best_result, alpha_orig, beta,
             best_move, params["max_depth"] - depth
         )
+        # Update the list of killer moves if it's no capture.
+        if board.board1d[coord2] is None:
+            killer_list.insert(best_move, depth)
         # Return results [fail-hard alpha cutoff].
         return best_move, alpha, False, ON_GOING
 
@@ -628,7 +725,7 @@ def negamax(
         childs_move, result_i, game_end_i, game_status_i = \
             negamax(
                 board, depth + 1, -beta, -alpha,
-                params, t_table, trace
+                params, t_table, trace, killer_list
             )
         best_result = -float(result_i)  # Switch to player's view.
         # And 'unmake' the move.
@@ -639,6 +736,7 @@ def negamax(
             board, depth, best_result, alpha_orig, beta,
             [coord1, coord2], params["max_depth"] - depth
         )
+        # No update to list of killer moves (it's a forced move).
         # Return results.
         return best_move, best_result, False, ON_GOING
 
@@ -648,7 +746,7 @@ def negamax(
 
 def quiesce(
     board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS,
-    t_table=None, trace=None, player_in_check=None
+    t_table=None, trace=None, player_in_check=None, killer_list=None
 ):
     """
     Evaluate a *legal* position exploring only DYNAMIC moves (or none).
@@ -669,6 +767,8 @@ def quiesce(
         player_in_check:
                         Boolean or None. A possible early detection of
                         the moving Prince being in check.
+        killer_list     A list of moves indexed by ply that worked well in
+                        sibling nodes (may not be possible or even legal).
 
     Output:
         best_move:      A list [coord1, coord2], or None.
@@ -799,6 +899,7 @@ def quiesce(
         moves.remove(hash_move)
 
     # Preevaluate and sort pseudomoves.
+    # k_moves = killer_list.retrieve(depth)
     moves = pre_evaluate_pseudomoves(board, moves)
 
     # Explore each possible pseudomove.
@@ -1094,14 +1195,97 @@ def generate_pseudomoves(board, kill_moves=None):
     return moves, moves_count
 
 
-def pre_evaluate_pseudomoves(board, moves):
+def pre_evaluate_pseudomoves(board, moves, k_moves=[None, None]):
+    """
+    Given a list of pseudomoves on a board, sort them for optimal seach.
+
+    Input:
+        board:      Board - the position where moves will be searched.
+        moves:      a list of moves, e.g. [[1, 13], [1, 14], [26, 16]...]
+        k_moves:    a list of TWO killer moves that might appear in 'moves'.
+                    E.g: [None, None]; [[1, 13], None]; [[23, 24], [1, 14]]
+
+    Output:
+        ev_moves:   a new list of moves, e.g. [[26, 16], [1, 13], [1, 14]...]
+
+    Heuristic implemented:
+    1.  Winning / neutral captures, sorted by decreasing expected gain:
+        1.a) if captured piece is not protected: full piece value.
+        1.b) if captured piece is protected: piece value - own piece value.
+    2.  Killer moves found in list (if any).
+    3.  Non capture moves (unsorted).
+    4.  Losing captures, sorted by increasing expected loss (same algorithm).
+
+    Not covered:
+    -   Checks / checkmates.
+    -   Prince's crowning / approaching crown.
+    -   Soldier's promotion / approaching missing Prince's position.
+    """
+    # Extend array with columns for evaluations.
+    # - columns 0, 1: coord1 and coord2 of the move (coord2 is not None).
+    # - column 2: move priority (higher value => higher priority).
+
+    if moves != []:
+        # Initialize array with moves on columns '0' and '1'.
+        ev_moves = np.zeros((len(moves), 3), dtype=np.intp)
+        ev_moves[:, 0:2] = moves
+
+        # Extract killer moves variables:
+        if k_moves[0] is not None:
+            k1, k2 = k_moves[0]
+        else:
+            k1, k2 = None, None
+        if k_moves[1] is not None:
+            k3, k4 = k_moves[1]
+        else:
+            k3, k4 = None, None
+
+        # Estimate the value captured by each move in column '2'.
+        ev_moves[:, 2] = piece_code_value[
+            board.boardcode[ev_moves[:, 1]]
+        ]
+
+        # For capturing moves, correct outcome in column '2',
+        # checking whether the opponent defends coord2.
+        attacking_side = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
+
+        # Moves sorting:
+        # 1. good captures <- 10 x (capturing result) + 5   (>= 15)
+        # 2. even captures <- 10 x (capturing result) + 5   (= 5)
+        # 3. killer moves <- 3                              (= 3)
+        # 3. non captures <- 0                              (= 0)
+        # 4. bad captures <- 10 x (capturing result) + 5    (<= -5)
+        ev_moves[:, 2] = np.where(
+            ev_moves[:, 2] > 0,  # Condition: some value is captured.
+            (  # <full value> - <capturer's value> if coord2 is defended.
+                ev_moves[:, 2] -
+                v_position_attacked(board, ev_moves[:, 1], attacking_side) *
+                piece_code_value[board.boardcode[ev_moves[:, 0]]]
+            )*(-10) - 5,
+            v_is_killer(
+                ev_moves[:, 0], ev_moves[:, 1], k1, k2, k3, k4
+            )*(-3)
+        )
+
+        # Sort moves by higher evaluation.
+        ev_moves.view('i8, i8, i8').sort(order=['f2'], axis=0)
+        # ev_moves = ev_moves[::-1]
+
+        # Discard auxiliary columns and return as a list.
+        return np.intp(ev_moves[:, 0:2])
+
+    else:
+        return moves
+
+
+def pre_evaluate_pseudomovesOLD(board, moves):
     """
     Given a list of pseudomoves on a board, sort them for optimal seach.
 
     Input:
         board:      Board - the position where moves will be searched.
         moves:      an array of moves, e.g. [[1, 13], [1, 14], [26, 16]...]
-    
+
     Output:
         ev_moves:   a new array of moves, e.g. [[26, 16], [1, 13], [1, 14]...]
 
@@ -1119,9 +1303,7 @@ def pre_evaluate_pseudomoves(board, moves):
     """
     # Extend array with columns for evaluations.
     # - columns 0, 1: coord1 and coord2 of the move (coord2 is not None).
-    # - column 2: value of the piece captured (or 0).
-    # - column 3: value of capturing piece, if coord2 is attacked by opponent.
-    # - column 4: evaluation of the move.
+    # - column 2: move priority (higher value => higher priority).
 
     if moves != []:
         # Initialize array with moves on columns '0' and '1'.
@@ -1133,14 +1315,14 @@ def pre_evaluate_pseudomoves(board, moves):
             board.boardcode[ev_moves[:, 1]]
         ]
 
-        # For capturing moves, estimate outcome in column '3',
-        # checking whether the opponent defends the coord2.
+        # For capturing moves, correct outcome in column '2',
+        # checking whether the opponent defends coord2.
         attacking_side = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
         v_position_attacked = np.vectorize(position_attacked)
 
         ev_moves[:, 2] = np.where(
-            ev_moves[:, 2] > 0,  # Condition: some value is captured
-            (  # Full value - capturer's value if coord2 is defended.
+            ev_moves[:, 2] > 0,  # Condition: some value is captured.
+            (  # <full value> - <capturer's value> if coord2 is defended.
                 ev_moves[:, 2] -
                 v_position_attacked(board, ev_moves[:, 1], attacking_side) *
                 piece_code_value[board.boardcode[ev_moves[:, 0]]]
@@ -1492,6 +1674,12 @@ def correct_eval_from_to_depth(evaluation, from_depth, to_depth):
             evaluation += delta_sign * depth_delta * STATIC_DEPTH_PENALTY
 
     return evaluation
+
+
+########################################################################
+# Vectorized functions (used within numpy).
+v_position_attacked = np.vectorize(position_attacked)
+v_is_killer = np.vectorize(is_killer)
 
 
 # Main program.

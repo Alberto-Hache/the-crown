@@ -167,10 +167,13 @@ def loop_negamax(case_idx):
         game_trace = gp.Gametrace(board)  # Tracking repetitions.
         transp_table = gp.Transposition_table() \
             if test_params["transposition_table"] else None
+        killer_list = gp.Killer_Moves() \
+            if test_params["killer_moves"] else None
         for _ in range(iterations):
             _, _, _, _ = gp.negamax(
                 board, 0, -np.Infinity, np.Infinity,
-                params=test_params, t_table=transp_table, trace=game_trace
+                params=test_params, t_table=transp_table, trace=game_trace,
+                killer_list=killer_list
             )
 
 

@@ -5,11 +5,9 @@
 ### A
 ...
 
-
 ### B
 
 - Negamax / Quiesce should discount depth from DRAW score (?).
-- Make Gametrace size flexible (not limited to DEFAULT_TRACE_LENGTH).
 - Regularize terminology: value/score (not result), color / turn / side?
 
 ## Optimizations
@@ -49,13 +47,9 @@
 - Pre-evaluation of moves (extend make pseudo-move()?) for move sorting?
   - Static exchange evaluation (plyx2) - DONE
   - Adapt to game status (middle game | end game)?
-- Add killer-move heuristic.
 
 ### (v2)
 - Add principal variation (without iterative deepening?).
-- Add iterative deepening:
-  - reusing principal variation
-  - reusing killer moves?
 - Try "soft-fail" alpha beta pruning?
   - In search.
   - In values stored in transposition table.
@@ -95,9 +89,6 @@
 
 - Enable vs code from CLI:
 export PATH="$PATH:/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin"
-
-
-
 
 
 

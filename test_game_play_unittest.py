@@ -28,7 +28,7 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_minimax_01.cor",  # Position to play.
                 TEST_SEARCH_PARAMS_4,     # Search parameters.
-                None, 10000, True, 1    # Move, result, end, status.
+                None, 10000, True, 1    # Move / list of moves, result, end, status.
             ),
             (
                 "test_minimax_02.cor",
@@ -73,7 +73,7 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_minimax_10.cor",
                 TEST_SEARCH_PARAMS_4,
-                [33, 25], -9991, False, 0
+                [[33, 25], [26, 27]], -9991, False, 0
             ),
             (
                 "test_minimax_10b.cor",
@@ -91,6 +91,8 @@ class Test_game_play(unittest.TestCase):
                 game_trace = gp.Gametrace(board)  # The game trace.
                 transp_table = gp.Transposition_table() \
                     if params["transposition_table"] else None
+                killer_list = gp.Killer_Moves() \
+                    if params["killer_moves"] else None
 
                 print("Testing position {}: ".format(file_name), end="")
                 print("Analysis of position {}: ".format(file_name), file=f)
@@ -100,7 +102,8 @@ class Test_game_play(unittest.TestCase):
                 t_start = time.time()
                 best_move, result, game_end, game_status = gp.negamax(
                     board, 0, -np.Infinity, np.Infinity,
-                    params=params, t_table=transp_table, trace=game_trace)
+                    params=params, t_table=transp_table, trace=game_trace,
+                    killer_list=killer_list)
                 t_end = time.time()
                 print("{}".format(
                     datetime.timedelta(seconds=t_end - t_start))
@@ -144,7 +147,7 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_quiesce_01.cor",  # Position to play.
                 TEST_SEARCH_PARAMS_4,   # Search parameters.
-                None, -11.5, False, 0    # Move, result, end, status.
+                None, -11.5, False, 0    # Move / list of moves, result, end, status.
             ),
             (
                 "test_quiesce_02.cor",
@@ -242,6 +245,8 @@ class Test_game_play(unittest.TestCase):
                 # game_trace = gp.Gametrace(board)  # The game trace.
                 transp_table = gp.Transposition_table() \
                     if params["transposition_table"] else None
+                killer_list = gp.Killer_Moves() \
+                    if params["killer_moves"] else None
 
                 print("\nAnalysis of position {}:".format(file_name), file=f)
                 board.print_char(out_file=f)
@@ -249,7 +254,9 @@ class Test_game_play(unittest.TestCase):
                 # Call to quiesce() with depth 'max_depth".
                 best_move, result, game_end, game_status = gp.quiesce(
                     board, params["max_depth"], -np.Infinity, np.Infinity,
-                    params=params, t_table=transp_table)
+                    params=params, t_table=transp_table,
+                    killer_list=killer_list
+                    )
 
                 # Display results.
                 utils.display_results(
@@ -375,54 +382,93 @@ class Test_game_play(unittest.TestCase):
         # Test cases.
         test_cases = (
             (
+                # Case: No killer moves.
                 "test_captures_00.cor",
                 [
-                    [1, 2],
-                    [41, 44],
-                    [28, 29],
-                    [41, 48],
-                    [41, 46],
-                    [41, 45],
-                    [41, 43],
-                    [41, 42],
-                    [41, 40],
-                    [41, 36],
-                    [41, 34],
-                    [41, 33],
-                    [41, 25],
-                    [41, 24],
-                    [41, 14],
-                    [41, 13],
-                    [28, 27],
-                    [28, 18],
-                    [26, 27],
-                    [26, 25],
-                    [26, 16],
-                    [1, 14],
+                    [1,  2],  # s x K
+                    [41, 44],  # k x S (not defended)
+                    [28, 29],  # s x S (defended)
+                    [1,  0],
                     [1, 13],
-                    [1, 0],
-                    [41, 37]
-                ]
+                    [1, 14],
+                    [26, 16],
+                    [26, 25],
+                    [26, 27],
+                    [28, 18],
+                    [28, 27],
+                    [41, 13],
+                    [41, 14],
+                    [41, 24],
+                    [41, 25],
+                    [41, 33],
+                    [41, 34],
+                    [41, 36],
+                    [41, 40],
+                    [41, 42],
+                    [41, 43],
+                    [41, 45],
+                    [41, 46],
+                    [41, 48],
+                    [41, 37]  # K x s (defended)
+                ],
+                [None, None]
             ),
             (
+                # Case: 1 killer move.
+                "test_captures_00.cor",
+                [
+                    [1,  2],  # s x K
+                    [41, 44],  # k x S (not defended)
+                    [28, 29],  # s x S (defended)
+                    [41, 24],  # Killer move
+                    [1,  0],
+                    [1, 13],
+                    [1, 14],
+                    [26, 16],
+                    [26, 25],
+                    [26, 27],
+                    [28, 18],
+                    [28, 27],
+                    [41, 13],
+                    [41, 14],
+                    [41, 25],
+                    [41, 33],
+                    [41, 34],
+                    [41, 36],
+                    [41, 40],
+                    [41, 42],
+                    [41, 43],
+                    [41, 45],
+                    [41, 46],
+                    [41, 48],
+                    [41, 37]  # K x s (defended)
+                ],
+                [[41, 24], [None, None]]
+            ),
+            (
+                # Case: No moves, no killer moves.
                 "test_minimax_02.cor",
-                []
+                [],
+                [None, None]
             )
         )
 
         # Loop over all test cases.
         for test in test_cases:
-            file_name, expected_moves = test
+            file_name, expected_moves, killer_moves = test
 
             # Generate and sort moves.
             board = bd.Board(file_name)
             moves, moves_count = gp.generate_pseudomoves(board)
-            moves = gp.pre_evaluate_pseudomoves(board, moves)
+            moves = gp.pre_evaluate_pseudomoves(
+                board, moves, killer_moves
+                )
 
             # Check results.
             self.assertTrue(
                 np.array_equal(moves, np.array(expected_moves)),
-                "Error found in position {}".format(file_name)
+                "Error found in position {} with killer moves {}".format(
+                    file_name, killer_moves)
             )
 
     def test_knights_mobility(self):
