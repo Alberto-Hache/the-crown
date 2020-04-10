@@ -17,7 +17,7 @@ PLY1_SEARCH_PARAMS = {
     "max_check_quiesc_depth":   4,
     "transposition_table":      True,
     "iterative_deepening":      False,  # Needles here.
-    "killer_moves":             True,
+    "killer_moves":             False,  # Needles here.
     "randomness":               0
 }
 
@@ -41,7 +41,7 @@ PLY3_SEARCH_PARAMS = {
 
 PLY4_SEARCH_PARAMS = {
     "max_depth":                4,
-    "max_check_quiesc_depth":   14,  # 5 plies below max depth.
+    "max_check_quiesc_depth":   14,  # 5 moves below max depth (prev. 10).
     "transposition_table":      True,
     "iterative_deepening":      True,
     "killer_moves":             True,
@@ -50,7 +50,7 @@ PLY4_SEARCH_PARAMS = {
 
 PLY5_SEARCH_PARAMS = {
     "max_depth":                5,
-    "max_check_quiesc_depth":   13,
+    "max_check_quiesc_depth":   13,  # 4 moves below max depth (increase?).
     "transposition_table":      True,
     "iterative_deepening":      True,
     "killer_moves":             True,
@@ -392,11 +392,12 @@ class Killer_Moves:
         # Insert a move that just created a cut-off.
         # If both slots are full, the oldest one is dropped.
         if ply < self.size:
-            if self.killer_list[ply][0] is None:
-                self.killer_list[ply][0] = move
-            else:
+            if move != self.killer_list[ply][0]:
+                # New move is not on top; shift right and insert.
                 self.killer_list[ply][1] = self.killer_list[ply][0]
                 self.killer_list[ply][0] = move
+            # else:
+            #   New move already on top: do nothing.
 
     def retrieve(self, ply):
         # Simply return content of list,
@@ -1255,6 +1256,7 @@ def pre_evaluate_pseudomoves(board, moves, k_moves=[None, None]):
         # 3. killer moves <- 3                              (= 3)
         # 3. non captures <- 0                              (= 0)
         # 4. bad captures <- 10 x (capturing result) + 5    (<= -5)
+        # NOTE: all values negated (x -1) for faster .sort() below.
         ev_moves[:, 2] = np.where(
             ev_moves[:, 2] > 0,  # Condition: some value is captured.
             (  # <full value> - <capturer's value> if coord2 is defended.
