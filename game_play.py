@@ -530,7 +530,8 @@ def negamax(
     # 0. If at max_depth, quiescence search takes care.
     if depth == params["max_depth"]:
         return quiesce(
-            board, depth, alpha, beta, params, t_table, trace
+            board, depth, alpha, beta, params, t_table, trace,
+            killer_list=killer_list
             )
 
     # 1. Register searched node, checking repetitions.
@@ -871,7 +872,7 @@ def quiesce(
             childs_move, result_i, game_end_i, game_status_i = \
                 quiesce(
                     board, depth + 1, -beta, -alpha,
-                    params, t_table, trace
+                    params, t_table, trace, killer_list=killer_list
                 )
             result_i = -float(result_i)  # Switch to player's view.
         # Assess results from final position or search.
@@ -884,6 +885,9 @@ def quiesce(
         if result_i >= beta:
             # Ignore rest of moves [fail-hard beta cutoff].
             # (No need to update transposition table with this known move.)
+            # Update the list of killer moves if it's no capture.
+            if board.board1d[coord2] is None:
+                killer_list.insert([coord1, coord2], depth)
             return [coord1, coord2], beta, False, ON_GOING
         if result_i > alpha:
             # Update move choice with this better one for player.
@@ -900,8 +904,8 @@ def quiesce(
         moves.remove(hash_move)
 
     # Preevaluate and sort pseudomoves.
-    # k_moves = killer_list.retrieve(depth)
-    moves = pre_evaluate_pseudomoves(board, moves)
+    k_moves = killer_list.retrieve(depth)
+    moves = pre_evaluate_pseudomoves(board, moves, k_moves)
 
     # Explore each possible pseudomove.
     for pseudo_move in moves:  # [[24, 14], [24, 13]...]], [2, 3]...]
@@ -932,7 +936,8 @@ def quiesce(
                         quiesce(
                             board, depth + 1, -beta, -alpha,
                             params, t_table, trace,
-                            player_in_check=opponent_in_check
+                            player_in_check=opponent_in_check,
+                            killer_list=killer_list
                         )
                     result_i = -float(result_i)  # Switch to player's view.
                 # Assess results from final position or search.
@@ -949,6 +954,9 @@ def quiesce(
                         board, depth, result_i, alpha_orig, beta,
                         [coord1, coord2], depth_searched=0
                     )
+                    # Update the list of killer moves if it's no capture.
+                    if board.board1d[coord2] is None:
+                        killer_list.insert([coord1, coord2], depth)
                     return [coord1, coord2], beta, False, ON_GOING
                 if result_i > alpha:
                     # Update move choice with this better one for player.
@@ -970,6 +978,9 @@ def quiesce(
             board, depth, best_result, alpha_orig, beta,
             best_move, depth_searched=0
         )
+        # Update the list of killer moves if it's no capture.
+        if board.board1d[coord2] is None:
+            killer_list.insert(best_move, depth)
         # Return results [fail-hard alpha cutoff].
         return best_move, alpha, False, ON_GOING
 
@@ -989,7 +1000,7 @@ def quiesce(
         childs_move, result_i, game_end_i, game_status_i = \
             quiesce(
                 board, depth + 1, -beta, -alpha,
-                params, t_table, trace
+                params, t_table, trace, killer_list=killer_list
             )
         best_result = -float(result_i)  # Switch to player's view.
         # And 'unmake' the move.
@@ -1000,6 +1011,7 @@ def quiesce(
             board, depth, best_result, alpha_orig, beta,
             [coord1, coord2], depth_searched=0
         )
+        # No update to list of killer moves (it's a forced move).
         # Return results.
         return best_move, best_result, False, ON_GOING
 
@@ -1011,6 +1023,7 @@ def quiesce(
         t_table.update_values(
             board, depth, alpha, alpha_orig, beta, None, depth_searched=0
         )
+        # No update to list of killer moves (no moves known).
         return None, alpha, False, ON_GOING
 
 
