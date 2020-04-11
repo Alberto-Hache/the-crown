@@ -1151,9 +1151,18 @@ def position_attacked(board, pos, attacking_side):
 
 def position_attacked_new_UNFINISHED(board, pos, attacking_side):
 
+    # Obtain a list of indices:
+    # [[42, 43, 44], [40, 34, 33, 25, 24, ...], ...]
     position_lists = bd.knight_moves[pos]
+    # Array of arrays:
+    # [[None, None, None], [None, None, None, Piece_i, None, ...], ...]
     board_slices = itemgetter(*position_lists)(board.board1d)
+
     # TODO: Pending next steps...
+    # Identify first piece on each array.
+    
+    # Get each piece's moves:
+    # p_moves = bd.piece_moves[piece.type][piece.color][piece.coord]
 
 
 def generate_pseudomoves(board, kill_moves=None):
