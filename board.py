@@ -54,6 +54,7 @@ soldier_moves = utils.calculate_soldier_moves()  # 2 lists, one for each side.
 knight_moves = utils.calculate_knight_moves()  # For the Knight of any side.
 
 # Generate moves table for the 2 x 3 side-type combinations.
+# Use: piece_moves[piece.type][piece.color][piece.coord]
 piece_moves = (
     # 0: PRINCE; both sides have the same moves.
     (simple_moves, simple_moves),
@@ -63,16 +64,33 @@ piece_moves = (
     (knight_moves, knight_moves)
 )
 
+soldier_moves_flat = utils.calculate_soldier_moves_flat()  # 2 lists, one for each side.
+knight_moves_flat = utils.calculate_knight_moves_flat()  # For the Knight of any side.
+
+# Generate moves table for the 2 x 3 side-type combinations.
+# Use: piece_moves[piece.type][piece.color][piece.coord]
+piece_moves_flat = (
+    # 0: PRINCE; both sides have the same moves.
+    (simple_moves, simple_moves),
+    # 1: SOLDIER; each side has DIFFERENT moves (kingdom, throne...).
+    (soldier_moves_flat[0], soldier_moves_flat[1]),
+    # 2: KNIGHT; both sides have the same moves.
+    (knight_moves_flat, knight_moves_flat)
+)
+
+
 # UNIQUE CODES for each piece type and color.
 # Order: Prince, Soldier, Knight
 piece_code = (
     (1, 2, 3),
     (4, 5, 6)
 )
+"""
 piece_moves_by_code = (
     (simple_moves, soldier_moves[0], knight_moves),
     (simple_moves, soldier_moves[1], knight_moves)
 )
+"""
 
 
 class Board:

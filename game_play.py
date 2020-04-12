@@ -4,6 +4,7 @@ import sys
 import types
 import time
 from operator import itemgetter
+from itertools import dropwhile
 
 import board as bd
 import utils
@@ -1120,7 +1121,7 @@ def evaluate_end(board, depth):
     return None, None, False, ON_GOING
 
 
-def position_attacked(board, pos, attacking_side):
+def position_attacked_OLD(board, pos, attacking_side):
 
     attacked = False
     # Loop over each of the up to 6 directions till attacked == True
@@ -1149,7 +1150,7 @@ def position_attacked(board, pos, attacking_side):
     return attacked
 
 
-def position_attacked_new_UNFINISHED(board, pos, attacking_side):
+def position_attacked(board, pos, attacking_side):
 
     # Obtain a list of indices:
     # [[42, 43, 44], [40, 34, 33, 25, 24, ...], ...]
@@ -1158,11 +1159,16 @@ def position_attacked_new_UNFINISHED(board, pos, attacking_side):
     # [[None, None, None], [None, None, None, Piece_i, None, ...], ...]
     board_slices = itemgetter(*position_lists)(board.board1d)
 
-    # TODO: Pending next steps...
     # Identify first piece on each array.
-    
-    # Get each piece's moves:
+    # [[], ]
+    first_in_board_slices = list(map(lambda x: list(dropwhile(lambda y: y[1] is None, enumerate(x))), board_slices))
+
+    # Pick only non empty lists headed by "attacking_side".
     # p_moves = bd.piece_moves[piece.type][piece.color][piece.coord]
+    # Check for pieces of the color required, piece's moves:
+    attacking_pieces = [x[0] for x in first_in_board_slices if len(x) > 0 and x[0][1].color == attacking_side and (pos in bd.piece_moves_flat[x[0][1].type][x[0][1].color][x[0][1].coord])]
+
+    return len(attacking_pieces) > 0
 
 
 def generate_pseudomoves(board, kill_moves=None):
