@@ -1121,7 +1121,7 @@ def evaluate_end(board, depth):
     return None, None, False, ON_GOING
 
 
-def position_attacked_OLD(board, pos, attacking_side):
+def position_attacked(board, pos, attacking_side):
 
     attacked = False
     # Loop over each of the up to 6 directions till attacked == True
@@ -1150,7 +1150,7 @@ def position_attacked_OLD(board, pos, attacking_side):
     return attacked
 
 
-def position_attacked(board, pos, attacking_side):
+def position_attacked_NEW(board, pos, attacking_side):
 
     # Obtain a list of indices:
     # [[42, 43, 44], [40, 34, 33, 25, 24, ...], ...]
