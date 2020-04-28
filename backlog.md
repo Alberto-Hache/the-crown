@@ -8,7 +8,11 @@
 ### B
 
 - Negamax / Quiesce should discount depth from DRAW score (?).
-- Regularize terminology: value/score (not result), color / turn / side?
+- Regularize terminology:
+  - terminal nodes (not end-game nodes, etc.)
+  - null move -> stand pat
+  - value/score (not result)
+  - turn / side (not color)
 
 ## Optimizations
 
@@ -16,6 +20,15 @@
 ...
 
 ### (v2)
+
+- Use killer moves from previous plies (now using current ply only)?
+
+- Keep more info in hash table:
+  - list of pseudo_moves? (to save calls to generate_pms)
+  - player_in_check? (to save calls to position_attacked)
+  - static_evaluation? (to save calls to evaluate_static)
+  - ...
+  
 - Optimize position_attacked() [30% to 50% of time spent]
   - Use itemgetter?
   - Use special version of knight_moves[], even_knight_moves[]
@@ -31,13 +44,15 @@
       ]
     - Capture first per row and detect attack. (how?)
     - ...
-  - Use beams?
-  - Quick previous discards (e.g. Knight off-rank?, too far away Soldier/Prince?)
-  ...
 - knights_mobility()
   - Estimate just blank positions, ignoring capture / friendly piece distinction.
   - Avoid using knights_mobility() or count_knight_pseudomoves() by making generate_pseudomoves() count mobility of Knights!
-- Generate_pseudo_moves based on 'beams' - 'shadows'.
+
+### (v3)
+- Multiprocessing of tree nodes seach (shared hash table).
+- Define 'beams' to:
+  - Generate_pseudo_moves based on their 'shadows'.
+  - Calculate position_attacked()?
 
 
 ## Tree search efficiency
@@ -84,6 +99,10 @@
   - End-game:
     - Prince distance to crown
     - Obstacles to crown?
+
+- Don't let quiesce() use null-move's result if it's too different from static evaluation;
+it means there's a big threat. Instead, force full search (like when 'player_in_check').
+E.g. in test_quiesce_01.cor black misses the imminent check-mate.
 
 ## Environment and versioning
 

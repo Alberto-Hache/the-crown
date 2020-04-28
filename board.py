@@ -52,6 +52,10 @@ kingdoms = utils.calculate_kingdoms(N_POSITIONS)
 simple_moves = utils.calculate_simple_moves()  # For the Prince of any side.
 soldier_moves = utils.calculate_soldier_moves()  # 2 lists, one for each side.
 knight_moves = utils.calculate_knight_moves()  # For the Knight of any side.
+distance_from_to = utils.calculate_distance_from_to()  # Distance between 2 coords.
+distance_to_crown = \
+    utils.calculate_distance_to_crown()  # Distance from a coord to the crown.
+np_distance_to_crown = np.array(distance_to_crown)
 
 # Generate moves table for the 2 x 3 side-type combinations.
 # Use: piece_moves[piece.type][piece.color][piece.coord]

@@ -16,6 +16,7 @@ import utils
 PLY1_SEARCH_PARAMS = {
     "max_depth":                1,
     "max_check_quiesc_depth":   4,
+    "max_non_dynamic_depth":    9,  # 4 moves below max depth.
     "transposition_table":      True,
     "iterative_deepening":      False,  # Needles here.
     "killer_moves":             False,  # Needles here.
@@ -25,6 +26,7 @@ PLY1_SEARCH_PARAMS = {
 PLY2_SEARCH_PARAMS = {
     "max_depth":                2,
     "max_check_quiesc_depth":   6,
+    "max_non_dynamic_depth":    10,  # 4 moves below max depth. WIP
     "transposition_table":      True,
     "iterative_deepening":      True,
     "killer_moves":             True,
@@ -34,6 +36,7 @@ PLY2_SEARCH_PARAMS = {
 PLY3_SEARCH_PARAMS = {
     "max_depth":                3,
     "max_check_quiesc_depth":   8,
+    "max_non_dynamic_depth":    11,  # 4 moves below max depth. WIP
     "transposition_table":      True,
     "iterative_deepening":      True,
     "killer_moves":             True,
@@ -43,6 +46,7 @@ PLY3_SEARCH_PARAMS = {
 PLY4_SEARCH_PARAMS = {
     "max_depth":                4,
     "max_check_quiesc_depth":   14,  # 5 moves below max depth (prev. 10).
+    "max_non_dynamic_depth":    10,  # WIP
     "transposition_table":      True,
     "iterative_deepening":      True,
     "killer_moves":             True,
@@ -51,7 +55,8 @@ PLY4_SEARCH_PARAMS = {
 
 PLY5_SEARCH_PARAMS = {
     "max_depth":                5,
-    "max_check_quiesc_depth":   13,  # 4 moves below max depth (increase?).
+    "max_check_quiesc_depth":   15,  # 5 moves below max depth.
+    "max_non_dynamic_depth":    11,  # WIP
     "transposition_table":      True,
     "iterative_deepening":      True,
     "killer_moves":             True,
@@ -94,11 +99,32 @@ piece_weights = np.array([
 # max mobility of a Knight = 23 moves, so 2 Knights max = 46 moves.
 # 46 moves * 0.1 = 4.6 ≈ 1/2 Knight
 KNIGHT_MOVE_VALUE = 0.1
+MAX_K_MOVES_TO_REWARD = 12
+
+# Prince-crown distance:
+# Range: [0, 12]
+MAX_CROWN_DIST_REWARD = 5
+UNSAFETY_PENALTY_RATE = 0.25
+
+# Soldiers lag penalty:
+# Range: [0, 12] x 3 ≈ [0, 30]
+SOLDIERS_LAG_PENALTY = 0.05
+
+# Soldiers to crown reward:
+# Range: [0, 12] x 3 ≈ [0, 30]
+SOLDIERS_ADV_REWARD = 0.05
+
+# Unsafe Knight-count combinations for Prince of each side:
+prince_at_danger = np.array(
+    [
+        [[0, 1], [0, 2], [1, 2], [2, 2]],
+        [[1, 0], [2, 0], [2, 1], [2, 2]]
+    ]
+)
 
 # Other:
-# TODO: fine tune mobility vs shortest wins.
-STATIC_DEPTH_PENALTY = 0.05  # Subtract to foster faster wins.
-END_DEPTH_PENALTY = 1  # Subtract to foster faster wins.
+STATIC_DEPTH_PENALTY = 0.05  # Subtract in non-final positions for faster wins.
+END_DEPTH_PENALTY = 1  # Subtract in final positions to foster faster wins.
 
 
 ########################################################################
@@ -460,6 +486,7 @@ def play(
         t_table = Transposition_table()
     if params_copy["killer_moves"] and killer_list is None:
         killer_list = Killer_Moves()
+    search_trace = []
 
     # Iterative deepening loop.
     while keep_iterating:
@@ -468,7 +495,7 @@ def play(
         # Reuse: transposition table, killer moves.
         move, result, game_end, game_status = negamax(
             board, depth, alpha, beta, params_copy,
-            t_table, trace, killer_list
+            t_table, trace, killer_list, search_trace
             )
 
         # Update iteration parameters (not needed for TT).
@@ -495,7 +522,7 @@ def play(
 
 def negamax(
     board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS,
-    t_table=None, trace=None, killer_list=None
+    t_table=None, trace=None, killer_list=None, search_trace=[]
 ):
     """
     Given a *legal* position in the game-tree, find and evaluate the best move.
@@ -515,6 +542,7 @@ def negamax(
         trace:          The structure tracking played / searched boards.
         killer_list     A list of moves indexed by ply that worked well in
                         sibling nodes (may not be possible or even legal).
+        search_trace:   A list storing current search thread from root node.
 
     Output:
         best_move:      A list [coord1, coord2], or None.
@@ -532,7 +560,7 @@ def negamax(
     if depth == params["max_depth"]:
         return quiesce(
             board, depth, alpha, beta, params, t_table, trace,
-            killer_list=killer_list
+            killer_list=killer_list, search_trace=search_trace
             )
 
     # 1. Register searched node, checking repetitions.
@@ -591,7 +619,8 @@ def negamax(
             captured_piece, leaving_piece, old_hash, \
             opponent_in_check = \
             make_pseudomove(
-                board, coord1, coord2, depth, params
+                board, coord1, coord2, depth, params,
+                search_trace=search_trace
             )
         # Assumption: it's legal.
         n_legal_moves_tried += 1
@@ -600,7 +629,7 @@ def negamax(
             childs_move, result_i, game_end_i, game_status_i = \
                 negamax(
                     board, depth + 1, -beta, -alpha,
-                    params, t_table, trace, killer_list
+                    params, t_table, trace, killer_list, search_trace
                 )
             result_i = -float(result_i)  # Switch to player's view.
         # Assess results from final position or search.
@@ -610,6 +639,7 @@ def negamax(
         # And 'unmake' the move.
         board.unmake_move(
             coord1, coord2, captured_piece, leaving_piece, old_hash)
+        search_trace.pop()
         if result_i >= beta:
             # Ignore rest of moves [fail-hard beta cutoff].
             # (No need to update transposition table with this known move.)
@@ -632,7 +662,10 @@ def negamax(
         moves.remove(hash_move)
 
     # Preevaluate and sort pseudomoves.
-    k_moves = killer_list.retrieve(depth)
+    if killer_list is not None:
+        k_moves = killer_list.retrieve(depth)
+    else:
+        k_moves = [None, None]
     moves = pre_evaluate_pseudomoves(board, moves, k_moves)
 
     # Explore each possible pseudomove.
@@ -645,7 +678,8 @@ def negamax(
             captured_piece, leaving_piece, old_hash, \
             opponent_in_check = \
             make_pseudomove(
-                board, coord1, coord2, depth, params
+                board, coord1, coord2, depth, params,
+                search_trace=search_trace
             )
         # Check if it's legal.
         if is_legal_i:
@@ -660,7 +694,7 @@ def negamax(
                 childs_move, result_i, game_end_i, game_status_i = \
                     negamax(
                         board, depth + 1, -beta, -alpha,
-                        params, t_table, trace, killer_list
+                        params, t_table, trace, killer_list, search_trace
                     )
                 result_i = -float(result_i)  # Switch to player's view.
             # Assess results from final position or search.
@@ -670,6 +704,7 @@ def negamax(
             # And 'unmake' the move.
             board.unmake_move(
                 coord1, coord2, captured_piece, leaving_piece, old_hash)
+            search_trace.pop()
             if result_i >= beta:
                 # Ignore rest of pseudomoves [fail-hard beta cutoff].
                 # Update transposition table with best result found.
@@ -688,6 +723,7 @@ def negamax(
             # Simply 'unmake' the illegal move.
             board.unmake_move(
                 coord1, coord2, captured_piece, leaving_piece, old_hash)
+            search_trace.pop()
 
     # Check exploration results.
     if n_legal_moves_tried > 0:
@@ -722,18 +758,20 @@ def negamax(
             result_i, game_end_i, game_status_i, \
             captured_piece, leaving_piece, old_hash, opponent_in_check = \
             make_pseudomove(
-                board, coord1, coord2, depth, params
+                board, coord1, coord2, depth, params,
+                search_trace=search_trace
             )
         # And the new board must be assessed.
         childs_move, result_i, game_end_i, game_status_i = \
             negamax(
                 board, depth + 1, -beta, -alpha,
-                params, t_table, trace, killer_list
+                params, t_table, trace, killer_list, search_trace
             )
         best_result = -float(result_i)  # Switch to player's view.
         # And 'unmake' the move.
         board.unmake_move(
             coord1, coord2, captured_piece, leaving_piece, old_hash)
+        search_trace.pop()
         # Update transposition table with best result found.
         t_table.update_values(
             board, depth, best_result, alpha_orig, beta,
@@ -747,9 +785,10 @@ def negamax(
     return None, DRAW, True, DRAW_STALEMATE
 
 
-def quiesce(
+def quiesce_NEW(
     board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS,
-    t_table=None, trace=None, player_in_check=None, killer_list=None
+    t_table=None, trace=None, player_in_check=None, killer_list=None,
+    search_trace=[]
 ):
     """
     Evaluate a *legal* position exploring only DYNAMIC moves (or none).
@@ -772,6 +811,7 @@ def quiesce(
                         the moving Prince being in check.
         killer_list     A list of moves indexed by ply that worked well in
                         sibling nodes (may not be possible or even legal).
+        search_trace:   A list storing current search thread from root node.
 
     Output:
         best_move:      A list [coord1, coord2], or None.
@@ -794,7 +834,352 @@ def quiesce(
 
     # 2. Check position in transposition table.
     alpha_orig = alpha
-    value = t_table.retrieve(board.hash)
+    if t_table:
+        value = t_table.retrieve(board.hash)
+    else:
+        value = None
+    hash_move = None
+    if value is not None:
+        # Position found; check value and flags.
+        # No check on hash postion's depth: quiesce() has no limit.
+        # Adjust 'stored_value' to current depth.
+        stored_value = correct_eval_from_to_depth(
+            value[VALUE_IDX], value[DEPTH_IDX], depth
+        )
+        # Adapt search to value flag.
+        if value[FLAG_IDX] == EXACT:
+            return value[MOVE_IDX], stored_value, False, ON_GOING
+        elif value[FLAG_IDX] == LOWER_BOUND:
+            alpha = max(alpha, stored_value)
+        elif value[FLAG_IDX] == UPPER_BOUND:
+            beta = min(beta, stored_value)
+        # Check for alpha-beta cutoff.
+        if alpha >= beta:
+            return value[MOVE_IDX], stored_value, False, ON_GOING
+        # Retrieve possibly registered move.
+        hash_move = value[MOVE_IDX]
+
+    # 3. Check for other end conditions:
+    #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
+    childs_move, result, game_end, game_status = evaluate_end(board, depth)
+    if game_end:
+        # End of game: no move is returned.
+        return None, result, game_end, game_status  # TODO: Return beta?
+
+    # Prepare for tree search.
+    best_move = None
+    best_result = -np.Infinity  # Value to store in transposition table.
+    n_legal_moves_found = 0
+    n_legal_moves_tried = 0
+
+    # 4.1. Null-move: Perform static evaluation if it is legal and not endgame.
+    player_side = board.turn
+    opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
+    is_endgame = board.piece_count[player_side][bd.KNIGHT] == 0
+
+    # Detect if  player is in check (unless it's already passed as argument).
+    if player_in_check is None:
+        # See if board is not legal (would mean the player is in check).
+        # The other case (>1 Princes) is not explored by calling method.
+        board.turn = opponent_side  # Flip turns temporarily.
+        player_in_check = not is_legal(board)
+        board.turn = player_side  # Restablish original turn.
+
+    # Evaluate 'stand pat' condition:
+    # Player is NOT in check and it's not an endgame (or it's too deep).
+    try_stand_pat = not player_in_check and \
+        (not is_endgame or depth > params["max_non_dynamic_depth"])
+    if try_stand_pat:
+        # Null move heuristic is possible; evaluate it.
+        best_move = None
+        result_i = evaluate_static(board, depth)
+        # Check result of null_move vs alpha-beta window.
+        if result_i >= beta:
+            return None, beta, False, ON_GOING  # [fail hard beta cutoff]
+        if result_i > alpha:
+            # Update move choice with this better one for player.
+            alpha = result_i
+
+    # 4.2 Try hash-move (before generating pseudo-moves),
+    # regardless of whether it's dynamic or not.
+    if hash_move is not None:
+        coord1, coord2 = hash_move
+        # Try hash_move on board;
+        # if it leads to a game end, we can use result_i.
+        is_legal_i, is_dynamic_i, \
+            result_i, game_end_i, game_status_i, \
+            captured_piece, leaving_piece, old_hash, \
+            opponent_in_check = \
+            make_pseudomove(
+                board, coord1, coord2, depth, params,
+                search_trace=search_trace
+            )
+        # Assumption: it's legal.
+        n_legal_moves_found += 1
+        n_legal_moves_tried += 1
+        # Unless it led to a final position, search the move.
+        if not game_end_i:
+            childs_move, result_i, game_end_i, game_status_i = \
+                quiesce(
+                    board, depth + 1, -beta, -alpha,
+                    params, t_table, trace, killer_list=killer_list,
+                    search_trace=search_trace
+                )
+            result_i = -float(result_i)  # Switch to player's view.
+        # Assess results from final position or search.
+        if result_i > best_result:
+            best_move = [coord1, coord2]
+            best_result = result_i
+        # And 'unmake' the move.
+        board.unmake_move(
+            coord1, coord2, captured_piece, leaving_piece, old_hash)
+        search_trace.pop()
+        if result_i >= beta:
+            # Ignore rest of moves [fail-hard beta cutoff].
+            # (No need to update transposition table with this known move.)
+            # Update the list of killer moves if it's no capture.
+            if board.board1d[coord2] is None:
+                killer_list.insert([coord1, coord2], depth)
+            return [coord1, coord2], beta, False, ON_GOING
+        if result_i > alpha:
+            # Update move choice with this better one for player.
+            best_move, alpha = [coord1, coord2], result_i
+
+    # 4.3. Generate and explore dynamic pseudomoves.
+    moves, moves_count = generate_pseudomoves(board)
+    assert(moves_count > 0),\
+        "ERROR: No pseudomoves found despite game is not ended."
+
+    # Remove already searched hash_move from list.
+    # Note: if hash_move is "Prince leaving", it won't be in 'moves'.
+    if hash_move is not None and hash_move[1] is not None:
+        moves.remove(hash_move)
+
+    # Preevaluate and sort pseudomoves.
+    if killer_list is not None:
+        k_moves = killer_list.retrieve(depth)
+    else:
+        k_moves = [None, None]
+    moves = pre_evaluate_pseudomoves(board, moves, k_moves)
+
+    # Explore each possible pseudomove in two passes:
+    # 1st pass: dynamic moves (or all if player in check).
+    # 2nd pass: postponed static moves if 'stand pat' was not used.
+
+    non_dynamic_moves = []  # To store initially discarded static moves.
+    moves_lists = [moves, non_dynamic_moves]
+    search_static_moves = False  # Only activated if needed for 2nd pass.
+
+    # Loop over the two moves lists: original moves and postponed static moves.
+    for sublist in moves_lists:
+        # Loop over moves in the sublist.
+        for pseudo_move in sublist:  # [[24, 14], [24, 13]...]], [2, 3]...]
+            coord1, coord2 = pseudo_move  # [24, 14]
+            # Try pseudomove 'i' on board;
+            # if it leads to a game end, we can use result_i.
+            is_legal_i, is_dynamic_i, \
+                result_i, game_end_i, game_status_i, \
+                captured_piece, leaving_piece, old_hash, \
+                opponent_in_check = \
+                make_pseudomove(
+                    board, coord1, coord2, depth, params,
+                    check_dynamic=not(player_in_check),
+                    search_trace=search_trace
+                )
+            # Check if it's legal.
+            if is_legal_i:
+                if sublist is moves:  # Don't count twice!
+                    n_legal_moves_found += 1
+                # Check if it's a dynamic move or static moves are ok.
+                if is_dynamic_i or player_in_check or search_static_moves:
+                    # A move worth searching in quiesce().
+                    n_legal_moves_tried += 1
+                    if not game_end_i:
+                        # We need to recursively search this move deeper:
+                        childs_move, result_i, game_end_i, game_status_i = \
+                            quiesce(
+                                board, depth + 1, -beta, -alpha,
+                                params, t_table, trace,
+                                player_in_check=opponent_in_check,
+                                killer_list=killer_list,
+                                search_trace=search_trace
+                            )
+                        result_i = -float(result_i)  # Switch to player's view.
+                    # Assess results from final position or search.
+                    if result_i > best_result:
+                        best_move = [coord1, coord2]
+                        best_result = result_i
+                    # And 'unmake' the move.
+                    board.unmake_move(
+                        coord1, coord2, captured_piece, leaving_piece,
+                        old_hash
+                    )
+                    search_trace.pop()
+                    if result_i >= beta:
+                        # Ignore rest of pseudomoves [fail hard beta cutoff].
+                        # Update transposition table with best result found.
+                        t_table.update_values(
+                            board, depth, result_i, alpha_orig, beta,
+                            [coord1, coord2], depth_searched=0
+                        )
+                        # Update the list of killer moves if it's no capture.
+                        if board.board1d[coord2] is None:
+                            killer_list.insert([coord1, coord2], depth)
+                        return [coord1, coord2], beta, False, ON_GOING
+                    if result_i > alpha:
+                        # Update move choice with this better one for player.
+                        best_move, alpha = [coord1, coord2], result_i
+                else:
+                    # Non-dynamic move; 'unmake' it and keep it for later.
+                    board.unmake_move(
+                        coord1, coord2, captured_piece, leaving_piece,
+                        old_hash
+                    )
+                    search_trace.pop()
+                    # Add only from 1st to 2nd list.
+                    if sublist is moves:
+                        non_dynamic_moves.append(pseudo_move)
+            else:
+                # Simply 'unmake' the illegal move.
+                board.unmake_move(
+                    coord1, coord2, captured_piece, leaving_piece, old_hash
+                )
+                search_trace.pop()
+        # End of sublist search. Strategy on non-dynamic moves:
+        # a) No static eval was done and no dynamic moves searched;
+        #    search ALL non-dynamic moves.
+        # b) NO static eval was done and some move was searched (TT or dynamic);
+        #    search a few extra non-dynamic moves.
+        # c) otherwise, skip non-dynamic moves.
+        if sublist is moves:
+            if not try_stand_pat:
+                if n_legal_moves_tried == 0:
+                    # a) Search all non-dynamic moves.
+                    search_static_moves = True
+                else:
+                    # b) Search a few static moves [TODO: validate 2].
+                    search_static_moves = True
+                    moves_lists[1] = moves_lists[1][0:2]
+            else:
+                # c) Skip non-dynamic moves.
+                search_static_moves = False
+                non_dynamic_moves.clear()
+
+    # Check exploration results.
+    if n_legal_moves_tried > 0:
+        # A legal best move was found.
+        # Update transposition table with best result found.
+        t_table.update_values(
+            board, depth, best_result, alpha_orig, beta,
+            best_move, depth_searched=0
+        )
+        # Update the list of killer moves if it's no capture.
+        if board.board1d[coord2] is None:
+            killer_list.insert(best_move, depth)
+        # Return results [fail-hard alpha cutoff].
+        return best_move, alpha, False, ON_GOING
+
+    # 5. No legal moves were played: check for player's Prince check.
+    player_prince = board.prince[player_side]
+    if player_in_check:
+        # The player is CHECKMATED, its Prince leaves and yields turn.
+        coord1, coord2 = player_prince.coord, None  # Prince leaving move.
+        best_move = [coord1, coord2]
+        is_legal_i, is_dynamic_i, \
+            result_i, game_end_i, game_status_i, \
+            captured_piece, leaving_piece, old_hash, opponent_in_check = \
+            make_pseudomove(
+                board, coord1, coord2, depth, params, search_trace=search_trace
+            )
+        # And the new board must be searched.
+        childs_move, result_i, game_end_i, game_status_i = \
+            quiesce(
+                board, depth + 1, -beta, -alpha,
+                params, t_table, trace, killer_list=killer_list,
+                search_trace=search_trace
+            )
+        best_result = -float(result_i)  # Switch to player's view.
+        # And 'unmake' the move.
+        board.unmake_move(
+            coord1, coord2, captured_piece, leaving_piece, old_hash)
+        search_trace.pop()
+        # Update transposition table with best result found.
+        t_table.update_values(
+            board, depth, best_result, alpha_orig, beta,
+            [coord1, coord2], depth_searched=0
+        )
+        # No update to list of killer moves (it's a forced move).
+        # Return results.
+        return best_move, best_result, False, ON_GOING
+
+    if n_legal_moves_found == 0:
+        # 6. The player is STALEMATED.
+        return None, DRAW, True, DRAW_STALEMATE
+    else:
+        # 4.3 [unexplored by 4.2] The player has only non-dynamic moves.
+        # Non-dynamic moves aren't explored; return initial static evaluation.
+        # Update transposition table.
+        if t_table:
+            t_table.update_values(
+                board, depth, alpha, alpha_orig, beta, None, depth_searched=0
+            )
+        # No update to list of killer moves (no moves known).
+        return None, alpha, False, ON_GOING
+
+
+def quiesce(
+    board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS,
+    t_table=None, trace=None, player_in_check=None, killer_list=None,
+    search_trace=[]
+):
+    """
+    Evaluate a *legal* position exploring only DYNAMIC moves (or none).
+    This is used instead of negamax() once MAX_DEPTH has been reached.
+
+    Input:
+        board:          Board - the position to play on.
+        depth:          int - the depth of the node in the game tree.
+        alpha, beta:    float, float - with alpha < beta
+                        The window within which result is expected to fall. 
+                        'alpha' is the value to maximize and return.
+                        Search is prunned when alpha >= beta.
+        params:         A dictionary with the search settings to follow:
+                        max_depth, quiescence,randomness, (more to come).
+        t_table:        The transposition table storing previously explored
+                        boards.
+        trace:          The structure tracking played / searched boards.
+        player_in_check:
+                        Boolean or None. A possible early detection of
+                        the moving Prince being in check.
+        killer_list     A list of moves indexed by ply that worked well in
+                        sibling nodes (may not be possible or even legal).
+        search_trace:   A list storing current search thread from root node.
+
+    Output:
+        best_move:      A list [coord1, coord2], or None.
+        result:         float - evaluation of the node from the moving side's
+                        perspective (+ is good).
+        game_end:       Boolen - whether the game was ended in this node.
+        game_status:    int - situation of the board passed.
+                        Conditions detected:
+                        ON_GOING / VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT /
+                        DRAW_NO_PRINCES_LEFT / DRAW_STALEMATE /
+                        DRAW_THREE_REPETITIONS
+    """
+
+    # 1. Register searched node, checking repetitions.
+    if trace is not None:
+        repetition = trace.register_searched_board(board, depth)
+        if repetition:
+            # The position had already happenned in the game.
+            return None, DRAW, True, DRAW_THREE_REPETITIONS
+
+    # 2. Check position in transposition table.
+    alpha_orig = alpha
+    if t_table:
+        value = t_table.retrieve(board.hash)
+    else:
+        value = None
     hash_move = None
     if value is not None:
         # Position found; check value and flags.
@@ -863,7 +1248,8 @@ def quiesce(
             captured_piece, leaving_piece, old_hash, \
             opponent_in_check = \
             make_pseudomove(
-                board, coord1, coord2, depth, params
+                board, coord1, coord2, depth, params,
+                search_trace=search_trace
             )
         # Assumption: it's legal.
         n_legal_moves_tried += 1
@@ -873,7 +1259,8 @@ def quiesce(
             childs_move, result_i, game_end_i, game_status_i = \
                 quiesce(
                     board, depth + 1, -beta, -alpha,
-                    params, t_table, trace, killer_list=killer_list
+                    params, t_table, trace, killer_list=killer_list,
+                    search_trace=search_trace
                 )
             result_i = -float(result_i)  # Switch to player's view.
         # Assess results from final position or search.
@@ -883,6 +1270,7 @@ def quiesce(
         # And 'unmake' the move.
         board.unmake_move(
             coord1, coord2, captured_piece, leaving_piece, old_hash)
+        search_trace.pop()
         if result_i >= beta:
             # Ignore rest of moves [fail-hard beta cutoff].
             # (No need to update transposition table with this known move.)
@@ -905,7 +1293,10 @@ def quiesce(
         moves.remove(hash_move)
 
     # Preevaluate and sort pseudomoves.
-    k_moves = killer_list.retrieve(depth)
+    if killer_list is not None:
+        k_moves = killer_list.retrieve(depth)
+    else:
+        k_moves = [None, None]
     moves = pre_evaluate_pseudomoves(board, moves, k_moves)
 
     # Explore each possible pseudomove.
@@ -919,11 +1310,12 @@ def quiesce(
             opponent_in_check = \
             make_pseudomove(
                 board, coord1, coord2, depth, params,
-                check_dynamic=not(player_in_check))
+                check_dynamic=not(player_in_check),
+                search_trace=search_trace)
         # Check if it's legal.
         if is_legal_i:
             n_legal_moves_found += 1
-            # Check if it's a dynamic move or check evasion.
+            # Check if it's a dynamic move.
             if is_dynamic_i or player_in_check:
                 # A move worth searching in quiesce().
                 n_legal_moves_tried += 1
@@ -938,7 +1330,7 @@ def quiesce(
                             board, depth + 1, -beta, -alpha,
                             params, t_table, trace,
                             player_in_check=opponent_in_check,
-                            killer_list=killer_list
+                            killer_list=killer_list, search_trace=search_trace
                         )
                     result_i = -float(result_i)  # Switch to player's view.
                 # Assess results from final position or search.
@@ -948,6 +1340,7 @@ def quiesce(
                 # And 'unmake' the move.
                 board.unmake_move(
                     coord1, coord2, captured_piece, leaving_piece, old_hash)
+                search_trace.pop()
                 if result_i >= beta:
                     # Ignore rest of pseudomoves [fail hard beta cutoff].
                     # Update transposition table with best result found.
@@ -966,10 +1359,12 @@ def quiesce(
                 # Simply 'unmake' the not-searched move.
                 board.unmake_move(
                     coord1, coord2, captured_piece, leaving_piece, old_hash)
+                search_trace.pop()
         else:
             # Simply 'unmake' the illegal move.
             board.unmake_move(
                 coord1, coord2, captured_piece, leaving_piece, old_hash)
+            search_trace.pop()
 
     # Check exploration results.
     if n_legal_moves_tried > 0:
@@ -989,24 +1384,26 @@ def quiesce(
     player_prince = board.prince[player_side]
     if player_in_check:
         # The player is CHECKMATED, its Prince leaves and yields turn.
-        coord1, coord2 = player_prince.coord, None  # Prince leaving move. BUG!
+        coord1, coord2 = player_prince.coord, None  # Prince leaving move.
         best_move = [coord1, coord2]
         is_legal_i, is_dynamic_i, \
             result_i, game_end_i, game_status_i, \
             captured_piece, leaving_piece, old_hash, opponent_in_check = \
             make_pseudomove(
-                board, coord1, coord2, depth, params
+                board, coord1, coord2, depth, params, search_trace=search_trace
             )
         # And the new board must be searched.
         childs_move, result_i, game_end_i, game_status_i = \
             quiesce(
                 board, depth + 1, -beta, -alpha,
-                params, t_table, trace, killer_list=killer_list
+                params, t_table, trace, killer_list=killer_list,
+                search_trace=search_trace
             )
         best_result = -float(result_i)  # Switch to player's view.
         # And 'unmake' the move.
         board.unmake_move(
             coord1, coord2, captured_piece, leaving_piece, old_hash)
+        search_trace.pop()
         # Update transposition table with best result found.
         t_table.update_values(
             board, depth, best_result, alpha_orig, beta,
@@ -1021,9 +1418,12 @@ def quiesce(
         return None, DRAW, True, DRAW_STALEMATE
     else:
         # 4.3 [unexplored by 4.2] The player has only non-dynamic moves.
-        t_table.update_values(
-            board, depth, alpha, alpha_orig, beta, None, depth_searched=0
-        )
+        # Non-dynamic moves aren't explored; return initial static evaluation.
+        # Update transposition table.
+        if t_table:
+            t_table.update_values(
+                board, depth, alpha, alpha_orig, beta, None, depth_searched=0
+            )
         # No update to list of killer moves (no moves known).
         return None, alpha, False, ON_GOING
 
@@ -1044,18 +1444,147 @@ def evaluate_static(board, depth):
     player_side = board.turn
     opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
 
-    # Factors evaluated.
+    # 1. Basic material balance:
     material = np.multiply(board.piece_count, piece_weights[player_side]).sum()
-    positional = (
+
+    # 2. Mobility obtained by the Knights is rewarded, upto some top:
+    mobility_balance = (
+        min(
+            MAX_K_MOVES_TO_REWARD * board.piece_count[player_side][bd.KNIGHT],
+            knights_mobility(board, player_side)
+        ) -
+        min(
+            MAX_K_MOVES_TO_REWARD * board.piece_count[opponent_side][bd.KNIGHT],
+            knights_mobility(board, opponent_side)
+        )
+    ) * KNIGHT_MOVE_VALUE
+
+    mobility_balance = min(
+        MAX_K_MOVES_TO_REWARD,
         knights_mobility(board, player_side) -
         knights_mobility(board, opponent_side)
     ) * KNIGHT_MOVE_VALUE
 
-    # Other factors.
-    pre_eval = material + positional
+    # 3. Prince state:
+
+    # 3.1. Crown proximity is rewarded, but less if Knights balance is unsafe.
+    own_prince = board.prince[player_side]
+    if own_prince is not None:
+        # The player has a Prince. Check safety and distance to crown.
+        own_prince_danger = board.piece_count[:, bd.KNIGHT] in \
+            prince_at_danger[player_side]
+        own_crown_distance = bd.distance_to_crown[own_prince.coord]
+        own_crown_reward = MAX_CROWN_DIST_REWARD * \
+            (1 - own_crown_distance/12) * \
+            (1 - own_prince_danger * UNSAFETY_PENALTY_RATE)
+    else:
+        own_crown_reward = 0
+
+    opp_prince = board.prince[opponent_side]
+    if opp_prince is not None:
+        # The opponent has a Prince. Check safety and distance to crown.
+        opp_prince_danger = board.piece_count[:, bd.KNIGHT] in \
+            prince_at_danger[opponent_side]
+        opp_crown_distance = bd.distance_to_crown[opp_prince.coord]
+        opp_crown_reward = MAX_CROWN_DIST_REWARD * \
+            (1 - opp_crown_distance/12) * \
+            (1 - opp_prince_danger * UNSAFETY_PENALTY_RATE)
+    else:
+        opp_crown_reward = 0
+
+    crown_distance_balance = own_crown_reward - opp_crown_reward
+
+    # 4. Soldiers.
+    # 4.1 With enemy Knights, penalize Soldiers lagging behind their Prince.
+    own_soldiers_lag_penalty = soldiers_lag(board, player_side)
+    opp_soldiers_lag_penalty = soldiers_lag(board, opponent_side)
+    soldiers_lag_penalty_balance = \
+        - SOLDIERS_LAG_PENALTY * \
+        (own_soldiers_lag_penalty - opp_soldiers_lag_penalty)
+
+    # 4.2 Without defense duties, reward Soldiers for approaching the crown.
+    own_soldiers_adv_reward = soldiers_advance(board, player_side)
+    opp_soldiers_adv_reward = soldiers_advance(board, opponent_side)
+    soldiers_adv_reward_balance = \
+        SOLDIERS_ADV_REWARD * \
+        (own_soldiers_adv_reward - opp_soldiers_adv_reward)
+
+    # 5. Other factors.
+    pre_eval = \
+        material + \
+        mobility_balance + \
+        crown_distance_balance + \
+        soldiers_lag_penalty_balance + \
+        soldiers_adv_reward_balance
+
+    # 4.1. Depth is penalized to encourage nearer wins.
     other = - depth*STATIC_DEPTH_PENALTY*np.sign(pre_eval)
 
     return pre_eval + other
+
+
+def eval_princes_end(board, depth):
+    """
+    Evaluate a position where only two Princes are left on the board.
+    Result based on:
+    - Prince's distance to crown
+    - and turn.
+
+    1. If the Prince to play is closer to crown;
+        the player wins.
+    2. If the Prince to play is at the same distance as the opponent;
+        the player loses.
+    3. If the Prince to play is one position farther than the opponent;
+        the player wins.
+    4. Otherwise, the player loses.
+
+    The result is penalized with:
+        (depth + depth_to_final) * END_DEPTH_PENALTY
+    """
+    player_side = board.turn
+    opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
+
+    player_prince_coord = board.prince[player_side].coord
+    opponent_prince_coord = board.prince[opponent_side].coord
+
+    player_dist_to_crown = bd.distance_to_crown[player_prince_coord]
+    opponent_dist_to_crown = bd.distance_to_crown[opponent_prince_coord]
+
+    if player_dist_to_crown < opponent_dist_to_crown:
+        # Case 1. Player is closer: direct win.
+        result = PLAYER_WINS
+        depth_to_final = 2 * player_dist_to_crown - 1
+        depth_penalty = - (depth + depth_to_final) * END_DEPTH_PENALTY
+    elif player_dist_to_crown == opponent_dist_to_crown:
+        # Case 2. Player at the same distance as opponent: a loss.
+        result = OPPONENT_WINS
+        depth_to_final = 2 * opponent_dist_to_crown
+        depth_penalty = (depth + depth_to_final) * END_DEPTH_PENALTY
+    elif player_dist_to_crown == opponent_dist_to_crown + 1:
+        # Case 3. Player is one coord farther: a win.
+        result = PLAYER_WINS
+        depth_to_final = 2 * player_dist_to_crown - 1
+        depth_penalty = - (depth + depth_to_final) * END_DEPTH_PENALTY
+    else:
+        # Case 4. Player loses in rest of cases.
+        result = OPPONENT_WINS
+        depth_to_final = 2 * opponent_dist_to_crown
+        depth_penalty = (depth + depth_to_final) * END_DEPTH_PENALTY
+
+    return result + depth_penalty
+
+
+def eval_soldiers_end_WIP(board, depth):
+    """
+    Evaluate a position where only two Princes and Soldiers 
+    are left on the board.
+    Result based on Prince's distance to crown and turn.
+    
+    NOTE:
+    - Check rows from top to bottom for known conditions.
+    """
+
+    return None
 
 
 def evaluate_end(board, depth):
@@ -1242,13 +1771,16 @@ def pre_evaluate_pseudomoves(board, moves, k_moves=[None, None]):
         1.a) if captured piece is not protected: full piece value.
         1.b) if captured piece is protected: piece value - own piece value.
     2.  Killer moves found in list (if any).
-    3.  Non capture moves (unsorted).
-    4.  Losing captures, sorted by increasing expected loss (same algorithm).
+    3.  [If in endgame] Prince and Soldiers sorted by proximity to the crown.
+    4.  Non capture moves (unsorted).
+    5.  Losing captures, sorted by increasing expected loss (same algorithm).
 
     Not covered:
     -   Checks / checkmates.
-    -   Prince's crowning / approaching crown.
-    -   Soldier's promotion / approaching missing Prince's position.
+    -   Endgame (no Knights):
+        -   Prince approaching crown.
+        -   Soldier approaching crown.
+        -   Soldier's promotion / approaching missing Prince's position.
     """
     # Extend array with columns for evaluations.
     # - columns 0, 1: coord1 and coord2 of the move (coord2 is not None).
@@ -1269,6 +1801,9 @@ def pre_evaluate_pseudomoves(board, moves, k_moves=[None, None]):
         else:
             k3, k4 = None, None
 
+        # Determine endgame condition (player has no Knights).
+        is_endgame = board.piece_count[board.turn][bd.KNIGHT] == 0
+
         # Estimate the value captured by each move in column '2'.
         ev_moves[:, 2] = piece_code_value[
             board.boardcode[ev_moves[:, 1]]
@@ -1279,24 +1814,49 @@ def pre_evaluate_pseudomoves(board, moves, k_moves=[None, None]):
         attacking_side = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
 
         # Moves sorting:
-        # 1. good captures <- 10 x (capturing result) + 5   (>= 15)
-        # 2. even captures <- 10 x (capturing result) + 5   (= 5)
-        # 3. killer moves <- 3                              (= 3)
-        # 3. non captures <- 0                              (= 0)
-        # 4. bad captures <- 10 x (capturing result) + 5    (<= -5)
-        # NOTE: all values negated (x -1) for faster .sort() below.
-        ev_moves[:, 2] = np.where(
-            ev_moves[:, 2] > 0,  # Condition: some value is captured.
-            (  # <full value> - <capturer's value> if coord2 is defended.
-                ev_moves[:, 2] -
-                v_position_attacked(board, ev_moves[:, 1], attacking_side) *
-                piece_code_value[board.boardcode[ev_moves[:, 0]]]
-            )*(-10) - 5,
-            v_is_killer(
-                ev_moves[:, 0], ev_moves[:, 1], k1, k2, k3, k4
-            )*(-3)
-        )
+        # 1a. good captures <- 10 x (capturing result) + 50   (>= 150)
+        # 1b. even captures <- 10 x (capturing result) + 50   (= 50)
+        # 2. killer moves <- 30                              (= 30)
+        # 3. [endgame] moves towards the crown               (0, 12)
+        # 4. non captures <- 0                              (= 0)
+        # 5. bad captures <- 10 x (capturing result) + 5    (<= -50)
+        # NOTE: all values inverted below (x -1) for faster .sort()
 
+        if not is_endgame:
+            # Middle-game preevaluation.
+            ev_moves[:, 2] = np.where(
+                ev_moves[:, 2] > 0,  # Condition: some value is captured.
+                # <full value> - <capturer's value> if coord2 is defended.
+                (
+                    ev_moves[:, 2] -
+                    v_position_attacked(board, ev_moves[:, 1], attacking_side) *
+                    piece_code_value[board.boardcode[ev_moves[:, 0]]]
+                )*(-10) - 50,
+                # Not a capture: value rest of conditions.
+                v_is_killer(
+                    ev_moves[:, 0], ev_moves[:, 1], k1, k2, k3, k4
+                )*(-30)
+            )
+        else:
+            # Endgame preevaluation.
+            ev_moves[:, 2] = np.where(
+                ev_moves[:, 2] > 0,  # Condition: some value is captured.
+                # <full value> - <capturer's value> if coord2 is defended.
+                (
+                    ev_moves[:, 2] -
+                    v_position_attacked(board, ev_moves[:, 1], attacking_side) *
+                    piece_code_value[board.boardcode[ev_moves[:, 0]]]
+                )*(-10) - 50,
+                # Not a capture: value rest of conditions.
+                v_is_killer(
+                    ev_moves[:, 0], ev_moves[:, 1], k1, k2, k3, k4
+                )*(-30) -
+                (
+                    bd.np_distance_to_crown[ev_moves[:, 1]] <
+                    bd.np_distance_to_crown[ev_moves[:, 0]]
+                ) * \
+                (12 - bd.np_distance_to_crown[ev_moves[:, 1]])
+            )
         # Sort moves by higher evaluation.
         ev_moves.view('i8, i8, i8').sort(order=['f2'], axis=0)
         # ev_moves = ev_moves[::-1]
@@ -1308,67 +1868,102 @@ def pre_evaluate_pseudomoves(board, moves, k_moves=[None, None]):
         return moves
 
 
-def pre_evaluate_pseudomovesOLD(board, moves):
+def soldiers_lag(board, color):
     """
-    Given a list of pseudomoves on a board, sort them for optimal seach.
-
-    Input:
-        board:      Board - the position where moves will be searched.
-        moves:      an array of moves, e.g. [[1, 13], [1, 14], [26, 16]...]
-
-    Output:
-        ev_moves:   a new array of moves, e.g. [[26, 16], [1, 13], [1, 14]...]
-
-    Heuristic implemented:
-    1.  Winning captures, sorted by decreasing expected gain:
-        1.a) if captured piece is not protected: full piece value.
-        1.b) if captured piece is protected: piece value - own piece value.
-    2.  Non capture moves (unsorted).
-    3.  Losing captures, sorted by increasing expected loss (same algorithm).
-
-    Not covered:
-    -   Checks / checkmates.
-    -   Prince's crowning / approaching crown.
-    -   Soldier's promotion / approaching missing Prince's position.
+    Evaluate the amount of danger from Soldiers lagging behind their Prince,
+    considering:
+    a) player has no Prince or opponent has no Knights => no lag
+    b) for Soldiers behind their Prince, a penalty proportional to
+    their distance above a thresold of 1.
     """
-    # Extend array with columns for evaluations.
-    # - columns 0, 1: coord1 and coord2 of the move (coord2 is not None).
-    # - column 2: move priority (higher value => higher priority).
+    player_side = color
+    opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
 
-    if moves != []:
-        # Initialize array with moves on columns '0' and '1'.
-        ev_moves = np.zeros((len(moves), 3), dtype=np.intp)
-        ev_moves[:, 0:2] = moves
-
-        # Estimate the value captured by each move in column '2'.
-        ev_moves[:, 2] = piece_code_value[
-            board.boardcode[ev_moves[:, 1]]
-        ]
-
-        # For capturing moves, correct outcome in column '2',
-        # checking whether the opponent defends coord2.
-        attacking_side = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
-        v_position_attacked = np.vectorize(position_attacked)
-
-        ev_moves[:, 2] = np.where(
-            ev_moves[:, 2] > 0,  # Condition: some value is captured.
-            (  # <full value> - <capturer's value> if coord2 is defended.
-                ev_moves[:, 2] -
-                v_position_attacked(board, ev_moves[:, 1], attacking_side) *
-                piece_code_value[board.boardcode[ev_moves[:, 0]]]
-            )*10 + 1,
-            ev_moves[:, 2]  # No-captures are left untouched.
-        )
-
-        # Sort moves by higher evaluation.
-        ev_moves.view('i8, i8, i8').sort(order=['f2'], axis=0)
-        ev_moves = ev_moves[::-1]
-
-        # Discard auxiliary columns and return as a list.
-        return np.intp(ev_moves[:, 0:2])
-
+    # Check preconditions.
+    if board.prince[player_side] is None or \
+       board.piece_count[opponent_side][bd.KNIGHT] == 0:
+        # Player has no Prince, or enemy has no Knights.
+        return 0
     else:
-        return moves
+        # Player has a Prince and opponent has Knight(s).
+        prince_coord = board.prince[player_side].coord
+        prince_crown_dist = bd.distance_to_crown[prince_coord]
+        """
+        # Version 1: check 'y' coordinate only, i.e. horizontal row, if behind.
+        soldiers_lag = sum(
+            [
+                max(
+                    0, bd.coord1to3[prince_coord][2] -
+                    bd.coord1to3[p.coord][2]
+                )
+                for p in board.pieces[player_side] if p.type == bd.SOLDIER
+            ]
+        )
+        """
+        """
+        # Version 2: check differences in distance to crown, if behind.
+        soldiers_lag = sum(
+            [
+                max(
+                    0, bd.distance_to_crown[p.coord] -
+                    bd.distance_to_crown[prince_coord]
+                    - 1  # No penalty for pieces lagging 1 distance unit.
+                )
+                for p in board.pieces[player_side] if p.type == bd.SOLDIER
+            ]
+        )
+        """
+        # Version 3: check distances from Prince for Soldiers behind.
+        soldiers_lag = sum(
+            [
+                bd.distance_from_to[p.coord][prince_coord] - 1
+                for p in board.pieces[color]
+                if p.type == bd.SOLDIER and
+                bd.distance_to_crown[p.coord] > prince_crown_dist
+            ]
+        )
+        return soldiers_lag
+
+
+def soldiers_advance(board, color):
+    """
+    Evaluate reward from Soldiers approaching the crown,
+    considering:
+    a) player has a Prince and opponent has Knight(s) = no reward.
+    b) for all Soldiers, reward proportional to proximity to crown.
+    """
+    player_side = color
+    opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
+
+    # Check preconditions.
+    if board.prince[player_side] is not None and \
+       board.piece_count[opponent_side][bd.KNIGHT] > 0:
+        # Player has a Prince and the enemy has some Knight.
+        return 0
+    else:
+        # Check distances from Soldiers to crown.
+        soldiers_reward = sum(
+            [
+                12 - bd.distance_to_crown[p.coord]
+                for p in board.pieces[color]
+                if p.type == bd.SOLDIER
+            ]
+        )
+        return soldiers_reward
+    
+
+def soldiers_dispersion(board, color, coord):
+    """
+    Calculate the sum of distances of Soldier of a given color
+    to some given coordinate 'coord'.
+    """
+    dispersion = sum(
+        [
+            bd.distance_from_to[p.coord][coord]
+            for p in board.pieces[color] if p.type == bd.SOLDIER
+        ]
+    )
+    return dispersion
 
 
 def knights_mobility(board, color):
@@ -1448,7 +2043,10 @@ def count_knight_pseudomoves(board, position, color):
     return len(moves)
 
 
-def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
+def make_pseudomove(
+    board, coord1, coord2, depth, params, check_dynamic=False, 
+    search_trace=[]
+):
     """
     Given a *legal* position, try to make a pseudomove.
     Detect if the move would be ilegal first.
@@ -1466,6 +2064,7 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
         params:         A dictionary with the search settings to follow.
         check_dynamic:  Boolean - whether dynamism of move must be
                         assessed.
+        search_trace:   A list storing current search thread from root node.
 
     Output:
         is_legal:   Boolean - whether it was a legal move.
@@ -1477,9 +2076,11 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
                     - Soldier promotions
                     - Check evasion (no null move)
                     - Checks [downto 'max_check_quiesc_depth']
+                    (when no enemy Knights)
+                    - Prince moves upwards
+                    - Soldier moves leaving other Soldiers behind / on-pair
 
                     Conditions not checked:  TODO: check in some cases.
-                    - Prince moves upwards (in absence of enemy Knights)?
                     - Soldier moves to throne (in absence of Prince)?
 
         result:     float - an early evaluation of winner moves,
@@ -1518,6 +2119,7 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
     # And now, make the move.
     captured_piece, leaving_piece, old_hash = board.make_move(coord1, coord2)
     depth += 1
+    search_trace.append([coord1, coord2])
 
     # Check if the move produced an illegal position.
     if not is_legal(board):
@@ -1543,7 +2145,7 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
     if check_dynamic:
         # Checked: Piece captures, mated Prince leaves, Soldier promotion,
         # check, check evasion.
-        # NOT checked: Prince -> up, Soldier -> throne
+        # NOT checked: Princeless Soldier -> throne
         # NOT checked: check evasion (calling node must search all moves)
         if captured_piece is not None or leaving_piece is not None:
             # Piece captured / mated Prince leaving / Soldier promotion.
@@ -1559,6 +2161,24 @@ def make_pseudomove(board, coord1, coord2, depth, params, check_dynamic=False):
                 )
                 # Flag check detection.
                 opponent_in_check = is_dynamic
+            if not is_dynamic and board.piece_count[:, bd.KNIGHT].sum() == 0:
+                # It's an endgame without Knights.
+                if piece_type == bd.PRINCE:
+                    # Check for moves towards crown.
+                    is_dynamic = bd.distance_to_crown[coord1] > \
+                        bd.distance_to_crown[coord2]
+                elif piece_type == bd.SOLDIER:
+                    # Check for moves of highest Soldier towards crown.
+                    if bd.distance_to_crown[coord1] > \
+                       bd.distance_to_crown[coord2]:
+                        # Check if the rest of Soldiers are behind / on pair.
+                        is_dynamic = bd.distance_to_crown[coord2] == min(
+                            [
+                                bd.distance_to_crown[p.coord]
+                                for p in board.pieces[moving_side]
+                                if p.type == bd.SOLDIER
+                            ]
+                        )
 
     # Report as a legal move, the dynamism of the move and other conditions.
     return True, is_dynamic, None, False, ON_GOING, \
@@ -1632,6 +2252,7 @@ def is_legal_move(board, move):
         # And now, 'unmake' the move:
         board.unmake_move(
             coord1, coord2, captured_piece, leaving_piece, old_hash)
+        # search_trace.pop()
         # Check results:
         if pseudo_move_legal:
             return True, ""
@@ -1663,6 +2284,7 @@ def is_legal_move(board, move):
                 board.unmake_move(
                     move_coords[0], move_coords[1], captured_piece,
                     leaving_piece, old_hash)
+                # search_trace.pop()
                 if pseudo_move_legal:
                     # The player has some legal moves.
                     return False, "Error: Prince at {} " \
