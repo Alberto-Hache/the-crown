@@ -364,7 +364,7 @@ class Test_game_play(unittest.TestCase):
             ],
             [
                 "test_make_pseudomove_03.cor",
-                "f1f2", True, False, None, False, 0, None
+                "f1f2", True, True, None, False, 0, None
             ],
             # BOARD to test: test_make_pseudomove_04.cor
             [
@@ -448,9 +448,9 @@ class Test_game_play(unittest.TestCase):
 
             self.assertTrue(
                 (res1, res2, res3, res4, res5, res6) == (
-                    is_legal, is_dynamic, result, game_end, 
+                    is_legal, is_dynamic, result, game_end,
                     game_status, opponent_in_check),
-                "ERROR in position {}, move: {}:"
+                "ERROR in position {}, move: {}:\n"
                 "Expected: {}, {}, {}, {}, {}, {}\n"
                 "Received: {}, {}, {}, {}, {}, {}".format(
                     file_name, test_move,
@@ -466,7 +466,7 @@ class Test_game_play(unittest.TestCase):
             self.assertEqual(
                 (board.turn, board.hash),
                 (board_orig.turn, board_orig.hash),
-                "ERROR in position {}, after 'unmaking' move: {}: "
+                "ERROR in position {}, after 'unmaking' move: {}:\n"
                 "Expected: {}, {}\n"
                 "Received: {}, {}".format(
                     file_name, test_move,
@@ -477,7 +477,7 @@ class Test_game_play(unittest.TestCase):
             # Check .piece_count
             self.assertTrue(
                 (board.piece_count == board_orig.piece_count).all(),
-                "ERROR in position {}, after 'unmaking' move: {}: "
+                "ERROR in position {}, after 'unmaking' move: {}:\n"
                 ".piece_count differs".format(
                     file_name, test_move
                 )
@@ -485,7 +485,7 @@ class Test_game_play(unittest.TestCase):
             # Check .boardcode
             self.assertTrue(
                 (board.boardcode == board_orig.boardcode).all(),
-                "ERROR in position {}, after 'unmaking' move: {}: "
+                "ERROR in position {}, after 'unmaking' move: {}:\n"
                 ".boardcode differs.".format(
                     file_name, test_move
                 )
@@ -493,7 +493,7 @@ class Test_game_play(unittest.TestCase):
             # Check .board1d, all coordinates.
             self.assertTrue(
                 (board.board1d == board_orig.board1d).all(),
-                "ERROR in position {}, after 'unmaking' move: {}: "
+                "ERROR in position {}, after 'unmaking' move: {}:\n"
                 ".board1d differs.".format(
                     file_name, test_move
                 )
@@ -549,7 +549,7 @@ class Test_game_play(unittest.TestCase):
             )
             # Check .pieces
 
-    def test_evaluate_end(self):
+    def test_evaluate_terminal(self):
         file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
         file_list.sort()
 
@@ -563,7 +563,7 @@ class Test_game_play(unittest.TestCase):
                 board.print_char(out_file=f)
 
                 # Evaluate from original moving side.
-                best_move, eval, game_end, game_status = gp.evaluate_end(
+                best_move, eval, game_end, game_status = gp.evaluate_terminal(
                     board, depth=0)
                 # Display results.
                 utils.display_results(
@@ -576,7 +576,7 @@ class Test_game_play(unittest.TestCase):
                     "\n{} to move:".format(bd.color_name[board.turn]), file=f
                 )
 
-                best_move, eval, game_end, game_status = gp.evaluate_end(
+                best_move, eval, game_end, game_status = gp.evaluate_terminal(
                     board, depth=0)
 
                 # Display results.
@@ -598,7 +598,7 @@ class Test_game_play(unittest.TestCase):
             ),
             (
                 100, 2, 4,
-                99.9
+                99.99
             ),
             (
                 -9990, 2, 4,
@@ -606,7 +606,7 @@ class Test_game_play(unittest.TestCase):
             ),
             (
                 -100, 2, 4,
-                -99.9
+                -99.99
             )
         )
 
@@ -616,7 +616,9 @@ class Test_game_play(unittest.TestCase):
                 evaluation, from_depth, to_depth
             )
             self.assertEqual(
-                new_eval, correct_eval
+                new_eval, correct_eval,
+                f"Error correcting {evaluation} "
+                f"from depth {from_depth} to {to_depth}."
             )
 
     def test_soldiers_lag(self):
@@ -742,7 +744,8 @@ class Test_game_play(unittest.TestCase):
                 coord1, coord2 = move
                 # Make the move and check results.
                 is_legal, is_dynamic, result, game_end, game_status, \
-                    captured_piece, leaving_piece, old_hash, opponent_in_check = \
+                    captured_piece, leaving_piece, old_hash, \
+                    opponent_in_check = \
                     gp.make_pseudomove(
                         board, coord1, coord2,
                         depth=0, params=gp.DEFAULT_SEARCH_PARAMS,
@@ -781,14 +784,14 @@ class Test_game_play(unittest.TestCase):
         # - Move / list of moves, result, end, status.
         test_cases = (
             (
-                "endgame_09.cor",
+                "endgame_09.cor",  # 
                 TEST_SEARCH_PARAMS_4,
-                [36, 35], 9991.0, False, 0
+                None, 1.33, False, 0
             ),
             (
                 "test_quiesce_01.cor",
                 TEST_SEARCH_PARAMS_4,
-                [[4, 5], [17, 16]], -9984.0, False, 0  # Old -11.5.
+                None, -11.788333333333332, False, 0
             ),
             (
                 "test_quiesce_02.cor",
@@ -798,17 +801,17 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_quiesce_03.cor",
                 TEST_SEARCH_PARAMS_4,
-                [4, 15],  -9989.0, False, 0
+                None,  -12.68833333333333, False, 0
             ),
             (
                 "test_quiesce_05.cor",
                 TEST_SEARCH_PARAMS_4,
-                [33, None], -114.2375, False, 0  # Old: -112.85
+                [33, None], -113.93666666666667, False, 0
             ),
             (
                 "test_quiesce_06.cor",
                 TEST_SEARCH_PARAMS_4,
-                [35, 34], -11.9625, False, 0  # Old: -11.55
+                [35, 34], -12.08333333333333, False, 0
             ),
             (
                 "test_quiesce_07.cor",
@@ -818,7 +821,7 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_quiesce_08.cor",
                 TEST_SEARCH_PARAMS_4,
-                [4, 5], -113.0875, False, 0  # Old: -112.1
+                None, -112.63833333333334, False, 0
             ),
             #  Taken from negamax() unit tests.
             (
@@ -864,12 +867,12 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_minimax_09.cor",
                 TEST_SEARCH_PARAMS_4,
-                [41, 45], 1.1, False, 0  # Old: 1.8
+                [41, 45], 1.7416666666666667, False, 0  # Old: 1.8
             ),
             (
                 "test_minimax_10.cor",
                 TEST_SEARCH_PARAMS_4,
-                None, -11.9625, False, 0  # Old: 11.5
+                None, -11.488333333333332, False, 0  # Old: 11.5
             ),
             (
                 "test_minimax_10b.cor",
@@ -949,9 +952,9 @@ class Test_game_play(unittest.TestCase):
         # Go through all test cases, each on one board.
         test_cases = (
             (
-                "test_minimax_01.cor",  # Position to play.
-                TEST_SEARCH_PARAMS_4,     # Search parameters.
-                None, 10000, True, 1    # Move / list of moves, result, end, status.
+                "test_minimax_01.cor",  # Position to play
+                TEST_SEARCH_PARAMS_4,  # Search parameters
+                None, 10000, True, 1  # Move/list of moves, result, end, status
             ),
             (
                 "test_minimax_02.cor",
@@ -991,7 +994,7 @@ class Test_game_play(unittest.TestCase):
             (
                 "test_minimax_09.cor",
                 TEST_SEARCH_PARAMS_4,
-                [41, 45], 1.5250000000000004, False, 0  # Old: 1.8
+                [41, 45], 1.9583333333333335, False, 0  # Old: 1.8
             ),
             (
                 "test_minimax_10.cor",

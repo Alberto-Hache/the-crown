@@ -132,8 +132,10 @@ prince_at_danger = np.array(
 )
 
 # Other:
-STATIC_DEPTH_PENALTY = 0.005  # Subtract in non-final positions for faster wins.
-END_DEPTH_PENALTY = 1  # Subtract in final positions to foster faster wins.
+# Subtract in non-terminal positions to choose faster wins.
+STATIC_DEPTH_PENALTY = 0.005
+# Subtract in terminal positions to choose faster wins.
+END_DEPTH_PENALTY = 1
 
 
 ########################################################################
@@ -157,12 +159,11 @@ DEFAULT_TRACE_LENGTH = 500
 # Extension applied to depth every time current lenth is exceeded.
 DEFAULT_TRACE_EXTENSION = int(DEFAULT_TRACE_LENGTH/10)
 
-HASH_COL = 0            # Index of hash column: id of the position.
-NODE_COUNT_COL = 1      # Index of node_counter column: nodes explored at
-                        # that depth.
-IRREVERSIBLE_COL = 2    # Index of flag for board obtained after irreversible
-                        # move (no possible repetitions above).
-N_TRACE_COLS = 3    # Number of columns required for the above data.
+# Indices:
+HASH_COL = 0  # Index of hash column: id of the position.
+NODE_COUNT_COL = 1  # node_counter: nodes explored at that depth.
+IRREVERSIBLE_COL = 2  # flag for board obtained after irreversible move.
+N_TRACE_COLS = 3  # Number of columns required for the above data.
 
 ########################################################################
 # Hash table used for transpositions.
@@ -260,7 +261,7 @@ class Gametrace:
         Input:
             board:          Board - the position to register.
             depth:          integer - detph of the node in the game search:
-                            0 for root node, 1 for its children, etc.                            
+                            0 for root node, 1 for its children, etc.
             irreversible:   Boolean - whether this board was produced by a move
                             changing material of any side.
 
@@ -270,7 +271,8 @@ class Gametrace:
         """
         board_hash = board.hash
         ply_number = self.current_board_ply + depth  # idx in gral. game trace.
-        if ply_number >= self.level_trace.shape[0]:  # pylint: disable=E1136  # pylint/issues/3139
+        # pylint: disable=E1136  # pylint/issues/3139
+        if ply_number >= self.level_trace.shape[0]:  # pylint: disable=E1136
             # Max depth exceeded: extend array.
             trace_patch = np.zeros((DEFAULT_TRACE_EXTENSION, N_TRACE_COLS))
             self.level_trace = np.concatenate(
@@ -541,7 +543,7 @@ def negamax(
         board:          Board - the position to play on.
         depth:          int - the depth of the node in the game tree.
         alpha, beta:    float, float - with alpha < beta
-                        The window within which result is expected to fall. 
+                        The window within which result is expected to fall.
                         'alpha' is the value to maximize and return.
                         Search is prunned when alpha >= beta.
         params:         A dictionary with the search settings to follow:
@@ -605,7 +607,8 @@ def negamax(
 
     # 3. Check for other end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
-    childs_move, result, game_end, game_status = evaluate_end(board, depth)
+    childs_move, result, game_end, game_status = evaluate_terminal(
+        board, depth)
     if game_end:
         # End of game: no move is returned.
         return None, result, game_end, game_status  # TODO: Return beta?
@@ -807,7 +810,7 @@ def quiesce_WIP(
         board:          Board - the position to play on.
         depth:          int - the depth of the node in the game tree.
         alpha, beta:    float, float - with alpha < beta
-                        The window within which result is expected to fall. 
+                        The window within which result is expected to fall.
                         'alpha' is the value to maximize and return.
                         Search is prunned when alpha >= beta.
         params:         A dictionary with the search settings to follow:
@@ -870,7 +873,8 @@ def quiesce_WIP(
 
     # 3. Check for other end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
-    childs_move, result, game_end, game_status = evaluate_end(board, depth)
+    childs_move, result, game_end, game_status = evaluate_terminal(
+        board, depth)
     if game_end:
         # End of game: no move is returned.
         return None, result, game_end, game_status  # TODO: Return beta?
@@ -1016,7 +1020,7 @@ def quiesce_WIP(
                         result_i = -float(result_i)  # Switch to player's view.
                     # Assess results from final position or search.
                     if result_i > best_result:
-                        best_move = [coord1, coord2]
+                        # best_move = [coord1, coord2]  # This overwrote stand pat
                         best_result = result_i
                     # And 'unmake' the move.
                     board.unmake_move(
@@ -1057,8 +1061,8 @@ def quiesce_WIP(
         # End of sublist search. Strategy on non-dynamic moves:
         # a) No static eval was done and no dynamic moves searched;
         #    search ALL non-dynamic moves.
-        # b) NO static eval was done and some move was searched (TT or dynamic);
-        #    search a few extra non-dynamic moves.
+        # b) No static eval was done and some move was searched
+        #    (TT or dynamic); search a few extra non-dynamic moves.
         # c) otherwise, skip non-dynamic moves.
         if sublist is moves:
             if not try_stand_pat:
@@ -1149,7 +1153,7 @@ def quiesce(
         board:          Board - the position to play on.
         depth:          int - the depth of the node in the game tree.
         alpha, beta:    float, float - with alpha < beta
-                        The window within which result is expected to fall. 
+                        The window within which result is expected to fall.
                         'alpha' is the value to maximize and return.
                         Search is prunned when alpha >= beta.
         params:         A dictionary with the search settings to follow:
@@ -1212,7 +1216,8 @@ def quiesce(
 
     # 3. Check for other end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
-    childs_move, result, game_end, game_status = evaluate_end(board, depth)
+    childs_move, result, game_end, game_status = evaluate_terminal(
+        board, depth)
     if game_end:
         # End of game: no move is returned.
         return None, result, game_end, game_status  # TODO: Return beta?
@@ -1227,7 +1232,7 @@ def quiesce(
     player_side = board.turn
     opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
 
-    # Detect if  player is in check (unless it's already passed as argument).
+    # Detect if player is in check (unless it's already passed as argument).
     if player_in_check is None:
         # See if board is not legal (would mean the player is in check).
         # The other case (>1 Princes) is not explored by calling method.
@@ -1344,7 +1349,7 @@ def quiesce(
                     result_i = -float(result_i)  # Switch to player's view.
                 # Assess results from final position or search.
                 if result_i > best_result:
-                    best_move = [coord1, coord2]
+                    # best_move = [coord1, coord2]  # This overwrote stand pat.
                     best_result = result_i
                 # And 'unmake' the move.
                 board.unmake_move(
@@ -1459,11 +1464,13 @@ def evaluate_static(board, depth):
     # 2. Mobility obtained by the Knights is rewarded, upto some limit:
     mobility_balance = (
         min(
-            MAX_K_MOVES_TO_REWARD * board.piece_count[player_side][bd.KNIGHT],
+            MAX_K_MOVES_TO_REWARD *
+            board.piece_count[player_side][bd.KNIGHT],
             knights_mobility(board, player_side)
         ) -
         min(
-            MAX_K_MOVES_TO_REWARD * board.piece_count[opponent_side][bd.KNIGHT],
+            MAX_K_MOVES_TO_REWARD *
+            board.piece_count[opponent_side][bd.KNIGHT],
             knights_mobility(board, opponent_side)
         )
     ) * KNIGHT_MOVE_VALUE
@@ -1579,10 +1586,9 @@ def eval_princes_end(board, depth):
 
 def eval_soldiers_end_WIP(board, depth):
     """
-    Evaluate a position where only two Princes and Soldiers 
+    Evaluate a position where only two Princes and Soldiers
     are left on the board.
     Result based on Prince's distance to crown and turn.
-    
     NOTE:
     - Check rows from top to bottom for known conditions.
     """
@@ -1590,9 +1596,10 @@ def eval_soldiers_end_WIP(board, depth):
     return None
 
 
-def evaluate_end(board, depth):
+def evaluate_terminal(board, depth):
     """
-    Detect and evaluate clear end positions from playing side's perspective.
+    Detect (most) terminal positions, evaluating them from playing side's
+    perspective.
 
     Input:
         board:      Board - The game position to evaluate.
@@ -1613,9 +1620,9 @@ def evaluate_end(board, depth):
 
                     Conditions not checked:
                     DRAW_STALEMATE
-                    [Detected by calling method once moves are generated.]
+                    [Detected during search once moves are generated.]
                     DRAW_THREE_REPETITIONS
-                    [Done before by calling method]
+                    [Detected during search]
     """
 
     player_side = board.turn
@@ -1693,12 +1700,22 @@ def position_attacked_NEW(board, pos, attacking_side):
 
     # Identify first piece on each array.
     # [[], ]
-    first_in_board_slices = list(map(lambda x: list(dropwhile(lambda y: y[1] is None, enumerate(x))), board_slices))
+    first_in_board_slices = list(
+        map(
+            lambda x: list(dropwhile(lambda y: y[1] is None, enumerate(x))),
+            board_slices
+        )
+    )
 
     # Pick only non empty lists headed by "attacking_side".
     # p_moves = bd.piece_moves[piece.type][piece.color][piece.coord]
     # Check for pieces of the color required, piece's moves:
-    attacking_pieces = [x[0] for x in first_in_board_slices if len(x) > 0 and x[0][1].color == attacking_side and (pos in bd.piece_moves_flat[x[0][1].type][x[0][1].color][x[0][1].coord])]
+    attacking_pieces = [
+        x[0] for x in first_in_board_slices
+        if len(x) > 0 and
+        x[0][1].color == attacking_side and
+        pos in bd.piece_moves_flat[x[0][1].type][x[0][1].color][x[0][1].coord]
+    ]
 
     return len(attacking_pieces) > 0
 
@@ -1830,7 +1847,9 @@ def pre_evaluate_pseudomoves(board, moves, k_moves=[None, None]):
                 # <full value> - <capturer's value> if coord2 is defended.
                 (
                     ev_moves[:, 2] -
-                    v_position_attacked(board, ev_moves[:, 1], attacking_side) *
+                    v_position_attacked(
+                        board, ev_moves[:, 1], attacking_side
+                    ) *
                     piece_code_value[board.boardcode[ev_moves[:, 0]]]
                 )*(-10) - 50,
                 # Not a capture: value rest of conditions.
@@ -1845,7 +1864,9 @@ def pre_evaluate_pseudomoves(board, moves, k_moves=[None, None]):
                 # <full value> - <capturer's value> if coord2 is defended.
                 (
                     ev_moves[:, 2] -
-                    v_position_attacked(board, ev_moves[:, 1], attacking_side) *
+                    v_position_attacked(
+                        board, ev_moves[:, 1], attacking_side
+                    ) *
                     piece_code_value[board.boardcode[ev_moves[:, 0]]]
                 )*(-10) - 50,
                 # Not a capture: value rest of conditions.
@@ -2027,7 +2048,7 @@ def count_knight_pseudomoves(board, position, color):
 
 
 def make_pseudomove(
-    board, coord1, coord2, depth, params, check_dynamic=False, 
+    board, coord1, coord2, depth, params, check_dynamic=False,
     search_trace=[]
 ):
     """
