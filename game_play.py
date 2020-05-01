@@ -16,17 +16,17 @@ import utils
 PLY1_SEARCH_PARAMS = {
     "max_depth":                1,
     "max_check_quiesc_depth":   4,
-    "max_non_dynamic_depth":    9,  # 4 moves below max depth.
+    "max_non_dynamic_depth":    9,  # WIP
     "transposition_table":      True,
-    "iterative_deepening":      False,  # Needles here.
-    "killer_moves":             False,  # Needles here.
+    "iterative_deepening":      False,  # Needless here.
+    "killer_moves":             False,  # Needless here.
     "randomness":               0
 }
 
 PLY2_SEARCH_PARAMS = {
     "max_depth":                2,
     "max_check_quiesc_depth":   6,
-    "max_non_dynamic_depth":    10,  # 4 moves below max depth. WIP
+    "max_non_dynamic_depth":    10,  # WIP
     "transposition_table":      True,
     "iterative_deepening":      True,
     "killer_moves":             True,
@@ -36,7 +36,7 @@ PLY2_SEARCH_PARAMS = {
 PLY3_SEARCH_PARAMS = {
     "max_depth":                3,
     "max_check_quiesc_depth":   8,
-    "max_non_dynamic_depth":    11,  # 4 moves below max depth. WIP
+    "max_non_dynamic_depth":    11,  # WIP
     "transposition_table":      True,
     "iterative_deepening":      True,
     "killer_moves":             True,
@@ -69,12 +69,12 @@ DEFAULT_SEARCH_PARAMS = PLY4_SEARCH_PARAMS
 ########################################################################
 # Evaluation of static positions.
 
-# Material:
+# Material value of the pieces:
 PRINCE_WEIGHT = 100
 KNIGHT_WEIGHT = 10
 SOLDIER_WEIGHT = 1
 
-# Material for each code found in board.code[]
+# Material value for each code found in board.code[]
 piece_code_value = np.array(
     [
         0,
@@ -83,7 +83,7 @@ piece_code_value = np.array(
     ]
 )
 
-# Material from player's view, ordered by piece.code:
+# Material value from player's view, ordered by piece.code:
 piece_weights = np.array([
     [  # From White's point of view (Prince, Soldier, Knight).
         [PRINCE_WEIGHT, SOLDIER_WEIGHT, KNIGHT_WEIGHT],
@@ -95,24 +95,33 @@ piece_weights = np.array([
     ]
 ])
 
-# Pieces mobility:
+# Knights mobility is rewarded upto a max. per Knight:
 # max mobility of a Knight = 23 moves, so 2 Knights max = 46 moves.
 # 46 moves * 0.1 = 4.6 ≈ 1/2 Knight
 KNIGHT_MOVE_VALUE = 0.1
 MAX_K_MOVES_TO_REWARD = 12
 
-# Prince-crown distance:
-# Range: [0, 12]
+# Prince-crown proximity is rewarded up to a max. value:
+# Distance Range: [0, 12]
+# Parameter range: ≈ (0, 10)
 MAX_CROWN_DIST_REWARD = 5
-UNSAFETY_PENALTY_RATE = 0.25
 
-# Soldiers lag penalty:
+# Reduce Prince-crown distance reward when 'prince_at_danger'.
+# Parameter range: [0, 1]:
+#   0.0 -> full reward regarless Prince unsafety.
+#   0.5 -> cut half the reward if unsafe.
+#   1.0 -> no reward if unsafe.
+UNSAFETY_PENALTY_RATE = 0.50
+
+# Penalize Soldiers lag penalty:
 # Range: [0, 12] x 3 ≈ [0, 30]
-SOLDIERS_LAG_PENALTY = 0.05
+SOLDIER_LAG_PENALTY = 0.05
+SOLDIER_LAG_TOLERANCE = 2  # No penalty if dist ≤ this value.
 
 # Soldiers to crown reward:
 # Range: [0, 12] x 3 ≈ [0, 30]
-SOLDIERS_ADV_REWARD = 0.05
+SOLDIER_ADV_REWARD = 0.05
+MAX_SOLDIER_ADV_REWARD = 10
 
 # Unsafe Knight-count combinations for Prince of each side:
 prince_at_danger = np.array(
@@ -123,7 +132,7 @@ prince_at_danger = np.array(
 )
 
 # Other:
-STATIC_DEPTH_PENALTY = 0.05  # Subtract in non-final positions for faster wins.
+STATIC_DEPTH_PENALTY = 0.005  # Subtract in non-final positions for faster wins.
 END_DEPTH_PENALTY = 1  # Subtract in final positions to foster faster wins.
 
 
@@ -785,7 +794,7 @@ def negamax(
     return None, DRAW, True, DRAW_STALEMATE
 
 
-def quiesce_NEW(
+def quiesce_WIP(
     board, depth, alpha, beta, params=DEFAULT_SEARCH_PARAMS,
     t_table=None, trace=None, player_in_check=None, killer_list=None,
     search_trace=[]
@@ -1447,7 +1456,7 @@ def evaluate_static(board, depth):
     # 1. Basic material balance:
     material = np.multiply(board.piece_count, piece_weights[player_side]).sum()
 
-    # 2. Mobility obtained by the Knights is rewarded, upto some top:
+    # 2. Mobility obtained by the Knights is rewarded, upto some limit:
     mobility_balance = (
         min(
             MAX_K_MOVES_TO_REWARD * board.piece_count[player_side][bd.KNIGHT],
@@ -1457,12 +1466,6 @@ def evaluate_static(board, depth):
             MAX_K_MOVES_TO_REWARD * board.piece_count[opponent_side][bd.KNIGHT],
             knights_mobility(board, opponent_side)
         )
-    ) * KNIGHT_MOVE_VALUE
-
-    mobility_balance = min(
-        MAX_K_MOVES_TO_REWARD,
-        knights_mobility(board, player_side) -
-        knights_mobility(board, opponent_side)
     ) * KNIGHT_MOVE_VALUE
 
     # 3. Prince state:
@@ -1499,14 +1502,14 @@ def evaluate_static(board, depth):
     own_soldiers_lag_penalty = soldiers_lag(board, player_side)
     opp_soldiers_lag_penalty = soldiers_lag(board, opponent_side)
     soldiers_lag_penalty_balance = \
-        - SOLDIERS_LAG_PENALTY * \
+        - SOLDIER_LAG_PENALTY * \
         (own_soldiers_lag_penalty - opp_soldiers_lag_penalty)
 
     # 4.2 Without defense duties, reward Soldiers for approaching the crown.
     own_soldiers_adv_reward = soldiers_advance(board, player_side)
     opp_soldiers_adv_reward = soldiers_advance(board, opponent_side)
     soldiers_adv_reward_balance = \
-        SOLDIERS_ADV_REWARD * \
+        SOLDIER_ADV_REWARD * \
         (own_soldiers_adv_reward - opp_soldiers_adv_reward)
 
     # 5. Other factors.
@@ -1771,15 +1774,13 @@ def pre_evaluate_pseudomoves(board, moves, k_moves=[None, None]):
         1.a) if captured piece is not protected: full piece value.
         1.b) if captured piece is protected: piece value - own piece value.
     2.  Killer moves found in list (if any).
-    3.  [If in endgame] Prince and Soldiers sorted by proximity to the crown.
+    3.  [If no enemy Knights] Prince and Soldiers approaches to the crown.
     4.  Non capture moves (unsorted).
     5.  Losing captures, sorted by increasing expected loss (same algorithm).
 
     Not covered:
     -   Checks / checkmates.
-    -   Endgame (no Knights):
-        -   Prince approaching crown.
-        -   Soldier approaching crown.
+    -   Endgame (no Prince):
         -   Soldier's promotion / approaching missing Prince's position.
     """
     # Extend array with columns for evaluations.
@@ -1787,6 +1788,10 @@ def pre_evaluate_pseudomoves(board, moves, k_moves=[None, None]):
     # - column 2: move priority (higher value => higher priority).
 
     if moves != []:
+        attacking_side = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
+        # Determine endgame condition (player has no Knights).
+        is_endgame = board.piece_count[attacking_side][bd.KNIGHT] == 0
+
         # Initialize array with moves on columns '0' and '1'.
         ev_moves = np.zeros((len(moves), 3), dtype=np.intp)
         ev_moves[:, 0:2] = moves
@@ -1801,9 +1806,6 @@ def pre_evaluate_pseudomoves(board, moves, k_moves=[None, None]):
         else:
             k3, k4 = None, None
 
-        # Determine endgame condition (player has no Knights).
-        is_endgame = board.piece_count[board.turn][bd.KNIGHT] == 0
-
         # Estimate the value captured by each move in column '2'.
         ev_moves[:, 2] = piece_code_value[
             board.boardcode[ev_moves[:, 1]]
@@ -1811,7 +1813,6 @@ def pre_evaluate_pseudomoves(board, moves, k_moves=[None, None]):
 
         # For capturing moves, correct outcome in column '2',
         # checking whether the opponent defends coord2.
-        attacking_side = bd.WHITE if board.turn == bd.BLACK else bd.BLACK
 
         # Moves sorting:
         # 1a. good captures <- 10 x (capturing result) + 50   (>= 150)
@@ -1820,7 +1821,7 @@ def pre_evaluate_pseudomoves(board, moves, k_moves=[None, None]):
         # 3. [endgame] moves towards the crown               (0, 12)
         # 4. non captures <- 0                              (= 0)
         # 5. bad captures <- 10 x (capturing result) + 5    (<= -50)
-        # NOTE: all values inverted below (x -1) for faster .sort()
+        # NOTE: all values as negatives below for faster .sort()
 
         if not is_endgame:
             # Middle-game preevaluation.
@@ -1888,35 +1889,14 @@ def soldiers_lag(board, color):
         # Player has a Prince and opponent has Knight(s).
         prince_coord = board.prince[player_side].coord
         prince_crown_dist = bd.distance_to_crown[prince_coord]
-        """
-        # Version 1: check 'y' coordinate only, i.e. horizontal row, if behind.
+        # Check distances from Prince for Soldiers behind.
         soldiers_lag = sum(
             [
                 max(
-                    0, bd.coord1to3[prince_coord][2] -
-                    bd.coord1to3[p.coord][2]
+                    0,
+                    bd.distance_from_to[p.coord][prince_coord] -
+                    SOLDIER_LAG_TOLERANCE  # No penalty if dist ≤ this value.
                 )
-                for p in board.pieces[player_side] if p.type == bd.SOLDIER
-            ]
-        )
-        """
-        """
-        # Version 2: check differences in distance to crown, if behind.
-        soldiers_lag = sum(
-            [
-                max(
-                    0, bd.distance_to_crown[p.coord] -
-                    bd.distance_to_crown[prince_coord]
-                    - 1  # No penalty for pieces lagging 1 distance unit.
-                )
-                for p in board.pieces[player_side] if p.type == bd.SOLDIER
-            ]
-        )
-        """
-        # Version 3: check distances from Prince for Soldiers behind.
-        soldiers_lag = sum(
-            [
-                bd.distance_from_to[p.coord][prince_coord] - 1
                 for p in board.pieces[color]
                 if p.type == bd.SOLDIER and
                 bd.distance_to_crown[p.coord] > prince_crown_dist
@@ -1939,18 +1919,21 @@ def soldiers_advance(board, color):
     if board.prince[player_side] is not None and \
        board.piece_count[opponent_side][bd.KNIGHT] > 0:
         # Player has a Prince and the enemy has some Knight.
-        return 0
+        return 0.0
     else:
-        # Check distances from Soldiers to crown.
+        # Sum Soldiers' progress towards crown (upto a value).
         soldiers_reward = sum(
             [
-                12 - bd.distance_to_crown[p.coord]
+                min(
+                    MAX_SOLDIER_ADV_REWARD,
+                    12 - bd.distance_to_crown[p.coord]
+                )
                 for p in board.pieces[color]
                 if p.type == bd.SOLDIER
             ]
         )
         return soldiers_reward
-    
+
 
 def soldiers_dispersion(board, color, coord):
     """
@@ -2076,11 +2059,11 @@ def make_pseudomove(
                     - Soldier promotions
                     - Check evasion (no null move)
                     - Checks [downto 'max_check_quiesc_depth']
-                    (when no enemy Knights)
+                    (when no enemy Knights):
                     - Prince moves upwards
                     - Soldier moves leaving other Soldiers behind / on-pair
 
-                    Conditions not checked:  TODO: check in some cases.
+                    Conditions not checked:
                     - Soldier moves to throne (in absence of Prince)?
 
         result:     float - an early evaluation of winner moves,
@@ -2143,15 +2126,15 @@ def make_pseudomove(
     # Optionally, check dynamic conditions of the move.
     is_dynamic = False
     if check_dynamic:
-        # Checked: Piece captures, mated Prince leaves, Soldier promotion,
-        # check, check evasion.
+        # Checked: captures, mated Prince leaves, Soldier promotion, checks,
+        # (when no enemy Knights): Prince upwards, highest Soldier upwds.
         # NOT checked: Princeless Soldier -> throne
         # NOT checked: check evasion (calling node must search all moves)
         if captured_piece is not None or leaving_piece is not None:
             # Piece captured / mated Prince leaving / Soldier promotion.
             is_dynamic = True
         else:
-            # Check on 'board' if it produced a check to the opponent.
+            # Check on 'board' if it produced a check to the enemy.
             opponent_prince = board.prince[board.turn]
             if opponent_prince is not None and \
                not depth > params["max_check_quiesc_depth"]:
@@ -2161,7 +2144,8 @@ def make_pseudomove(
                 )
                 # Flag check detection.
                 opponent_in_check = is_dynamic
-            if not is_dynamic and board.piece_count[:, bd.KNIGHT].sum() == 0:
+            if not is_dynamic and \
+               board.piece_count[board.turn][bd.KNIGHT] == 0:
                 # It's an endgame without Knights.
                 if piece_type == bd.PRINCE:
                     # Check for moves towards crown.
