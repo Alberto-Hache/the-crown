@@ -214,6 +214,8 @@ def display_move_metrics(
     player_max_depth = player_params["max_depth"]
     player_max_check_quiesc_depth = player_params["max_check_quiesc_depth"]
     player_randomness = player_params["randomness"]
+    player_hash = tt_metrics[0]
+    hash_use = tt_metrics[1]
 
     move_txt = utils.move_2_txt(move)
     nodes_count = game_trace.level_trace[
@@ -222,23 +224,26 @@ def display_move_metrics(
 
     # On-SCREEN output:
     print(
-        "{}: [max_depth={}, max_check_depth={}, rnd={:0.2f}]"
+        "Move:   {} ({:+.5f})".format(move_txt, result)
+    )
+    print(
+        "Params: full_depth={}, check_depth={}, hash_max={}, rnd={:0.2f}"
         .format(
-            bd.color_name[side],
             player_max_depth,
             player_max_check_quiesc_depth,
+            player_hash,
             player_randomness
         )
     )
     print(
-        "Move: {} ({:+.5f}) {:.0f} nodes searched, "
-        "{:.2f} sec., max depth={:d}"
+        "Search: {:.0f} nodes, "
+        "{:.2f} sec, max depth={:d}, "
+        "hash use={:d}"
         .format(
-            move_txt,
-            result,
             nodes_count,
             time_used,
-            game_trace.max_depth_searched
+            game_trace.max_depth_searched,
+            hash_use
         )
     )
     # Game-record FILE:
@@ -359,6 +364,9 @@ def play_match(board, player, max_moves, file_name=None):
                     display_end_results(
                         board, game.DRAW, game.DRAW_THREE_REPETITIONS, rec_file
                     )
+                else:
+                    # Draw separation line.
+                    print('.' * 80)
             else:
                 # End of the game.
                 if player_quit:
