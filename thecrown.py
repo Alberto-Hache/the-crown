@@ -35,6 +35,9 @@ crown_players = {
     ),
     "crowny-v": Player(
         "Crowny-V", MACHINE_PLAYER, None, game.PLY5_SEARCH_PARAMS
+    ),
+    "crowny-vi": Player(
+        "Crowny-VI", MACHINE_PLAYER, None, game.PLY6_SEARCH_PARAMS
     )
 }
 

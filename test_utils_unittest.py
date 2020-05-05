@@ -72,7 +72,7 @@ class Test_utils(unittest.TestCase):
                              .format(case))
 
     def test_calculate_simple_moves(self):
-        simple_moves = utils.calculate_simple_moves()
+        simple_moves = utils.simple_moves
         board = bd.Board()
         with open("output.txt", "w") as f:
             for position in range(bd.N_POSITIONS):
@@ -93,7 +93,7 @@ class Test_utils(unittest.TestCase):
             "tests/output_calculate_simple_moves.txt"))
 
     def test_calculate_soldier_moves(self):
-        soldier_moves = utils.calculate_soldier_moves()
+        soldier_moves = utils.soldier_moves
         board = bd.Board()
         with open("output.txt", "w") as f:
             for side in [bd.WHITE, bd.BLACK]:
@@ -130,7 +130,7 @@ class Test_utils(unittest.TestCase):
             "tests/output_calculate_soldier_moves.txt"))
 
     def test_calculate_knight_moves(self):
-        knight_moves = utils.calculate_knight_moves()
+        knight_moves = utils.knight_moves
         board = bd.Board()
         with open("output.txt", "w") as f:
             for position in range(bd.N_POSITIONS):

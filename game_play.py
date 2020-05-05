@@ -16,7 +16,6 @@ import utils
 PLY1_SEARCH_PARAMS = {
     "max_depth":                1,
     "max_check_quiesc_depth":   4,
-    "max_non_dynamic_depth":    9,  # WIP
     "transposition_table":      True,
     "iterative_deepening":      False,  # Needless here.
     "killer_moves":             False,  # Needless here.
@@ -26,7 +25,6 @@ PLY1_SEARCH_PARAMS = {
 PLY2_SEARCH_PARAMS = {
     "max_depth":                2,
     "max_check_quiesc_depth":   6,
-    "max_non_dynamic_depth":    10,  # WIP
     "transposition_table":      True,
     "iterative_deepening":      True,
     "killer_moves":             True,
@@ -36,7 +34,6 @@ PLY2_SEARCH_PARAMS = {
 PLY3_SEARCH_PARAMS = {
     "max_depth":                3,
     "max_check_quiesc_depth":   8,
-    "max_non_dynamic_depth":    11,  # WIP
     "transposition_table":      True,
     "iterative_deepening":      True,
     "killer_moves":             True,
@@ -45,8 +42,7 @@ PLY3_SEARCH_PARAMS = {
 
 PLY4_SEARCH_PARAMS = {
     "max_depth":                4,
-    "max_check_quiesc_depth":   14,  # 5 moves below max depth (prev. 10).
-    "max_non_dynamic_depth":    10,  # WIP
+    "max_check_quiesc_depth":   14,  # 10 moves below max depth (prev. 10).
     "transposition_table":      True,
     "iterative_deepening":      True,
     "killer_moves":             True,
@@ -55,8 +51,16 @@ PLY4_SEARCH_PARAMS = {
 
 PLY5_SEARCH_PARAMS = {
     "max_depth":                5,
-    "max_check_quiesc_depth":   15,  # 5 moves below max depth.
-    "max_non_dynamic_depth":    11,  # WIP
+    "max_check_quiesc_depth":   15,  # 10 moves below max depth.
+    "transposition_table":      True,
+    "iterative_deepening":      True,
+    "killer_moves":             True,
+    "randomness":               0
+}
+
+PLY6_SEARCH_PARAMS = {
+    "max_depth":                6,
+    "max_check_quiesc_depth":   16,  # 10 moves below max depth.
     "transposition_table":      True,
     "iterative_deepening":      True,
     "killer_moves":             True,
@@ -469,7 +473,7 @@ def is_killer(m1, m2, k1, k2, k3, k4):
 
 def play(
     board, params=DEFAULT_SEARCH_PARAMS, trace=None, max_time=float("inf"),
-    t_table=None, killer_list=None
+    t_table=None, killer_list=None, screen_traces=True
 ):
     # Capture initial time for time keeping.
     time_0 = time.time()
@@ -501,31 +505,47 @@ def play(
 
     # Iterative deepening loop.
     while keep_iterating:
-
         # Run search for move selection.
         # Reuse: transposition table, killer moves.
         move, result, game_end, game_status = negamax(
             board, depth, alpha, beta, params_copy,
             t_table, trace, killer_list, search_trace
             )
-
+        # Display search status: move found after iteration.
+        if screen_traces:
+            print(
+                "Search at depth {:3d}... {:<6} ({:>+.5f}) \r".format(
+                    params_copy["max_depth"],
+                    utils.move_2_txt(move),
+                    result
+                ),
+                end="", flush=True
+            )
         # Update iteration parameters (not needed for TT).
         params_copy["max_depth"] += depth_step
         params_copy["max_check_quiesc_depth"] += depth_step
         time_1 = time.time()
-
-        # Check conditions for new iteration.
+        # Check all conditions for new iteration.
+        # - set in search parameters,
+        # - max_depth not reached yet,
+        # - max time not exceeded,
+        # - current search didn't find a win at that depth.
         keep_iterating = \
             do_iterative_deepening and \
             params_copy["max_depth"] <= max_depth and \
-            time_1 - time_0 < max_time
+            time_1 - time_0 < max_time and \
+            abs(result) < PLAYER_WINS - 100
+
+    # Clear search status.
+    if screen_traces:
+        print("{}\r".format(utils.CLEAN_LINE), end="")
 
     # Adapt killer moves list for next move to play (2 plies fwd).
     killer_list.shift_plies()
 
     # Get Transposition Table's metrics.
     t_table_metrics = t_table.metrics()
-    # t_table.clear()
+    # t_table.clear()  # Not cleard so it's used in next turn.
 
     return move, result, game_end, game_status, \
         time_1 - time_0, t_table_metrics
@@ -613,6 +633,13 @@ def negamax(
         # End of game: no move is returned.
         return None, result, game_end, game_status  # TODO: Return beta?
 
+    # 4.0 Check for predictable ends (not for root node).
+    if depth > 0:
+        result = endgame_prediction(board, depth)
+        if result is not None:
+            # The position has a predictable end: no search needed.
+            return None, result, False, ON_GOING
+
     # Prepare for tree search.
     best_move = None
     best_result = -np.Infinity  # Value to store in transposition table.
@@ -665,7 +692,7 @@ def negamax(
 
     # 4.3 Generate and explore existing pseudomoves.
     moves, moves_count = generate_pseudomoves(board)
-    assert(moves_count > 0),\
+    assert (moves_count > 0),\
         "ERROR: No pseudomoves found despite game is not ended "\
         "and MAX_DEPTH has not been reached."
     # Remove already searched hash_move from pseudomoves list.
@@ -1222,6 +1249,12 @@ def quiesce(
         # End of game: no move is returned.
         return None, result, game_end, game_status  # TODO: Return beta?
 
+    # 4.0 Check for predictable ends (no neeed to check if it's root node).
+    result = endgame_prediction(board, depth)
+    if result is not None:
+        # The position has a predictable end: no search needed.
+        return None, result, False, ON_GOING
+
     # Prepare for tree search.
     best_move = None
     best_result = -np.Infinity  # Value to store in transposition table.
@@ -1533,6 +1566,39 @@ def evaluate_static(board, depth):
     return pre_eval + other
 
 
+def endgame_prediction(board, depth):
+    """
+    Input:
+        board:      Board - The game position to evaluate.
+        depth:      int - Depth of node in the search tree.
+
+    Output:
+        result:     float; predicted result in case it is predictable.
+                    None; when it's not predictable.
+
+    Endgames covered:
+    - Prince vs Prince
+
+    """
+
+    # Check pieces:
+    if board.piece_count[:, bd.KNIGHT].sum() == 0:
+        # Find player's top piece.
+        if board.piece_count[:, bd.SOLDIER].sum() == 0:
+            # P vs P (no Soldiers)
+            assert board.piece_count[:, bd.PRINCE].sum() == 2, \
+                "Error: Expected 2 Princes but found {}".format(
+                    board.piece_count[:, bd.PRINCE].sum()
+                )
+            return eval_princes_end(board, depth)
+        else:
+            # P+S vs P+S
+            return princes_and_soldiers_end(board, depth)
+    else:
+        # Position with some Knight; not predictable.
+        return None
+
+
 def eval_princes_end(board, depth):
     """
     Evaluate a position where only two Princes are left on the board.
@@ -1584,14 +1650,76 @@ def eval_princes_end(board, depth):
     return result + depth_penalty
 
 
-def eval_soldiers_end_WIP(board, depth):
+def princes_and_soldiers_end(board, depth):
     """
-    Evaluate a position where only two Princes and Soldiers
-    are left on the board.
-    Result based on Prince's distance to crown and turn.
-    NOTE:
-    - Check rows from top to bottom for known conditions.
+    Evaluate a position with:
+    - no Knights
+    - some Soldier (at least 1)
+    - some Prince (1 or 2)
+    Result based on:
+    - Pieces' distance to crown
+    - and turn.
+
+    1. If the Prince to play is closer to crown than any other piece;
+        the player wins.
+
+    2. If the enemy's Prince is at least TWO steps closer to crown than any other piece;
+        the opponet wins.
+
+    The result is penalized with:
+        (depth + depth_to_final) * END_DEPTH_PENALTY
     """
+    player_side = board.turn
+    opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
+
+    # Find out minimal distance to crown:
+    # - of each player
+    # - overall across both players
+    min_dist_to_crown_of_side = (
+        min(
+            [bd.piece_color_distance_to_crown[p.type][p.color][p.coord]
+                for p in board.pieces[bd.WHITE]]
+        ),
+        min(
+            [bd.piece_color_distance_to_crown[p.type][p.color][p.coord]
+                for p in board.pieces[bd.BLACK]]
+        )
+    )
+    min_dist_to_crown = min(min_dist_to_crown_of_side)
+
+    # 1. Check if the player to play has its Prince on top.
+    try:
+        if (
+            bd.distance_to_crown[board.prince[player_side].coord] ==
+            min_dist_to_crown and
+            min_dist_to_crown_of_side[opponent_side] > min_dist_to_crown
+        ):
+            # The Prince to play is on top: it will win.
+            result = PLAYER_WINS
+            depth_to_final = 2 * min_dist_to_crown - 1
+            depth_penalty = - (depth + depth_to_final) * END_DEPTH_PENALTY
+            return result + depth_penalty
+    except AttributeError:
+        # This side has no Prince; try next case.
+        pass
+
+    # 2. Check if the opponent's Prince is on top by 2 or more steps.
+    try:
+        if (
+            bd.distance_to_crown[board.prince[opponent_side].coord] ==
+            min_dist_to_crown and
+            min_dist_to_crown_of_side[player_side] > min_dist_to_crown + 1
+        ):
+            # The enemy's Prince is on top and can't be reached: it will win.
+            result = OPPONENT_WINS
+            depth_to_final = 2 * min_dist_to_crown
+            depth_penalty = + (depth + depth_to_final) * END_DEPTH_PENALTY
+            return result + depth_penalty
+    except AttributeError:
+        # This side has no Prince; try next case.
+        pass
+
+    # No more known cases.
 
     return None
 

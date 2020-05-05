@@ -45,17 +45,38 @@ initial_position = (
     "w"
 )
 
-# Load precalculated tables:
-coord1to3 = utils.calculate_coord1to3(N_ROWS)  # TODO: move to utils.py
+# Calculate auxiliary tables:
+coord1to3 = utils.calculate_coord1to3(N_ROWS)
 kingdoms = utils.calculate_kingdoms(N_POSITIONS)
 
-simple_moves = utils.calculate_simple_moves()  # For the Prince of any side.
-soldier_moves = utils.calculate_soldier_moves()  # 2 lists, one for each side.
-knight_moves = utils.calculate_knight_moves()  # For the Knight of any side.
-distance_from_to = utils.calculate_distance_from_to()  # Distance between 2 coords.
-distance_to_crown = \
-    utils.calculate_distance_to_crown()  # Distance from a coord to the crown.
+# Load precalculated tables:
+
+# Moves:
+simple_moves = utils.simple_moves  # For the Prince of any side.
+soldier_moves = utils.soldier_moves  # 2 lists, one for each side.
+knight_moves = utils.knight_moves  # For the Knight of any side.
+
+# Distances:
+# Distance between 2 coords.
+distance_from_to = utils.distance_from_to
+# Distance from a coord to the crown.
+distance_to_crown = utils.distance_to_crowm
+# Distance for a Soldier from its coordinate to the crown.
+# E.g. soldier_distance_to_crowm[WHITE][0] -> 12 [starts from BLACK side]
+# E.g. soldier_distance_to_crowm[WHITE][12] -> 9 [starts from WHITE's kingdom]
+soldier_distance_to_crown = utils.soldier_distance_to_crowm
+# A numpy version of this tuple(s):
 np_distance_to_crown = np.array(distance_to_crown)
+
+# Distance from a coord to the crown depending on piece type.
+# Use: piece_color_distance_to_crown[piece.type][piece.color][piece.coord]
+piece_color_distance_to_crown = (
+    # 0: PRINCE; both sides have the same distances.
+    (distance_to_crown, distance_to_crown),
+    # 1: SOLDIER: each side has different distances (due to kingdom moves).
+    (soldier_distance_to_crown[0], soldier_distance_to_crown[1])
+)
+
 
 # Generate moves table for the 2 x 3 side-type combinations.
 # Use: piece_moves[piece.type][piece.color][piece.coord]
@@ -68,8 +89,9 @@ piece_moves = (
     (knight_moves, knight_moves)
 )
 
-soldier_moves_flat = utils.calculate_soldier_moves_flat()  # 2 lists, one for each side.
-knight_moves_flat = utils.calculate_knight_moves_flat()  # For the Knight of any side.
+# Flat moves lists:
+soldier_moves_flat = utils.soldier_moves_flat  # 2 lists, one for each side.
+knight_moves_flat = utils.knight_moves_flat  # For the Knight of any side.
 
 # Generate moves table for the 2 x 3 side-type combinations.
 # Use: piece_moves[piece.type][piece.color][piece.coord]

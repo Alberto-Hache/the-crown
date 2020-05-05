@@ -1057,6 +1057,124 @@ class Test_game_play(unittest.TestCase):
                     "Position: {}".format(file_name)
                 )
 
+    def test_eval_princes_end(self):
+        # Testcases:
+        p_vs_p_test_cases = (
+            (
+                "endgame_02.cor", 4,
+                -9988.0, 9989.0
+            ),
+            (
+                "endgame_03.cor", 4,
+                -9988.0, -9988.0
+            ),
+            (
+                "endgame_04.cor", 4,
+                9987.0, 9989.0
+            ),
+            (
+                "endgame_05.cor", 4,
+                9987.0, -9986.0
+            )
+        )
+
+        # Loop over cases.
+        for test_case in p_vs_p_test_cases:
+            file_name, test_depth, exp_result_w, exp_result_b = test_case
+            board = bd.Board(file_name)
+
+            # Run 2 tests per case.
+            board.turn = bd.WHITE
+            result_w = gp.eval_princes_end(board, test_depth)
+            board.turn = bd.BLACK
+            result_b = gp.eval_princes_end(board, test_depth)
+
+            # Check results.
+            self.assertEqual(
+                (result_w, result_b), (exp_result_w, exp_result_b),
+                f"Error in position {file_name}"
+            )
+
+    def test_princes_and_soldiers_end(self):
+        # Testcases:
+        endgame_test_cases = (
+            ("test_minimax_09.cor", 9993.0, None),
+            ("endgame_01.cor", None, 9989.0),
+            ("endgame_06.cor", None, 9989.0),
+            ("endgame_07.cor", None, None),
+            ("endgame_08.cor", None, None),
+            ("endgame_09.cor", None, None),
+            ("endgame_10.cor", None, None),
+            ("endgame_11.cor", None, None),
+            ("endgame_12.cor", None, None),
+            ("endgame_13.cor", None, None),
+            ("endgame_14.cor", None, None),
+            ("endgame_15.cor", None, None),
+            ("endgame_16.cor", -9982.0, 9983.0),
+            ("endgame_17.cor", None, 9981.0),
+            ("endgame_18.cor", None, 9983.0)
+        )
+
+        # Loop over test cases.
+        for test_case in endgame_test_cases:
+            file_name, exp_result_w, exp_result_b = test_case
+            board = bd.Board(file_name)
+            test_depth = 4  # Arbitrary value for tests.
+
+            # Run tests per case.
+            board.turn = bd.WHITE
+            result_w = gp.princes_and_soldiers_end(board, test_depth)
+            board.turn = bd.BLACK
+            result_b = gp.princes_and_soldiers_end(board, test_depth)
+
+            # Check results.
+            self.assertEqual(
+                (result_w, result_b), (exp_result_w, exp_result_b),
+                f"Error in position {file_name}"
+            )
+
+    def test_endgame_prediction(self):
+        # Testcases:
+        endgame_test_cases = (
+            ("endgame_02.cor", -9988.0, 9989.0),
+            ("endgame_03.cor", -9988.0, -9988.0),
+            ("endgame_04.cor", 9987.0, 9989.0),
+            ("endgame_05.cor", 9987.0, -9986.0),
+            ("test_minimax_09.cor", 9993.0, None),
+            ("endgame_01.cor", None, 9989.0),
+            ("endgame_06.cor", None, 9989.0),
+            ("endgame_07.cor", None, None),
+            ("endgame_08.cor", None, None),
+            ("endgame_09.cor", None, None),
+            ("endgame_10.cor", None, None),
+            ("endgame_11.cor", None, None),
+            ("endgame_12.cor", None, None),
+            ("endgame_13.cor", None, None),
+            ("endgame_14.cor", None, None),
+            ("endgame_15.cor", None, None),
+            ("endgame_16.cor", -9982.0, 9983.0),
+            ("endgame_17.cor", None, 9981.0),
+            ("endgame_18.cor", None, 9983.0)
+        )
+
+        # Loop over test cases.
+        for test_case in endgame_test_cases:
+            file_name, exp_result_w, exp_result_b = test_case
+            board = bd.Board(file_name)
+            test_depth = 4  # Arbitrary value for tests.
+
+            # Run tests per case.
+            board.turn = bd.WHITE
+            result_w = gp.endgame_prediction(board, test_depth)
+            board.turn = bd.BLACK
+            result_b = gp.endgame_prediction(board, test_depth)
+
+            # Check results.
+            self.assertEqual(
+                (result_w, result_b), (exp_result_w, exp_result_b),
+                f"Error in position {file_name}"
+            )
+
 
 if __name__ == '__main__':
     unittest.main()
