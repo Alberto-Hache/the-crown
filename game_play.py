@@ -514,7 +514,7 @@ def play(
         # Display search status: move found after iteration.
         if screen_traces:
             print(
-                "Search at depth {:3d}... {:<6} ({:>+.5f}) \r".format(
+                "Searching at depth {:d}... {} ({:>+.5f}) \r".format(
                     params_copy["max_depth"],
                     utils.move_2_txt(move),
                     result
@@ -2057,20 +2057,21 @@ def soldiers_lag(board, color):
 def soldiers_advance(board, color):
     """
     Evaluate reward from Soldiers approaching the crown,
-    considering:
-    a) player has a Prince and opponent has Knight(s) = no reward.
-    b) for all Soldiers, reward proportional to proximity to crown.
+    considering Prince's safety:
+    a) player has a Prince and Knights balance is unsafe = no reward.
+    b) otherwise, reward all Soldiers by their proximity to the crown.
     """
     player_side = color
     opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
 
-    # Check preconditions.
-    if board.prince[player_side] is not None and \
-       board.piece_count[opponent_side][bd.KNIGHT] > 0:
-        # Player has a Prince and the enemy has some Knight.
+    # Check player's Prince safety.
+    own_prince_danger = board.piece_count[:, bd.KNIGHT] in \
+        prince_at_danger[player_side]
+    if board.prince[player_side] is not None and own_prince_danger:
+        # Player has a Prince and the Knights balance is unsafe.
         return 0.0
     else:
-        # Sum Soldiers' progress towards crown (upto a value).
+        # Sum Soldiers' progress towards crown (upto a top value).
         soldiers_reward = sum(
             [
                 min(
