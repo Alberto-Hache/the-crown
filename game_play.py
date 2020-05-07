@@ -128,11 +128,17 @@ SOLDIER_ADV_REWARD = 0.05
 MAX_SOLDIER_ADV_REWARD = 10
 
 # Unsafe Knight-count combinations for Prince of each side:
-prince_at_danger = np.array(
-    [
-        [[0, 1], [0, 2], [1, 2], [2, 2]],
-        [[1, 0], [2, 0], [2, 1], [2, 2]]
-    ]
+prince_at_danger_ks = (
+    (   # For white:
+        (False, True, True),   # 0,0; 0,1; 0,2
+        (False, False, True),  # 1,0; 1,1; 1,1
+        (False, False, True)   # 2,0; 2,1; 2,2
+    ),
+    (   # For black:
+        (False, False, False),  # 0,0; 0,1; 0,2
+        (True, False, False),   # 1,0; 1,1; 1,1
+        (True, True, True)      # 2,0; 2,1; 2,2
+    )
 )
 
 # Other:
@@ -1512,10 +1518,10 @@ def evaluate_static(board, depth):
 
     # 3.1. Crown proximity is rewarded, but less if Knights balance is unsafe.
     own_prince = board.prince[player_side]
+    ks = board.piece_count[:, bd.KNIGHT]
     if own_prince is not None:
         # The player has a Prince. Check safety and distance to crown.
-        own_prince_danger = board.piece_count[:, bd.KNIGHT] in \
-            prince_at_danger[player_side]
+        own_prince_danger = prince_at_danger_ks[player_side][ks[0]][ks[1]]
         own_crown_distance = bd.distance_to_crown[own_prince.coord]
         own_crown_reward = MAX_CROWN_DIST_REWARD * \
             (1 - own_crown_distance/12) * \
@@ -1526,8 +1532,7 @@ def evaluate_static(board, depth):
     opp_prince = board.prince[opponent_side]
     if opp_prince is not None:
         # The opponent has a Prince. Check safety and distance to crown.
-        opp_prince_danger = board.piece_count[:, bd.KNIGHT] in \
-            prince_at_danger[opponent_side]
+        opp_prince_danger = prince_at_danger_ks[opponent_side][ks[0]][ks[1]]
         opp_crown_distance = bd.distance_to_crown[opp_prince.coord]
         opp_crown_reward = MAX_CROWN_DIST_REWARD * \
             (1 - opp_crown_distance/12) * \
@@ -2061,13 +2066,10 @@ def soldiers_advance(board, color):
     a) player has a Prince and Knights balance is unsafe = no reward.
     b) otherwise, reward all Soldiers by their proximity to the crown.
     """
-    player_side = color
-    opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
-
     # Check player's Prince safety.
-    own_prince_danger = board.piece_count[:, bd.KNIGHT] in \
-        prince_at_danger[player_side]
-    if board.prince[player_side] is not None and own_prince_danger:
+    ks = board.piece_count[:, bd.KNIGHT]
+    own_prince_danger = prince_at_danger_ks[color][ks[0]][ks[1]]
+    if board.prince[color] is not None and own_prince_danger:
         # Player has a Prince and the Knights balance is unsafe.
         return 0.0
     else:

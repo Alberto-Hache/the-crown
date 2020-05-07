@@ -129,7 +129,7 @@ class Board:
 
         # Pieces info.
         self.pieces = [[], []]  # Lists of pieces from 0=WHITE, 1=BLACK.
-        self.piece_count = np.zeros((2, 3))  # 2 sides x 3 piece types.
+        self.piece_count = np.zeros((2, 3), dtype=int)  # 2 sides, 3 piece types.
         self.prince = [None, None]  # List with the Prince of each side.
 
         # References to the pieces from board coordinates.
