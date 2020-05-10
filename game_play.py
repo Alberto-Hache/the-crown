@@ -67,8 +67,18 @@ PLY6_SEARCH_PARAMS = {
     "randomness":               0
 }
 
+PLY7_SEARCH_PARAMS = {
+    "max_depth":                7,
+    "max_check_quiesc_depth":   17,  # 10 moves below max depth.
+    "transposition_table":      True,
+    "iterative_deepening":      True,
+    "killer_moves":             True,
+    "randomness":               0
+}
+
+
 MINIMAL_SEARCH_PARAMS = PLY1_SEARCH_PARAMS
-DEFAULT_SEARCH_PARAMS = PLY4_SEARCH_PARAMS
+DEFAULT_SEARCH_PARAMS = PLY5_SEARCH_PARAMS
 
 ########################################################################
 # Evaluation of static positions.
