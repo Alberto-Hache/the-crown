@@ -108,7 +108,7 @@ MAX_K_MOVES_TO_REWARD = 12
 # Prince-crown proximity is rewarded up to a max. value:
 # Distance Range: [0, 12]
 # Parameter range: ≈ (0, 10)
-MAX_CROWN_DIST_REWARD = 5
+MAX_PRINCE_CROWN_DIST_REWARD = 5
 
 # Reduce Prince-crown distance reward when 'prince_at_danger'.
 # Parameter range: [0, 1]:
@@ -122,10 +122,53 @@ UNSAFETY_PENALTY_RATE = 0.50
 SOLDIER_LAG_PENALTY = 0.05
 SOLDIER_LAG_TOLERANCE = 2  # No penalty if dist ≤ this value.
 
-# Soldiers to crown reward:
+# Soldier advance reward system:
+#
+# 1. Crown: Soldiers are rewarded for approaching the crown.
 # Range: [0, 12] x 3 ≈ [0, 30]
 SOLDIER_ADV_REWARD = 0.05
 MAX_SOLDIER_ADV_REWARD = 10
+
+# 2. Top-center: Coords of special relevance during endgame get extra reward.
+# - Under-crown top:        0.10
+# - Nearby central coords:  0.05
+CENTRAL_CONTROL_REWARD = 0.1
+central_reward_weights = (
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 0.0,
+    0.0
+)
+# Precalculated single-Soldier advance reward:
+"""
+def calculate_soldier_advance_reward():
+    # This function can be used to calculate list 'soldier_advance_reward'
+
+    s_a_rwd = [
+        (
+            central_reward_weights[coord] * CENTRAL_CONTROL_REWARD +
+            min(
+                MAX_SOLDIER_ADV_REWARD,
+                12 - bd.distance_to_crown[coord]
+            ) * SOLDIER_ADV_REWARD
+        )
+        for coord in range(bd.N_POSITIONS)
+    ]
+    return s_a_rwd
+"""
+
+soldier_advance_reward = [
+    0.00, 0.05, 0.00, 0.05, 0.00, 0.05, 0.00, 0.05, 0.00, 0.05, 0.00, 0.05, 0.00,
+    0.10, 0.15, 0.10, 0.15, 0.10, 0.15, 0.10, 0.15, 0.10, 0.15, 0.10,
+    0.20, 0.25, 0.20, 0.30, 0.25, 0.30, 0.20, 0.25, 0.20,
+    0.30, 0.35, 0.40, 0.45, 0.40, 0.35, 0.30,
+    0.40, 0.45, 0.50, 0.45, 0.40,
+    0.50, 0.50, 0.50,
+    0.50
+]
 
 # Unsafe Knight-count combinations for Prince of each side:
 prince_at_danger_ks = (
@@ -633,13 +676,14 @@ def negamax(
 
     # 3. Check for other end conditions:
     #   VICTORY_CROWNING / VICTORY_NO_PIECES_LEFT / DRAW_NO_PRINCES_LEFT
+    #   Not detected: DRAW_STALEMATE / DRAW_THREE_REPETITIONS
     childs_move, result, game_end, game_status = evaluate_terminal(
         board, depth)
     if game_end:
         # End of game: no move is returned.
         return None, result, game_end, game_status  # TODO: Return beta?
 
-    # 4.0 Check for predictable ends (not for root node).
+    # 4.0 Check for predictable ends (not for root, where search is required).
     if depth > 0:
         result = endgame_prediction(board, depth)
         if result is not None:
@@ -1523,7 +1567,7 @@ def evaluate_static(board, depth):
         # The player has a Prince. Check safety and distance to crown.
         own_prince_danger = prince_at_danger_ks[player_side][ks[0]][ks[1]]
         own_crown_distance = bd.distance_to_crown[own_prince.coord]
-        own_crown_reward = MAX_CROWN_DIST_REWARD * \
+        own_crown_reward = MAX_PRINCE_CROWN_DIST_REWARD * \
             (1 - own_crown_distance/12) * \
             (1 - own_prince_danger * UNSAFETY_PENALTY_RATE)
     else:
@@ -1534,7 +1578,7 @@ def evaluate_static(board, depth):
         # The opponent has a Prince. Check safety and distance to crown.
         opp_prince_danger = prince_at_danger_ks[opponent_side][ks[0]][ks[1]]
         opp_crown_distance = bd.distance_to_crown[opp_prince.coord]
-        opp_crown_reward = MAX_CROWN_DIST_REWARD * \
+        opp_crown_reward = MAX_PRINCE_CROWN_DIST_REWARD * \
             (1 - opp_crown_distance/12) * \
             (1 - opp_prince_danger * UNSAFETY_PENALTY_RATE)
     else:
@@ -1551,11 +1595,10 @@ def evaluate_static(board, depth):
         (own_soldiers_lag_penalty - opp_soldiers_lag_penalty)
 
     # 4.2 Without defense duties, reward Soldiers for approaching the crown.
-    own_soldiers_adv_reward = soldiers_advance(board, player_side)
-    opp_soldiers_adv_reward = soldiers_advance(board, opponent_side)
+    own_soldiers_adv_reward = soldiers_advance_reward(board, player_side)
+    opp_soldiers_adv_reward = soldiers_advance_reward(board, opponent_side)
     soldiers_adv_reward_balance = \
-        SOLDIER_ADV_REWARD * \
-        (own_soldiers_adv_reward - opp_soldiers_adv_reward)
+        own_soldiers_adv_reward - opp_soldiers_adv_reward
 
     # 5. Other factors.
     pre_eval = \
@@ -1574,7 +1617,7 @@ def evaluate_static(board, depth):
 def endgame_prediction(board, depth):
     """
     Input:
-        board:      Board - The game position to evaluate.
+        board:      Board - A NON TERMINAL position to evaluate.
         depth:      int - Depth of node in the search tree.
 
     Output:
@@ -1583,12 +1626,16 @@ def endgame_prediction(board, depth):
 
     Endgames covered:
     - Prince vs Prince
-
+    - Two Princes and Soldiers
+    - Prince and Knight(s) [and Soldiers] vs Prince [and Soldiers]
     """
 
-    # Check pieces:
-    if board.piece_count[:, bd.KNIGHT].sum() == 0:
-        # Find player's top piece.
+    # Check the number of Knights on the board:
+    w_knights = board.piece_count[bd.WHITE, bd.KNIGHT]
+    b_knights = board.piece_count[bd.BLACK, bd.KNIGHT]
+
+    if w_knights + b_knights == 0:
+        # No Knights; check cases.
         if board.piece_count[:, bd.SOLDIER].sum() == 0:
             # P vs P (no Soldiers)
             assert board.piece_count[:, bd.PRINCE].sum() == 2, \
@@ -1597,8 +1644,11 @@ def endgame_prediction(board, depth):
                 )
             return eval_princes_end(board, depth)
         else:
-            # P+S vs P+S
-            return princes_and_soldiers_end(board, depth)
+            # P+S vs P+S.
+            return eval_princes_and_soldiers_end(board, depth)
+    elif w_knights * b_knights == 0:
+        # Player with Knight(s) vs Player without Knight(s).
+        return eval_player_without_knights(board, depth)
     else:
         # Position with some Knight; not predictable.
         return None
@@ -1606,8 +1656,8 @@ def endgame_prediction(board, depth):
 
 def eval_princes_end(board, depth):
     """
-    Evaluate a position where only two Princes are left on the board.
-    Result based on:
+    Evaluate a NON TERMINAL position where only two Princes are left
+    on the board. Result based on:
     - Prince's distance to crown
     - and turn.
 
@@ -1655,24 +1705,28 @@ def eval_princes_end(board, depth):
     return result + depth_penalty
 
 
-def princes_and_soldiers_end(board, depth):
+def eval_princes_and_soldiers_end(board, depth):
     """
-    Evaluate a position with:
+    Evaluate a NON TERMINAL position with:
     - no Knights
     - some Soldier (at least 1)
     - some Prince (1 or 2)
     Result based on:
     - Pieces' distance to crown
-    - and turn.
+    - player's turns
+    - possible stalemates
 
     1. If the Prince to play is closer to crown than any other piece;
         the player wins.
 
-    2. If the enemy's Prince is at least TWO steps closer to crown than any other piece;
-        the opponet wins.
+    2. If the enemy's Prince is at least TWO steps closer to crown than any
+        other piece; the opponet wins (except if player is stalemated).
+
+    3. Otherwise, None is returned.
 
     The result is penalized with:
         (depth + depth_to_final) * END_DEPTH_PENALTY
+        2 moves if enemy Prince is currently stalemated
     """
     player_side = board.turn
     opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
@@ -1700,8 +1754,17 @@ def princes_and_soldiers_end(board, depth):
             min_dist_to_crown_of_side[opponent_side] > min_dist_to_crown
         ):
             # The Prince to play is on top: it will win.
+            # Special case: check for opponent's stalemate.
+            if board.piece_count[opponent_side, bd.SOLDIER] > 0 or \
+               board.piece_count[opponent_side, bd.PRINCE] == 0:
+                opponent_stalemate = False
+            else:
+                opponent_stalemate = not prince_has_moves(board, opponent_side)
+            # Predict result:
             result = PLAYER_WINS
-            depth_to_final = 2 * min_dist_to_crown - 1
+            depth_to_final = \
+                2 * min_dist_to_crown - 1 + \
+                2 * opponent_stalemate  # Guess two plies to avoid stalemate.
             depth_penalty = - (depth + depth_to_final) * END_DEPTH_PENALTY
             return result + depth_penalty
     except AttributeError:
@@ -1716,17 +1779,91 @@ def princes_and_soldiers_end(board, depth):
             min_dist_to_crown_of_side[player_side] > min_dist_to_crown + 1
         ):
             # The enemy's Prince is on top and can't be reached: it will win.
-            result = OPPONENT_WINS
-            depth_to_final = 2 * min_dist_to_crown
-            depth_penalty = + (depth + depth_to_final) * END_DEPTH_PENALTY
-            return result + depth_penalty
+            # Special case: check player's stalemate.
+            if board.piece_count[player_side, bd.SOLDIER] > 0 or \
+               board.piece_coung[player_side, bd.PRINCE] == 0:
+                player_stalemate = False
+            else:
+                player_stalemate = not prince_has_moves(board, player_side)
+            # Predict result:
+            if not player_stalemate:
+                # Opponent WINS.
+                result = OPPONENT_WINS
+                depth_to_final = 2 * min_dist_to_crown
+                depth_penalty = + (depth + depth_to_final) * END_DEPTH_PENALTY
+                return result + depth_penalty
+            else:
+                # STALEMATE: player's Prince can't move (and no Soldiers/Knights).
+                return DRAW_STALEMATE
     except AttributeError:
         # This side has no Prince; try next case.
         pass
 
     # No more known cases.
-
     return None
+
+
+def eval_player_without_knights(board, depth):
+    """
+    Evaluate a NON TERMINAL position in which:
+    - one player has NO Knights
+    - the other player some Knight
+
+    1.  If the Prince to play has the Knight(s) and
+        its Prince is closer to crown than any other piece;
+        the player wins.
+
+    2.  Otherwise, None is returned.
+
+    The result is penalized with:
+        (depth + depth_to_final) * END_DEPTH_PENALTY
+        2 moves if enemy Prince is currently stalemated
+    """
+    player_side = board.turn
+    opponent_side = bd.BLACK if player_side == bd.WHITE else bd.WHITE
+    player_prince = board.prince[player_side]
+
+    # 1. Check if the player has the Knight(s) and its Prince is on top.
+    if player_prince is not None and \
+       board.piece_count[opponent_side, bd.KNIGHT] == 0:
+        # Player's Prince + Knight vs enemy without Knights; it's predictable.
+        player_prince_dist_to_crown = bd.distance_to_crown[player_prince.coord]
+        # Find player's shortest regular distance to crown.
+        # Note: used for Knights too to detect "free way up".
+        player_min_dist_to_crown = min(
+            [bd.distance_to_crown[p.coord]
+                for p in board.pieces[player_side]]
+        )
+        # Find enemy's distances to crown.
+        # Note: use type-relative distance to detect Soldiers' double moves.
+        enemy_min_dist_to_crown = min(
+            [bd.piece_color_distance_to_crown[p.type][p.color][p.coord]
+                for p in board.pieces[opponent_side]]
+        )
+
+        # Check if the player's Prince is the nearest piece.
+        if (
+            player_prince_dist_to_crown <= player_min_dist_to_crown and
+                player_prince_dist_to_crown < enemy_min_dist_to_crown
+        ):
+            # The player wins in a predictable number of moves.
+            # Special case: check for opponent's stalemate.
+            if board.piece_count[opponent_side, bd.SOLDIER] > 0 or \
+               board.piece_count[opponent_side, bd.PRINCE] == 0:
+                opponent_stalemate = False
+            else:
+                opponent_stalemate = not prince_has_moves(board, opponent_side)
+            # Predict result:
+            result = PLAYER_WINS
+            depth_to_final = \
+                2 * player_prince_dist_to_crown - 1 + \
+                2 * opponent_stalemate  # Guess two plies to avoid stalemate.
+            depth_penalty = - (depth + depth_to_final) * END_DEPTH_PENALTY
+            return result + depth_penalty
+
+    else:
+        # Enemy with Knights or player without Prince; can't predict.
+        return None
 
 
 def evaluate_terminal(board, depth):
@@ -2059,12 +2196,14 @@ def soldiers_lag(board, color):
         return soldiers_lag
 
 
-def soldiers_advance(board, color):
+def soldiers_advance_reward(board, color):
     """
     Evaluate reward from Soldiers approaching the crown,
     considering Prince's safety:
     a) player has a Prince and Knights balance is unsafe = no reward.
-    b) otherwise, reward all Soldiers by their proximity to the crown.
+    b) otherwise, reward all Soldiers by:
+        b.1) their proximity to the crown.
+        b.2) their control of top central coords.
     """
     # Check player's Prince safety.
     ks = board.piece_count[:, bd.KNIGHT]
@@ -2073,18 +2212,15 @@ def soldiers_advance(board, color):
         # Player has a Prince and the Knights balance is unsafe.
         return 0.0
     else:
-        # Sum Soldiers' progress towards crown (upto a top value).
-        soldiers_reward = sum(
+        # Sum Soldiers' rewards in their progress towards crown.
+        advance_reward = sum(
             [
-                min(
-                    MAX_SOLDIER_ADV_REWARD,
-                    12 - bd.distance_to_crown[p.coord]
-                )
+                soldier_advance_reward[p.coord]
                 for p in board.pieces[color]
                 if p.type == bd.SOLDIER
             ]
         )
-        return soldiers_reward
+        return advance_reward
 
 
 def soldiers_dispersion(board, color, coord):
@@ -2437,6 +2573,37 @@ def is_legal_move(board, move):
                 utils.coord_2_algebraic[coord1],
                 txt_coord2
             )
+
+
+def prince_has_moves(board, side_to_check):
+    """
+    Given a position where player 'side' has a Prince,
+    check whether the Prince has some legal move.
+    """
+    # Initialization.
+    opponent_side = bd.BLACK if side_to_check == bd.WHITE else bd.WHITE
+    prince = board.prince[side_to_check]
+    assert(prince is not None), "Error: no Prince found in board passed."
+    board_side = board.turn
+    board.set_turn(side_to_check)
+
+    # Check each of the Prince's possible moves.
+    coord1 = prince.coord
+    for coord2 in bd.simple_moves[coord1]:
+        # Make the move from Prince's coord to coord2.
+        captured_piece, leaving_piece, old_hash = \
+            board.make_move(coord1, coord2)
+        # Check if the opponent controls the destination coord.
+        pseudo_move_legal = not position_attacked(board, coord2, opponent_side)
+        # And now, 'unmake' the move:
+        board.unmake_move(
+            coord1, coord2, captured_piece, leaving_piece, old_hash)
+        if pseudo_move_legal:
+            # The move was legal, no more search required.
+            board.set_turn(board_side)
+            return True
+    board.set_turn(board_side)
+    return False
 
 
 def correct_eval_from_to_depth(evaluation, from_depth, to_depth):

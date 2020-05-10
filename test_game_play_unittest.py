@@ -51,14 +51,22 @@ class Test_game_play(unittest.TestCase):
             "tests/output_position_attacked.txt"))
 
     def test_generate_pseudomoves(self):
-        file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
-        file_list.sort()
+        file_list = (
+            "position_01.cor",
+            "position_02.cor",
+            "position_03.cor",
+            "position_04.cor",
+            "position_05.cor",
+            "position_06.cor",
+            "position_07.cor",
+            "position_08.cor",
+            "position_09.cor",
+            "position_10.cor",
+        )
 
         with open("output.txt", "w") as f:
-            for full_file_name in file_list:
+            for file_name in file_list:
                 # Loop over all board states stored.
-                # Remove rel. path.
-                file_name = full_file_name[len(bd.GAMES_PATH):]
                 board = bd.Board(file_name)  # Actual board to put pieces on.
                 print("Loading game position {} ...".format(file_name), file=f)
                 display_board = bd.Board("empty.cor")  # Tracing board.
@@ -550,42 +558,58 @@ class Test_game_play(unittest.TestCase):
             # Check .pieces
 
     def test_evaluate_terminal(self):
-        file_list = glob.glob(bd.GAMES_PATH + "position*.cor")
-        file_list.sort()
+        test_cases = (
+            ("position_01.cor", (None, None, False, 0), (None, None, False, 0)),
+            ("position_02.cor", (None, None, False, 0), (None, None, False, 0)),
+            ("position_03.cor", (None, None, False, 0), (None, None, False, 0)),
+            ("position_04.cor", (None, None, False, 0), (None, None, False, 0)),
+            ("position_05.cor", (None, None, False, 0), (None, None, False, 0)),
+            ("position_06.cor", (None, 10000.0, True, 1), (None, -10000.0, True, 1)),
+            ("position_07.cor", (None, 10000.0, True, 2), (None, -10000.0, True, 2)),
+            ("position_08.cor", (None, 0, True, 3), (None, 0, True, 3)),
+            ("position_09.cor", (None, None, False, 0), (None, None, False, 0)),
+            ("position_10.cor", (None, None, False, 0), (None, None, False, 0)),
+            ("position_11.cor", (None, None, False, 0), (None, None, False, 0))
+        )
 
-        with open("output.txt", "w") as f:
-            for full_file_name in file_list:
-                # Remove rel. path.
-                file_name = full_file_name[len(bd.GAMES_PATH):]
-                board = bd.Board(file_name)  # The board to put pieces on.
+        for test in test_cases:
+            file_name, exp_1, exp_2 = test
 
-                print("Evaluation of position {}:".format(file_name), file=f)
-                board.print_char(out_file=f)
-
-                # Evaluate from original moving side.
-                best_move, eval, game_end, game_status = gp.evaluate_terminal(
-                    board, depth=0)
-                # Display results.
-                utils.display_results(
-                    best_move, eval, game_end, game_status, f
+            # Test 1
+            board = bd.Board(file_name)
+            # Evaluate from original moving side.
+            exp_best_move, exp_eval, exp_game_end, exp_game_status = exp_1
+            best_move, eval, game_end, game_status = gp.evaluate_terminal(
+                board, depth=0)
+            # Check results.
+            self.assertEqual(
+                (best_move, eval, game_end, game_status),
+                (exp_best_move, exp_eval, exp_game_end, exp_game_status),
+                "Error in position {}, {} to move: "
+                "expected {}, received {}".format(
+                    file_name, board.turn,
+                    (best_move, eval, game_end, game_status),
+                    (exp_best_move, exp_eval, exp_game_end, exp_game_status)
                 )
+            )
 
-                # Evaluate from the other side now.
-                board.flip_turn()
-                print(
-                    "\n{} to move:".format(bd.color_name[board.turn]), file=f
+            # Test 2
+            board.flip_turn()
+            # Evaluate from original moving side.
+            exp_best_move, exp_eval, exp_game_end, exp_game_status = exp_2
+            best_move, eval, game_end, game_status = gp.evaluate_terminal(
+                board, depth=0)
+            # Check results.
+            self.assertEqual(
+                (best_move, eval, game_end, game_status),
+                (exp_best_move, exp_eval, exp_game_end, exp_game_status),
+                "Error in position {}, {} to move: "
+                "expected {}, received {}".format(
+                    file_name, board.turn,
+                    (best_move, eval, game_end, game_status),
+                    (exp_best_move, exp_eval, exp_game_end, exp_game_status)
                 )
-
-                best_move, eval, game_end, game_status = gp.evaluate_terminal(
-                    board, depth=0)
-
-                # Display results.
-                utils.display_results(
-                    best_move, eval, game_end, game_status, f)
-
-        self.assertTrue(filecmp.cmp(
-            "output.txt",
-            "tests/output_test_evaluate.txt"))
+            )
 
     def test_correct_eval_from_to_depth(self):
         # Test cases are:
@@ -665,32 +689,32 @@ class Test_game_play(unittest.TestCase):
                 )
             )
 
-    def test_soldiers_advance(self):
+    def test_soldiers_advance_reward(self):
         test_cases = (
-            ("test_quiesce_01.cor", 2, 0),
-            ("test_quiesce_02.cor", 2, 0),
-            ("test_quiesce_03.cor", 2, 0),
-            ("test_quiesce_05.cor", 2, 0),
-            ("test_quiesce_06.cor", 2, 0),
-            ("test_quiesce_07.cor", 2, 0),
-            ("test_quiesce_08.cor", 2, 2),
-            ("test_minimax_01.cor", 2, 0),
-            ("test_minimax_02.cor", 2, 0),
-            ("test_minimax_03.cor", 2, 0),
+            ("test_quiesce_01.cor", 0.1, 0),
+            ("test_quiesce_02.cor", 0.1, 0),
+            ("test_quiesce_03.cor", 0.1, 0),
+            ("test_quiesce_05.cor", 0.1, 0),
+            ("test_quiesce_06.cor", 0.1, 0),
+            ("test_quiesce_07.cor", 0.1, 0),
+            ("test_quiesce_08.cor", 0.1, 0.1),
+            ("test_minimax_01.cor", 0.1, 0),
+            ("test_minimax_02.cor", 0.1, 0),
+            ("test_minimax_03.cor", 0.1, 0),
             ("test_minimax_05.cor", 0, 0),
-            ("test_minimax_06.cor", 6, 0),
-            ("test_minimax_07.cor", 0, 8),
-            ("test_minimax_08.cor", 5, 0),
-            ("test_minimax_09.cor", 0, 11),
-            ("test_minimax_10.cor", 2, 0),
+            ("test_minimax_06.cor", 0.4, 0),
+            ("test_minimax_07.cor", 0, 0.4),
+            ("test_minimax_08.cor", 0.3, 0),
+            ("test_minimax_09.cor", 0, 0.55),
+            ("test_minimax_10.cor", 0.1, 0),
             ("test_minimax_11.cor", 0, 0),
             ("test_minimax_13.cor", 0, 0),
-            ("test_make_pseudomove_01.cor", 0, 0),
-            ("test_make_pseudomove_04.cor", 0, 0),
-            ("test_make_pseudomove_07.cor", 2, 0),
-            ("test_make_pseudomove_12.cor", 0, 0),
-            ("endgame_00.cor", 0, 0),
-            ("endgame_01.cor", 15, 9),
+            ("test_make_pseudomove_01.cor", 0.2, 0.30000000000000004),
+            ("test_make_pseudomove_04.cor", 0.1, 0),
+            ("test_make_pseudomove_07.cor", 0.1, 0),
+            ("test_make_pseudomove_12.cor", 0.2, 0.1),
+            ("endgame_00.cor", 0.30000000000000004, 0.7),
+            ("endgame_01.cor", 0.7999999999999999, 0.44999999999999996),
             ("endgame_02.cor", 0, 0)
         )
 
@@ -698,9 +722,9 @@ class Test_game_play(unittest.TestCase):
             file_name, exp_w, exp_b = test
             board = bd.Board(file_name)
             board.set_turn(bd.WHITE)
-            res_w = gp.soldiers_advance(board, bd.WHITE)
+            res_w = gp.soldiers_advance_reward(board, bd.WHITE)
             board.set_turn(bd.BLACK)
-            res_b = gp.soldiers_advance(board, bd.BLACK)
+            res_b = gp.soldiers_advance_reward(board, bd.BLACK)
 
             self.assertEqual(
                 (res_w, res_b), (exp_w, exp_b),
@@ -783,108 +807,32 @@ class Test_game_play(unittest.TestCase):
         # - Search parameters.
         # - Move / list of moves, result, end, status.
         test_cases = (
-            (
-                "endgame_09.cor",  # 
-                TEST_SEARCH_PARAMS_4,
-                None, 1.33, False, 0
-            ),
-            (
-                "test_quiesce_01.cor",
-                TEST_SEARCH_PARAMS_4,
-                None, -11.788333333333332, False, 0
-            ),
-            (
-                "test_quiesce_02.cor",
-                TEST_SEARCH_PARAMS_4,
-                None, 0, True, 4
-            ),
-            (
-                "test_quiesce_03.cor",
-                TEST_SEARCH_PARAMS_4,
-                None,  -12.68833333333333, False, 0
-            ),
-            (
-                "test_quiesce_05.cor",
-                TEST_SEARCH_PARAMS_4,
-                [33, None], -113.93666666666667, False, 0
-            ),
-            (
-                "test_quiesce_06.cor",
-                TEST_SEARCH_PARAMS_4,
-                [35, 34], -12.08333333333333, False, 0
-            ),
-            (
-                "test_quiesce_07.cor",
-                TEST_SEARCH_PARAMS_4,
-                [33, 34], -9991.0, False, 0
-            ),
-            (
-                "test_quiesce_08.cor",
-                TEST_SEARCH_PARAMS_4,
-                None, -112.63833333333334, False, 0
-            ),
+            ("endgame_09.cor", None, 1.43, False, 0),
+            ("test_quiesce_01.cor", None, -13.246666666666666, False, 0),
+            ("test_quiesce_02.cor", None, 0, True, 4),
+            ("test_quiesce_03.cor", None,  -14.146666666666665, False, 0),
+            ("test_quiesce_05.cor", [33, None], -115.60333333333332, False, 0),
+            ("test_quiesce_06.cor", [35, 34], -13.541666666666666, False, 0),
+            ("test_quiesce_07.cor", [33, 34], -9991.0, False, 0),
+            ("test_quiesce_08.cor", None, -114.09666666666668, False, 0),
             #  Taken from negamax() unit tests.
-            (
-                "test_minimax_01.cor",  # Position to play.
-                TEST_SEARCH_PARAMS_4,   # Search parameters.
-                None, 9996.0, True, 1    # Move, result, end, status.
-            ),
-            (
-                "test_minimax_02.cor",
-                TEST_SEARCH_PARAMS_4,
-                None, -9996.0, True, 2
-            ),
-            (
-                "test_minimax_03.cor",
-                TEST_SEARCH_PARAMS_4,
-                None, 0, True, 4
-            ),
-            (
-                "test_minimax_04.cor",
-                TEST_SEARCH_PARAMS_4,
-                None, 0, True, 3
-            ),
-            (
-                "test_minimax_05.cor",
-                TEST_SEARCH_PARAMS_4,
-                None, -9996, True, 2
-            ),
-            (
-                "test_minimax_06.cor",
-                TEST_SEARCH_PARAMS_4,
-                [46, 48], 9995.0, False, 0
-            ),
-            (
-                "test_minimax_07.cor",
-                TEST_SEARCH_PARAMS_4,
-                [19, 40], 9995.0, False, 0
-            ),
-            (
-                "test_minimax_08.cor",
-                TEST_SEARCH_PARAMS_4,
-                [[32, 46], [32, 48]], 9994.0, False, 0
-            ),
-            (
-                "test_minimax_09.cor",
-                TEST_SEARCH_PARAMS_4,
-                [41, 45], 1.7416666666666667, False, 0  # Old: 1.8
-            ),
-            (
-                "test_minimax_10.cor",
-                TEST_SEARCH_PARAMS_4,
-                None, -11.488333333333332, False, 0  # Old: 11.5
-            ),
-            (
-                "test_minimax_10b.cor",
-                TEST_SEARCH_PARAMS_4,
-                [28, 26], 9990.0, False, 0
-            )
+            ("test_minimax_01.cor", None, 9996.0, True, 1),
+            ("test_minimax_02.cor", None, -9996.0, True, 2),
+            ("test_minimax_03.cor", None, 0, True, 4),
+            ("test_minimax_04.cor", None, 0, True, 3),
+            ("test_minimax_05.cor", None, -9996, True, 2),
+            ("test_minimax_06.cor", None, 9995.0, False, 0),
+            ("test_minimax_07.cor", [19, 40], 9995.0, False, 0),
+            ("test_minimax_08.cor", [[32, 46], [32, 48]], 9994.0, False, 0),
+            ("test_minimax_09.cor", [41, 45], 0.908333333333333, False, 0),
+            ("test_minimax_10.cor", None, -12.946666666666665, False, 0),
+            ("test_minimax_10b.cor", None, 9987.0, False, 0)
         )
 
+        params = TEST_SEARCH_PARAMS_4
         with open("output.txt", "w") as f:
             for test in test_cases:
-                file_name, params, \
-                    exp_move, exp_result, exp_end, exp_status = test
+                file_name, exp_move, exp_result, exp_end, exp_status = test
                 board = bd.Board(file_name)  # The board to put pieces on.
                 # The game trace, indexing first board appropriately.
                 game_trace = gp.Gametrace(board)
@@ -950,69 +898,27 @@ class Test_game_play(unittest.TestCase):
 
         TEST_SEARCH_PARAMS_4 = gp.PLY4_SEARCH_PARAMS
         # Go through all test cases, each on one board.
+        # - Position to play
+        # - Move/list of moves, result, end, status
         test_cases = (
-            (
-                "test_minimax_01.cor",  # Position to play
-                TEST_SEARCH_PARAMS_4,  # Search parameters
-                None, 10000, True, 1  # Move/list of moves, result, end, status
-            ),
-            (
-                "test_minimax_02.cor",
-                TEST_SEARCH_PARAMS_4,
-                None, -10000, True, 2
-            ),
-            (
-                "test_minimax_03.cor",
-                TEST_SEARCH_PARAMS_4,
-                None, 0, True, 4
-            ),
-            (
-                "test_minimax_04.cor",
-                TEST_SEARCH_PARAMS_4,
-                None, 0, True, 3
-            ),
-            (
-                "test_minimax_05.cor",
-                TEST_SEARCH_PARAMS_4,
-                None, -10000, True, 2
-            ),
-            (
-                "test_minimax_06.cor",
-                TEST_SEARCH_PARAMS_4,
-                [46, 48], 9999.0, False, 0
-            ),
-            (
-                "test_minimax_07.cor",
-                TEST_SEARCH_PARAMS_4,
-                [19, 40], 9999.0, False, 0
-            ),
-            (
-                "test_minimax_08.cor",
-                TEST_SEARCH_PARAMS_4,
-                [[32, 46], [32, 48]], 9998.0, False, 0
-            ),
-            (
-                "test_minimax_09.cor",
-                TEST_SEARCH_PARAMS_4,
-                [41, 45], 1.9583333333333335, False, 0  # Old: 1.8
-            ),
-            (
-                "test_minimax_10.cor",
-                TEST_SEARCH_PARAMS_4,
-                [[33, 25], [26, 27]], -9991, False, 0
-            ),
-            (
-                "test_minimax_10b.cor",
-                TEST_SEARCH_PARAMS_4,
-                [28, 26], 9994, False, 0
-            )
+            ("test_minimax_01.cor", None, 10000, True, 1),
+            ("test_minimax_02.cor", None, -10000, True, 2),
+            ("test_minimax_03.cor", None, 0, True, 4),
+            ("test_minimax_04.cor", None, 0, True, 3),
+            ("test_minimax_05.cor", None, -10000, True, 2),
+            ("test_minimax_06.cor", [46, 48], 9999.0, False, 0),
+            ("test_minimax_07.cor", [19, 40], 9999.0, False, 0),
+            ("test_minimax_08.cor", [[32, 46], [32, 48]], 9998.0, False, 0),
+            ("test_minimax_09.cor", [41, 45], 1.541666666666667, False, 0),
+            ("test_minimax_10.cor", [[33, 25], [26, 27], [26, 16]], -9990, False, 0),
+            ("test_minimax_10b.cor", [28, 26], 9994, False, 0)
         )
 
+        params = TEST_SEARCH_PARAMS_4
         with open("output.txt", "w") as f:
             print("")  # To clean up the screen traces.
             for test in test_cases:
-                file_name, params, \
-                    exp_move, exp_result, exp_end, exp_status = test
+                file_name, exp_move, exp_result, exp_end, exp_status = test
                 board = bd.Board(file_name)  # The board to put pieces on.
                 game_trace = gp.Gametrace(board)  # The game trace.
                 transp_table = gp.Transposition_table() \
@@ -1044,7 +950,8 @@ class Test_game_play(unittest.TestCase):
                 if exp_move is not None and type(exp_move[0]) == list:
                     self.assertTrue(
                         best_move in exp_move,
-                        "Position: {}".format(file_name)
+                        "Position: {}. Expected: {}; received: {}".format(
+                            file_name, exp_move, best_move)
                     )
                 else:
                     self.assertEqual(
@@ -1095,7 +1002,7 @@ class Test_game_play(unittest.TestCase):
                 f"Error in position {file_name}"
             )
 
-    def test_princes_and_soldiers_end(self):
+    def test_eval_princes_and_soldiers_end(self):
         # Testcases:
         endgame_test_cases = (
             ("test_minimax_09.cor", 9993.0, None),
@@ -1123,9 +1030,9 @@ class Test_game_play(unittest.TestCase):
 
             # Run tests per case.
             board.turn = bd.WHITE
-            result_w = gp.princes_and_soldiers_end(board, test_depth)
+            result_w = gp.eval_princes_and_soldiers_end(board, test_depth)
             board.turn = bd.BLACK
-            result_b = gp.princes_and_soldiers_end(board, test_depth)
+            result_b = gp.eval_princes_and_soldiers_end(board, test_depth)
 
             # Check results.
             self.assertEqual(
@@ -1133,15 +1040,112 @@ class Test_game_play(unittest.TestCase):
                 f"Error in position {file_name}"
             )
 
+    def test_eval_player_without_knights(self):
+        """
+        Evaluate a given position in which:
+        - one player has no Knights
+        - the other player some Knight
+        """
+        # Test cases: position, expected resul (if two values,
+        # sides are flipped for a second test on the position).
+        test_cases = (
+            ("position_11.cor", 9989.0),
+            ("test_minimax_08.cor", None),
+            ("test_quiesce_01.cor", None),
+            ("test_quiesce_02.cor", None, 9985.0),  # Test both sides
+            ("test_quiesce_03.cor", None, 9987.0),  # Test both sides
+            ("test_quiesce_05.cor", None),
+            ("test_quiesce_06.cor", None),
+            ("test_quiesce_07.cor", None),
+            ("test_quiesce_08.cor", None, 9987.0),  # Test both sides
+            ("test_minimax_03.cor", None, 9985.0),  # Test both sides 
+            ("test_minimax_06.cor", 9995.0),
+            ("test_minimax_07.cor", None),
+            ("test_minimax_10.cor", None, 9987.0),
+            ("endgame_19.cor", None),
+            ("test_make_pseudomove_03.cor", None),
+            ("test_make_pseudomove_05.cor", None, None),
+            ("test_make_pseudomove_07.cor", None, None),
+            ("test_make_pseudomove_11.cor", None, None)
+        )
+        # Loop over test cases:
+        for test in test_cases:
+            file_name, exp_results = test[0], test[1:]
+            board = bd.Board(file_name)
+            player_side = board.turn
+            opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
+            test_depth = 4  # Arbitrary value for tests.
+
+            # Obtain and check results.
+            res_1 = gp.eval_player_without_knights(board, test_depth)
+            self.assertEqual(
+                res_1, exp_results[0],
+                f"Error in position {file_name} with {board.turn} to move."
+            )
+
+            # If it's a two sides test, run second test.
+            if len(exp_results) == 2:
+                board.turn = opponent_side
+                res_2 = gp.eval_player_without_knights(board, test_depth)
+                self.assertEqual(
+                    res_2, exp_results[1],
+                    f"Error in position {file_name} with {board.turn} to move."
+                )
+
+    def test_prince_has_moves(self):
+        # Test cases: position, expected result.
+        test_cases = (
+            ("position_11.cor", True, True),
+            ("endgame_19.cor", True, None),  # No blank Prince
+            ("endgame_20.cor", True, False),
+            ("test_quiesce_01.cor", True, False),
+            ("test_quiesce_02.cor", True, False),
+            ("test_quiesce_03.cor", True, True),
+            ("test_quiesce_05.cor", True, False),
+            ("test_quiesce_06.cor", True, False),
+            ("test_quiesce_07.cor", True, True),
+            ("test_quiesce_08.cor", True, None),  # No black Prince
+            ("test_minimax_03.cor", True, False),
+            ("test_minimax_06.cor", True, True),
+            ("test_minimax_07.cor", True, None),  # No blank Prince
+            ("test_minimax_08.cor", True, True),
+            ("test_minimax_10.cor", True, True),
+            ("test_make_pseudomove_03.cor", True, None),  # No blank Prince
+            ("test_make_pseudomove_05.cor", True, None),  # No blank Prince
+            ("test_make_pseudomove_07.cor", True, True),
+            ("test_make_pseudomove_11.cor", True, True)
+        )
+        # Loop over test cases:
+        for test in test_cases:
+            file_name, exp_res_w, exp_res_b = test
+            board = bd.Board(file_name)
+            # White test.
+            board.turn = bd.WHITE
+            if board.prince[board.turn] is not None:
+                # Prince present for player.
+                has_moves_w = gp.prince_has_moves(board, board.turn)
+                self.assertEqual(
+                    has_moves_w, exp_res_w,
+                    f"Error in position {file_name} with {board.turn} to move."
+                )
+            # Black test.
+            board.turn = bd.BLACK
+            if board.prince[board.turn] is not None:
+                # Prince present for player.
+                has_moves_b = gp.prince_has_moves(board, board.turn)
+                self.assertEqual(
+                    has_moves_b, exp_res_b,
+                    f"Error in position {file_name} with {board.turn} to move."
+                )
+
     def test_endgame_prediction(self):
         # Testcases:
         endgame_test_cases = (
+            ("endgame_01.cor", None, 9989.0),
             ("endgame_02.cor", -9988.0, 9989.0),
             ("endgame_03.cor", -9988.0, -9988.0),
             ("endgame_04.cor", 9987.0, 9989.0),
             ("endgame_05.cor", 9987.0, -9986.0),
-            ("test_minimax_09.cor", 9993.0, None),
-            ("endgame_01.cor", None, 9989.0),
             ("endgame_06.cor", None, 9989.0),
             ("endgame_07.cor", None, None),
             ("endgame_08.cor", None, None),
@@ -1154,7 +1158,27 @@ class Test_game_play(unittest.TestCase):
             ("endgame_15.cor", None, None),
             ("endgame_16.cor", -9982.0, 9983.0),
             ("endgame_17.cor", None, 9981.0),
-            ("endgame_18.cor", None, 9983.0)
+            ("endgame_18.cor", None, 9983.0),
+            ("endgame_19.cor", None, None),
+            ("endgame_20.cor", 9985.0, None),
+            ("position_11.cor", None, 9989.0),
+            ("test_quiesce_01.cor", 9987.0, None),
+            ("test_quiesce_02.cor", 9985.0, None),
+            ("test_quiesce_03.cor", 9987.0, None),
+            ("test_quiesce_05.cor", None, None),
+            ("test_quiesce_06.cor", None, None),
+            ("test_quiesce_07.cor", 9987.0, None),
+            ("test_quiesce_08.cor", 9987.0, None),  # No black Prince
+            ("test_minimax_03.cor", 9985.0, None),
+            ("test_minimax_06.cor", 9995.0, None),
+            ("test_minimax_07.cor", None, None),  # No black Prince
+            ("test_minimax_08.cor", None, None),
+            ("test_minimax_09.cor", 9993.0, None),
+            ("test_minimax_10.cor", 9987.0, None),
+            ("test_make_pseudomove_03.cor", None, None),  # No black Prince
+            ("test_make_pseudomove_05.cor", None, None),  # No black Prince
+            ("test_make_pseudomove_07.cor", None, None),
+            ("test_make_pseudomove_11.cor", None, None)
         )
 
         # Loop over test cases.
@@ -1164,9 +1188,9 @@ class Test_game_play(unittest.TestCase):
             test_depth = 4  # Arbitrary value for tests.
 
             # Run tests per case.
-            board.turn = bd.WHITE
+            board.set_turn(bd.WHITE)
             result_w = gp.endgame_prediction(board, test_depth)
-            board.turn = bd.BLACK
+            board.set_turn(bd.BLACK)
             result_b = gp.endgame_prediction(board, test_depth)
 
             # Check results.
