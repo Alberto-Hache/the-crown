@@ -2,8 +2,9 @@
 # Auxiliary tables for the board.
 ###############################################################################
 
-import re  # Regular expressions.
+# Standard library imports
 import numpy as np
+import re  # Regular expressions.
 
 ###############################################################################
 # Precalculated table(s):
@@ -1301,7 +1302,7 @@ def calculate_and_save_distance_from_to(n_rows=49):
     Calculate the distance matrix for each i, j coordinates
     and save it as a file.
     """
-    simple_moves = calculate_simple_moves()
+    simple_moves_tuple = simple_moves
 
     # Initialize square matrix of 49x49.
     distance = [[-1 for i in range(n_rows)] for j in range(n_rows)]
@@ -1318,7 +1319,7 @@ def calculate_and_save_distance_from_to(n_rows=49):
             for coord_to in range(n_rows):
                 if distance[coord_from][coord_to] != -1:
                     # Distance from i to j is known.
-                    one_step_coords = simple_moves[coord_to]
+                    one_step_coords = simple_moves_tuple[coord_to]
                     for new_coord in one_step_coords:
                         if distance[coord_from][new_coord] == -1:
                             # Distance from i to k is unknown:
@@ -1329,4 +1330,3 @@ def calculate_and_save_distance_from_to(n_rows=49):
     with open("distance_from_to.txt", "w") as d_file:
         for i in range(n_rows):
             print(distance[i], file=d_file)
-

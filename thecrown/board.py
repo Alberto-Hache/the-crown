@@ -1,14 +1,11 @@
+# Standard library imports
 import sys
 import types
 import numpy as np
 
-import utils
+# Local application imports
+import crownutils as ut
 import textcolors
-
-import game_play as game
-
-# Saved games location
-GAMES_PATH = "./games/"
 
 # Game dimensions
 N_ROWS = 7
@@ -46,25 +43,25 @@ initial_position = (
 )
 
 # Calculate auxiliary tables:
-coord1to3 = utils.calculate_coord1to3(N_ROWS)
-kingdoms = utils.calculate_kingdoms(N_POSITIONS)
+coord1to3 = ut.calculate_coord1to3(N_ROWS)
+kingdoms = ut.calculate_kingdoms(N_POSITIONS)
 
 # Load precalculated tables:
 
 # Moves:
-simple_moves = utils.simple_moves  # For the Prince of any side.
-soldier_moves = utils.soldier_moves  # 2 lists, one for each side.
-knight_moves = utils.knight_moves  # For the Knight of any side.
+simple_moves = ut.simple_moves  # For the Prince of any side.
+soldier_moves = ut.soldier_moves  # 2 lists, one for each side.
+knight_moves = ut.knight_moves  # For the Knight of any side.
 
 # Distances:
 # Distance between 2 coords.
-distance_from_to = utils.distance_from_to
+distance_from_to = ut.distance_from_to
 # Distance from a coord to the crown.
-distance_to_crown = utils.distance_to_crowm
+distance_to_crown = ut.distance_to_crowm
 # Distance for a Soldier from its coordinate to the crown.
 # E.g. soldier_distance_to_crowm[WHITE][0] -> 12 [starts from BLACK side]
 # E.g. soldier_distance_to_crowm[WHITE][12] -> 9 [starts from WHITE's kingdom]
-soldier_distance_to_crown = utils.soldier_distance_to_crowm
+soldier_distance_to_crown = ut.soldier_distance_to_crowm
 # A numpy version of this tuple(s):
 np_distance_to_crown = np.array(distance_to_crown)
 
@@ -90,8 +87,8 @@ piece_moves = (
 )
 
 # Flat moves lists:
-soldier_moves_flat = utils.soldier_moves_flat  # 2 lists, one for each side.
-knight_moves_flat = utils.knight_moves_flat  # For the Knight of any side.
+soldier_moves_flat = ut.soldier_moves_flat  # 2 lists, one for each side.
+knight_moves_flat = ut.knight_moves_flat  # For the Knight of any side.
 
 # Generate moves table for the 2 x 3 side-type combinations.
 # Use: piece_moves[piece.type][piece.color][piece.coord]
@@ -129,13 +126,15 @@ class Board:
 
         # Pieces info.
         self.pieces = [[], []]  # Lists of pieces from 0=WHITE, 1=BLACK.
-        self.piece_count = np.zeros((2, 3), dtype=int)  # 2 sides, 3 piece types.
+        # 2 sides, 3 piece types.
+        self.piece_count = np.zeros((2, 3), dtype=int)
         self.prince = [None, None]  # List with the Prince of each side.
 
         # References to the pieces from board coordinates.
         self.board1d = np.full((self.n_positions), None)
         # Board view by content (piece.code value or 0 for empty).
-        self.boardcode = np.zeros(self.n_positions + 1, dtype=int)  # Positions + turn.
+        # Positions + turn.
+        self.boardcode = np.zeros(self.n_positions + 1, dtype=int)
 
         # Set position and sides.
         self.load_board(file_name)
@@ -146,7 +145,6 @@ class Board:
             lines = initial_position
         else:
             try:
-                file_name = GAMES_PATH + file_name
                 board_file = open(file_name, 'r')
                 lines = board_file.read().splitlines()
                 board_file.close()
@@ -168,7 +166,7 @@ class Board:
             else:
                 try:
                     type, color = char_piece[line[0]]
-                    coord = utils.coord_2_algebraic.index(line[1:])
+                    coord = ut.coord_2_algebraic.index(line[1:])
                     self.include_new_piece(type, color, coord)
                 except ValueError:
                     print("Error found in file {} ; "
@@ -177,50 +175,6 @@ class Board:
                     sys.exit(1)
 
         self.hash = self.calculate_hash()
-
-        if not self.is_legal_board():
-            print("Error: {} is not a legal board for 'The Crown'.".format(
-                file_name
-            ))
-            sys.exit(1)
-
-    def is_legal_board(self):
-        """
-        Check if a board is legal (e.g. after loading it from a .cor file).
-        Conditions checked:
-        - No Princes can be taken.
-        - Number of Princes, Knights, Soldiers per side.
-        - No Soldiers in their Prince's starting position.
-        """
-
-        # Check basic conditions: Princes <= 1 by side; Prince can't be taken.
-        if not game.is_legal(self):
-            return False
-
-        # Check now the rest of pieces:
-        if (
-            self.piece_count[WHITE][KNIGHT] > 2 or
-            self.piece_count[WHITE][SOLDIER] > 3 or
-            self.piece_count[BLACK][KNIGHT] > 2 or
-            self.piece_count[BLACK][SOLDIER] > 3
-        ):
-            return False
-
-        # Finally, check no Soldier stands on its Princes's starting position.
-        p_at_white_promo = self.board1d[self.prince_position[WHITE]]
-        if p_at_white_promo is not None:
-            if p_at_white_promo.type == SOLDIER and \
-               p_at_white_promo.color == WHITE:
-                return False
-
-        p_at_black_promo = self.board1d[self.prince_position[BLACK]]
-        if p_at_black_promo is not None:
-            if p_at_black_promo.type == SOLDIER and \
-               p_at_black_promo.color == BLACK:
-                return False
-
-        # Otherwise, the board is legal.
-        return True
 
     def include_new_piece(self, type, color, coord, tracing=False):
         """
@@ -231,7 +185,7 @@ class Board:
         # Check that it's empty.
         assert self.board1d[coord] is None, \
             "Coord {} ({}) is not empty.".format(
-                coord, utils.coord_2_algebraic[coord]
+                coord, ut.coord_2_algebraic[coord]
                 )
         # Create the piece.
         code_to_use = 0 if tracing else piece_code[color][type]
@@ -263,7 +217,7 @@ class Board:
         # Check that it's empty.
         assert self.board1d[coord] is None, \
             "Coord {} ({}) is not empty.".format(
-                coord, utils.coord_2_algebraic[coord]
+                coord, ut.coord_2_algebraic[coord]
                 )
         # Extract piece's features:
         type = piece.type
@@ -339,7 +293,7 @@ class Board:
                     already occupied by {}." \
                     .format(
                         piece_char[piece1.type][piece1.color],
-                        coord2, utils.coord_2_algebraic[coord2],
+                        coord2, ut.coord_2_algebraic[coord2],
                         piece_char[piece2.type][piece2.color]
                     )
                 captured_piece = piece2
@@ -411,11 +365,11 @@ class Board:
         assert self.board1d[coord2] is not None \
             or leaving_piece.type == PRINCE, \
             "Error: no piece found in {}" \
-            .format(utils.coord_2_algebraic[coord2])
+            .format(ut.coord_2_algebraic[coord2])
         # Check the coord to return is empty.
         assert self.board1d[coord1] is None, \
             "Error: unexpected piece found in {}" \
-            .format(utils.coord_2_algebraic[coord1])
+            .format(ut.coord_2_algebraic[coord1])
 
         if coord2 is not None:
             # It was a normal move (no checkmate) from coord1 to coord2.
@@ -431,7 +385,8 @@ class Board:
                 piece1.coord = coord1
                 self.board1d[coord1] = piece1
                 self.boardcode[coord1] = piece_code[piece1.color][piece1.type]
-                # Now restablish state at 'coord2'.  # TODO: Take this out of if/else?
+                # Now restablish state at 'coord2'.
+                # TODO: Take this out of if/else?
                 if captured_piece is not None:
                     # It was a move with capture.
                     self.include_existing_piece(captured_piece, coord2)
@@ -560,4 +515,4 @@ if __name__ == '__main__':
         board = Board(sys.argv[1])
         board.print_char()
     else:
-        print("First argument must be the .cor file to display.")
+        print("The first argument must be the .cor file to display.")

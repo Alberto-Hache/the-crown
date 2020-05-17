@@ -1,3 +1,4 @@
+# Standard library imports
 import time
 import datetime
 import glob
@@ -5,29 +6,42 @@ import unittest
 import filecmp
 import cProfile
 import numpy as np
+from os.path import dirname, realpath
 
-import game_play as gp
-import board as bd
-import utils
+# Local application imports
+import thecrown.board as bd
+import thecrown.crownutils as ut
+import thecrown.gameplay as gp
+
+# Paths and files used
+OUTPUT_PATH = "tests/test_outputs/"
+OUTPUT_FILE = "output.txt"
+
+# Location of saved games.
+dir_path = dirname(dirname(realpath(__file__)))
+GAMES_PATH = dir_path + "/thecrown/games/"
 
 
-class Test_game_play(unittest.TestCase):
+class Test_gameplay(unittest.TestCase):
     def setUp(self):
         pass
 
     def test_position_attacked(self):
-        file_list = glob.glob(bd.GAMES_PATH + "position_01.cor")
+        file_list = glob.glob(GAMES_PATH + "position_01.cor")
         file_list.sort()
+        output_file = OUTPUT_PATH + OUTPUT_FILE
+        expected_output_file = \
+            OUTPUT_PATH + "output_position_attacked.txt"
 
-        with open("output.txt", "w") as f:
+        with open(output_file, "w") as f:
             for full_file_name in file_list:
                 # Loop over all board states stored.
                 # Remove rel. path.
-                file_name = full_file_name[len(bd.GAMES_PATH):]
+                file_name = full_file_name[len(GAMES_PATH):]
                 for position in range(bd.N_POSITIONS):
                     # Loop over each position on that board.
-                    board = bd.Board(file_name)  # Board to put pieces on.
-                    display_board = bd.Board("empty.cor")  # Tracing board.
+                    board = bd.Board(GAMES_PATH + file_name)  # Board to put pieces on.
+                    display_board = bd.Board(GAMES_PATH + "empty.cor")  # Tracing board.
                     if board.board1d[position] is None:
                         # Test function from that free position.
                         print("\nKnight attacks from position {}"
@@ -47,8 +61,8 @@ class Test_game_play(unittest.TestCase):
                         display_board.print_char(out_file=f)
 
         self.assertTrue(filecmp.cmp(
-            "output.txt",
-            "tests/output_position_attacked.txt"))
+            output_file, expected_output_file)
+            )
 
     def test_generate_pseudomoves(self):
         file_list = (
@@ -64,12 +78,16 @@ class Test_game_play(unittest.TestCase):
             "position_10.cor",
         )
 
-        with open("output.txt", "w") as f:
+        output_file = OUTPUT_PATH + OUTPUT_FILE
+        expected_output_file = \
+            OUTPUT_PATH + "output_generate_pseudomoves.txt"
+
+        with open(output_file, "w") as f:
             for file_name in file_list:
                 # Loop over all board states stored.
-                board = bd.Board(file_name)  # Actual board to put pieces on.
+                board = bd.Board(GAMES_PATH + file_name)  # Actual board to put pieces on.
                 print("Loading game position {} ...".format(file_name), file=f)
-                display_board = bd.Board("empty.cor")  # Tracing board.
+                display_board = bd.Board(GAMES_PATH + "empty.cor")  # Tracing board.
 
                 for turn in [bd.WHITE, bd.BLACK]:
                     # Try board for both sides.
@@ -111,8 +129,8 @@ class Test_game_play(unittest.TestCase):
                     )
 
         self.assertTrue(filecmp.cmp(
-            "output.txt",
-            "tests/output_generate_pseudomoves.txt"))
+            output_file, expected_output_file)
+            )
 
     def test_pre_evaluate_pseudomoves(self):
 
@@ -222,7 +240,7 @@ class Test_game_play(unittest.TestCase):
             file_name, expected_moves, killer_moves = test
 
             # Generate and sort moves.
-            board = bd.Board(file_name)
+            board = bd.Board(GAMES_PATH + file_name)
             moves, moves_count = gp.generate_pseudomoves(board)
             moves = gp.pre_evaluate_pseudomoves(
                 board, moves, killer_moves
@@ -236,7 +254,7 @@ class Test_game_play(unittest.TestCase):
             )
 
     def test_knights_mobility(self):
-        # file_list = glob.glob(bd.GAMES_PATH + "position1.cor")
+        # file_list = glob.glob(GAMES_PATH + "position1.cor")
         file_list = [
             "strategy_01.cor",
             "strategy_02.cor",
@@ -245,12 +263,16 @@ class Test_game_play(unittest.TestCase):
             ]
         file_list.sort()
 
-        with open("output.txt", "w") as f:
+        output_file = OUTPUT_PATH + OUTPUT_FILE
+        expected_output_file = \
+            OUTPUT_PATH + "output_knights_mobility.txt"
+
+        with open(output_file, "w") as f:
             # Loop over all board states stored.
             for file_name in file_list:
                 # Remove rel. path.
-                # file_name = full_file_name[len(bd.GAMES_PATH):]
-                board = bd.Board(file_name)  # Board to put pieces on.
+                # file_name = full_file_name[len(GAMES_PATH):]
+                board = bd.Board(GAMES_PATH + file_name)  # Board to put pieces on.
                 print("Testing of position {}:".format(file_name), file=f)
                 board.print_char(out_file=f)
 
@@ -263,19 +285,23 @@ class Test_game_play(unittest.TestCase):
                       format(moves_count_black), file=f)
 
         self.assertTrue(filecmp.cmp(
-            "output.txt", "tests/output_knights_mobility.txt"))
+            output_file, expected_output_file)
+            )
 
     def test_count_knight_pseudomoves(self):
-        # file_list = glob.glob(bd.GAMES_PATH + "position_01.cor")
+        # file_list = glob.glob(GAMES_PATH + "position_01.cor")
         file_list = ["position_01.cor", "empty.cor"]
         file_list.sort()
+        output_file = OUTPUT_PATH + OUTPUT_FILE
+        expected_output_file = \
+            OUTPUT_PATH + "output_count_knight_pseudomoves.txt"
 
-        with open("output.txt", "w") as f:
+        with open(output_file, "w") as f:
             # Loop over all board states stored.
             for file_name in file_list:
                 # Remove rel. path.
-                # file_name = full_file_name[len(bd.GAMES_PATH):]
-                board = bd.Board(file_name)  # Board to put pieces on.
+                # file_name = full_file_name[len(GAMES_PATH):]
+                board = bd.Board(GAMES_PATH + file_name)  # Board to put pieces on.
                 print("Testing of position {}:".format(file_name), file=f)
                 board.print_char(out_file=f)
 
@@ -286,13 +312,13 @@ class Test_game_play(unittest.TestCase):
                         moves_count = gp.count_knight_pseudomoves(
                             board, position, board.turn)
                         print("Knight mobility from position {}: {}"
-                              .format(utils.coord_2_algebraic[position],
+                              .format(ut.coord_2_algebraic[position],
                                       moves_count),
                               file=f)
 
         self.assertTrue(filecmp.cmp(
-            "output.txt",
-            "tests/output_count_knight_pseudomoves.txt"))
+            output_file, expected_output_file)
+            )
 
     def test_make_unmake_pseudomove(self):
         # Definition of test cases to run:
@@ -438,11 +464,11 @@ class Test_game_play(unittest.TestCase):
         for test_case in test_cases:
             file_name, test_move, res1, res2, res3, res4, res5, res6 = \
                 test_case
-            board = bd.Board(file_name)
-            board_orig = bd.Board(file_name)  # Reference for unmake tests.
+            board = bd.Board(GAMES_PATH + file_name)
+            board_orig = bd.Board(GAMES_PATH + file_name)  # Reference for unmake tests.
             # Parse move.
             coord1, coord2, is_correct = \
-                utils.algebraic_move_2_coords(test_move)
+                ut.algebraic_move_2_coords(test_move)
             assert is_correct, "Error parsing move {}".format(test_move)
 
             # Make the move and check results.
@@ -576,7 +602,7 @@ class Test_game_play(unittest.TestCase):
             file_name, exp_1, exp_2 = test
 
             # Test 1
-            board = bd.Board(file_name)
+            board = bd.Board(GAMES_PATH + file_name)
             # Evaluate from original moving side.
             exp_best_move, exp_eval, exp_game_end, exp_game_status = exp_1
             best_move, eval, game_end, game_status = gp.evaluate_terminal(
@@ -676,7 +702,7 @@ class Test_game_play(unittest.TestCase):
 
         for test in test_cases:
             file_name, exp_w, exp_b = test
-            board = bd.Board(file_name)
+            board = bd.Board(GAMES_PATH + file_name)
             board.set_turn(bd.WHITE)
             res_w = gp.soldiers_lag(board, bd.WHITE)
             board.set_turn(bd.BLACK)
@@ -720,7 +746,7 @@ class Test_game_play(unittest.TestCase):
 
         for test in test_cases:
             file_name, exp_w, exp_b = test
-            board = bd.Board(file_name)
+            board = bd.Board(GAMES_PATH + file_name)
             board.set_turn(bd.WHITE)
             res_w = gp.soldiers_advance_reward(board, bd.WHITE)
             board.set_turn(bd.BLACK)
@@ -759,7 +785,7 @@ class Test_game_play(unittest.TestCase):
 
         for test in test_cases:
             file_name, exp_moves = test
-            board = bd.Board(file_name)
+            board = bd.Board(GAMES_PATH + file_name)
             moves, _ = gp.generate_pseudomoves(board)
             dynamic_moves = []
             non_dynamic_moves = []
@@ -833,7 +859,7 @@ class Test_game_play(unittest.TestCase):
         with open("output.txt", "w") as f:
             for test in test_cases:
                 file_name, exp_move, exp_result, exp_end, exp_status = test
-                board = bd.Board(file_name)  # The board to put pieces on.
+                board = bd.Board(GAMES_PATH + file_name)  # The board to put pieces on.
                 # The game trace, indexing first board appropriately.
                 game_trace = gp.Gametrace(board)
                 game_trace.current_board_ply = params["max_depth"] - 1
@@ -854,7 +880,7 @@ class Test_game_play(unittest.TestCase):
                     )
 
                 # Display results.
-                utils.display_results(
+                ut.display_results(
                     best_move, result, game_end, game_status, f
                 )
 
@@ -919,7 +945,7 @@ class Test_game_play(unittest.TestCase):
             print("")  # To clean up the screen traces.
             for test in test_cases:
                 file_name, exp_move, exp_result, exp_end, exp_status = test
-                board = bd.Board(file_name)  # The board to put pieces on.
+                board = bd.Board(GAMES_PATH + file_name)  # The board to put pieces on.
                 game_trace = gp.Gametrace(board)  # The game trace.
                 transp_table = gp.Transposition_table() \
                     if params["transposition_table"] else None
@@ -942,7 +968,7 @@ class Test_game_play(unittest.TestCase):
                 )
 
                 # Display results.
-                utils.display_results(
+                ut.display_results(
                     best_move, result, game_end, game_status, f
                 )
 
@@ -988,7 +1014,7 @@ class Test_game_play(unittest.TestCase):
         # Loop over cases.
         for test_case in p_vs_p_test_cases:
             file_name, test_depth, exp_result_w, exp_result_b = test_case
-            board = bd.Board(file_name)
+            board = bd.Board(GAMES_PATH + file_name)
 
             # Run 2 tests per case.
             board.turn = bd.WHITE
@@ -1025,7 +1051,7 @@ class Test_game_play(unittest.TestCase):
         # Loop over test cases.
         for test_case in endgame_test_cases:
             file_name, exp_result_w, exp_result_b = test_case
-            board = bd.Board(file_name)
+            board = bd.Board(GAMES_PATH + file_name)
             test_depth = 4  # Arbitrary value for tests.
 
             # Run tests per case.
@@ -1058,7 +1084,7 @@ class Test_game_play(unittest.TestCase):
             ("test_quiesce_06.cor", None),
             ("test_quiesce_07.cor", None),
             ("test_quiesce_08.cor", None, 9987.0),  # Test both sides
-            ("test_minimax_03.cor", None, 9985.0),  # Test both sides 
+            ("test_minimax_03.cor", None, 9985.0),  # Test both sides
             ("test_minimax_06.cor", 9995.0),
             ("test_minimax_07.cor", None),
             ("test_minimax_10.cor", None, 9987.0),
@@ -1071,7 +1097,7 @@ class Test_game_play(unittest.TestCase):
         # Loop over test cases:
         for test in test_cases:
             file_name, exp_results = test[0], test[1:]
-            board = bd.Board(file_name)
+            board = bd.Board(GAMES_PATH + file_name)
             player_side = board.turn
             opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
             test_depth = 4  # Arbitrary value for tests.
@@ -1118,7 +1144,7 @@ class Test_game_play(unittest.TestCase):
         # Loop over test cases:
         for test in test_cases:
             file_name, exp_res_w, exp_res_b = test
-            board = bd.Board(file_name)
+            board = bd.Board(GAMES_PATH + file_name)
             # White test.
             board.turn = bd.WHITE
             if board.prince[board.turn] is not None:
@@ -1184,7 +1210,7 @@ class Test_game_play(unittest.TestCase):
         # Loop over test cases.
         for test_case in endgame_test_cases:
             file_name, exp_result_w, exp_result_b = test_case
-            board = bd.Board(file_name)
+            board = bd.Board(GAMES_PATH + file_name)
             test_depth = 4  # Arbitrary value for tests.
 
             # Run tests per case.

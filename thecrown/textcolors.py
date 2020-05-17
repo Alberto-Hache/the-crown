@@ -1,7 +1,7 @@
 ###############################################################
 # IMPORT
 
-# libraries
+# Standard library imports
 import sys
 
 # ANSI escape codes

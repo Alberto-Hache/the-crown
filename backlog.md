@@ -1,5 +1,39 @@
 # Backlog
 
+## Project structure
+
+### High
+
+- Redistribute all files in module folders. DONE
+- Run all tests from base directory.
+- Add LICENSE file: GNU General Public License v3.0
+- Add basic README.md
+  - Basic description of the project.
+  - Download and install instructions.
+- Makefile:
+  - run
+  - test
+  - profile
+  - clean
+
+  See: https://krzysztofzuraw.com/blog/2016/makefiles-in-python-projects.html
+
+
+### Medium
+
+- Add a good README.md
+  - Game rules
+  - Playing "The Crown"
+  - Testing
+
+- Pylint cleanup:
+  - crownutils.py:
+    Get rid of tuple 'distance_from_to':
+      import pickle
+      distance_from_to = (...)
+      pickle.dump(distance_from_to, open('tuple.dump', 'wb'))
+      recovered_tuple = pickle.load(open('tuple.dump', 'rb'))
+
 ## Bugs
 
 ### A
@@ -59,11 +93,10 @@
 
 ### (v1)
 
-- Pre-evaluation of moves (extend make pseudo-move()?) for move sorting?
-  - Static exchange evaluation (plyx2) - DONE
-  - Adapt to game status (middle game | end game)?
+...
 
 ### (v2)
+
 - Add principal variation (without iterative deepening?).
 - Try "soft-fail" alpha beta pruning?
   - In search.
@@ -73,7 +106,7 @@
 
 ## Game-play
 
-### (v1)
+### (v2)
 - Define several playing styles:
   - Give Knight mobility a higher value.
   - Impatient Prince? (premature bonus for going up).

@@ -1,10 +1,16 @@
+# Standard library imports
 import glob
 import unittest
 import filecmp
 import numpy as np
 
-import board as bd
-import utils
+# Local application imports
+import thecrown.board as bd
+import thecrown.crownutils as ut
+
+# Paths and files used
+OUTPUT_PATH = "tests/test_outputs/"
+OUTPUT_FILE = "output.txt"
 
 
 class Test_utils(unittest.TestCase):
@@ -31,7 +37,7 @@ class Test_utils(unittest.TestCase):
         for i in range(expected_coord1to3.shape[0]):
             expected_coord1to3[i] = values[i]
         # Now test function vs. expected.
-        coord1to3 = utils.calculate_coord1to3(3)
+        coord1to3 = ut.calculate_coord1to3(3)
         np.testing.assert_array_equal(
             coord1to3, expected_coord1to3, err_msg='Results differ!')
 
@@ -47,13 +53,13 @@ class Test_utils(unittest.TestCase):
             ["b11++", 47, None]
         ]
         incorrect_test_cases = [
-            "ab12", "ab1a2", "c1", "d1", "c1 d1", "b12++", "++", "a1+", \
+            "ab12", "ab1a2", "c1", "d1", "c1 d1", "b12++", "++", "a1+",
             "a1+++", "a1a34"
         ]
 
         # Run test cases for correct moves.
         for case in correct_test_cases:
-            coord1, coord2, is_correct = utils.algebraic_move_2_coords(case[0])
+            coord1, coord2, is_correct = ut.algebraic_move_2_coords(case[0])
             self.assertEqual(case[1], coord1,
                              "Error found while testing correct move: {}"
                              .format(case[0]))
@@ -66,15 +72,19 @@ class Test_utils(unittest.TestCase):
 
         # Run test cases for INCORRECT moves.
         for case in incorrect_test_cases:
-            _, _, is_correct = utils.algebraic_move_2_coords(case)
+            _, _, is_correct = ut.algebraic_move_2_coords(case)
             self.assertFalse(is_correct,
                              "Error found while testing incorrect move: {}"
                              .format(case))
 
     def test_calculate_simple_moves(self):
-        simple_moves = utils.simple_moves
+        simple_moves = ut.simple_moves
         board = bd.Board()
-        with open("output.txt", "w") as f:
+        output_file = OUTPUT_PATH + OUTPUT_FILE
+        expected_output_file = \
+            OUTPUT_PATH + "output_calculate_simple_moves.txt"
+
+        with open(output_file, "w") as f:
             for position in range(bd.N_POSITIONS):
                 print("\nPrince moves from position: {}"
                       .format(position), file=f)
@@ -89,13 +99,17 @@ class Test_utils(unittest.TestCase):
                 board.print_char(out_file=f)
 
         self.assertTrue(filecmp.cmp(
-            "output.txt",
-            "tests/output_calculate_simple_moves.txt"))
+            output_file, expected_output_file)
+            )
 
     def test_calculate_soldier_moves(self):
-        soldier_moves = utils.soldier_moves
+        soldier_moves = ut.soldier_moves
         board = bd.Board()
-        with open("output.txt", "w") as f:
+        output_file = OUTPUT_PATH + OUTPUT_FILE
+        expected_output_file = \
+            OUTPUT_PATH + "output_calculate_soldier_moves.txt"
+
+        with open(output_file, "w") as f:
             for side in [bd.WHITE, bd.BLACK]:
                 for position in range(bd.N_POSITIONS):
                     moves = soldier_moves[side][position]
@@ -126,13 +140,17 @@ class Test_utils(unittest.TestCase):
                     board.print_char(out_file=f)
 
         self.assertTrue(filecmp.cmp(
-            "output.txt",
-            "tests/output_calculate_soldier_moves.txt"))
+            output_file, expected_output_file)
+            )
 
     def test_calculate_knight_moves(self):
-        knight_moves = utils.knight_moves
+        knight_moves = ut.knight_moves
         board = bd.Board()
-        with open("output.txt", "w") as f:
+        output_file = OUTPUT_PATH + OUTPUT_FILE
+        expected_output_file = \
+            OUTPUT_PATH + "output_calculate_knight_moves.txt"
+
+        with open(output_file, "w") as f:
             for position in range(bd.N_POSITIONS):
                 print("\nKnight moves from position: {}"
                       .format(position), file=f)
@@ -142,20 +160,24 @@ class Test_utils(unittest.TestCase):
                     board.include_new_piece(bd.KNIGHT, bd.WHITE, position)
                     trace = 1
                     for position_2 in direction:
-                        board.include_new_piece(trace, bd.WHITE, position_2,
-                            tracing=True)
+                        board.include_new_piece(
+                            trace, bd.WHITE, position_2, tracing=True)
                         trace += 1
                     board.print_char(out_file=f)
 
         self.assertTrue(filecmp.cmp(
-            "output.txt",
-            "tests/output_calculate_knight_moves.txt"))
+            output_file, expected_output_file)
+            )
 
     def test_calculate_kingdoms(self):
-        kingdoms = utils.calculate_kingdoms(bd.N_POSITIONS)
+        kingdoms = ut.calculate_kingdoms(bd.N_POSITIONS)
         board = bd.Board()
         board.clear_board()
-        with open("output.txt", "w") as f:
+        output_file = OUTPUT_PATH + OUTPUT_FILE
+        expected_output_file = \
+            OUTPUT_PATH + "output_calculate_kingdoms.txt"
+
+        with open(output_file, "w") as f:
             positions = np.argwhere(kingdoms[0]).flatten()
             for position in positions:
                 board.include_new_piece(
@@ -167,8 +189,8 @@ class Test_utils(unittest.TestCase):
             board.print_char(out_file=f)
 
         self.assertTrue(filecmp.cmp(
-            "output.txt",
-            "tests/output_calculate_kingdoms.txt"))
+            output_file, expected_output_file)
+            )
 
 
 if __name__ == '__main__':

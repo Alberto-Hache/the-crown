@@ -1,3 +1,4 @@
+# Standard library imports
 import numpy as np
 import copy
 import sys
@@ -6,8 +7,9 @@ import time
 from operator import itemgetter
 from itertools import dropwhile
 
+# Local application imports
 import board as bd
-import utils
+import crownutils as ut
 
 
 ########################################################################
@@ -171,7 +173,8 @@ def calculate_soldier_advance_reward():
 """
 
 soldier_advance_reward = [
-    0.00, 0.05, 0.00, 0.05, 0.00, 0.05, 0.00, 0.05, 0.00, 0.05, 0.00, 0.05, 0.00,
+    0.00, 0.05, 0.00, 0.05, 0.00, 0.05, 0.00, 0.05, 0.00, 0.05, 0.00, 0.05,
+    0.00,
     0.10, 0.15, 0.10, 0.15, 0.10, 0.15, 0.10, 0.15, 0.10, 0.15, 0.10,
     0.20, 0.25, 0.20, 0.30, 0.25, 0.30, 0.20, 0.25, 0.20,
     0.30, 0.35, 0.40, 0.45, 0.40, 0.35, 0.30,
@@ -575,7 +578,7 @@ def play(
             print(
                 "Searching at depth {:d}... {} ({:>+.5f}) \r".format(
                     params_copy["max_depth"],
-                    utils.move_2_txt(move),
+                    ut.move_2_txt(move),
                     result
                 ),
                 end="", flush=True
@@ -597,7 +600,7 @@ def play(
 
     # Clear search status.
     if screen_traces:
-        print("{}\r".format(utils.CLEAN_LINE), end="")
+        print("{}\r".format(ut.CLEAN_LINE), end="")
 
     # Adapt killer moves list for next move to play (2 plies fwd).
     killer_list.shift_plies()
@@ -1107,7 +1110,6 @@ def quiesce_WIP(
                         result_i = -float(result_i)  # Switch to player's view.
                     # Assess results from final position or search.
                     if result_i > best_result:
-                        # best_move = [coord1, coord2]  # This overwrote stand pat
                         best_result = result_i
                     # And 'unmake' the move.
                     board.unmake_move(
@@ -1803,7 +1805,7 @@ def eval_princes_and_soldiers_end(board, depth):
                 depth_penalty = + (depth + depth_to_final) * END_DEPTH_PENALTY
                 return result + depth_penalty
             else:
-                # STALEMATE: player's Prince can't move (and no Soldiers/Knights).
+                # STALEMATE: Prince can't move (and no Soldiers/Knights).
                 return DRAW_STALEMATE
     except AttributeError:
         # This side has no Prince; try next case.
@@ -2515,7 +2517,7 @@ def is_legal_move(board, move):
     moving_piece = board.board1d[coord1]  # The moving piece.
     if moving_piece is None:
         return False, "Error: No piece found at {}.".format(
-            utils.coord_2_algebraic[coord1])
+            ut.coord_2_algebraic[coord1])
 
     # Obtain pseudomoves for moving side, a list of lists:
     # [[24, 14], [24, 13]...]], [2, 3]...]
@@ -2540,8 +2542,8 @@ def is_legal_move(board, move):
             return True, ""
         else:
             return False, "Error: {}{} is an illegal move.".format(
-                utils.coord_2_algebraic[coord1],
-                utils.coord_2_algebraic[coord2]
+                ut.coord_2_algebraic[coord1],
+                ut.coord_2_algebraic[coord2]
             )
     else:
         # Move not found in pseudo-moves list.
@@ -2571,18 +2573,57 @@ def is_legal_move(board, move):
                     # The player has some legal moves.
                     return False, "Error: Prince at {} " \
                         "is not checkmated.".format(
-                            utils.coord_2_algebraic[coord1]
+                            ut.coord_2_algebraic[coord1]
                         )
             # No legal pseudomove found: legal leave.
             return True, ""
         else:
             # Not a pseudomove or a leaving mated Prince.
             txt_coord2 = "++" if coord2 is None \
-                else utils.coord_2_algebraic[coord2]
+                else ut.coord_2_algebraic[coord2]
             return False, "Error: {}{} is an illegal move.".format(
-                utils.coord_2_algebraic[coord1],
+                ut.coord_2_algebraic[coord1],
                 txt_coord2
             )
+
+
+def is_legal_loaded_board(board):
+    """
+    Check if a board is legal after loading it from a .cor file.
+    Conditions checked:
+    - No Princes can be taken.
+    - Number of Princes, Knights, Soldiers per side.
+    - No Soldiers in their Prince's starting position.
+    """
+
+    # Check basic conditions: Princes <= 1 by side; Prince can't be taken.
+    if not is_legal(board):
+        return False
+
+    # Check now the rest of pieces:
+    if (
+        board.piece_count[bd.WHITE][bd.KNIGHT] > 2 or
+        board.piece_count[bd.WHITE][bd.SOLDIER] > 3 or
+        board.piece_count[bd.BLACK][bd.KNIGHT] > 2 or
+        board.piece_count[bd.BLACK][bd.SOLDIER] > 3
+    ):
+        return False
+
+    # Finally, check no Soldier stands on its Princes's starting position.
+    p_at_white_promo = board.board1d[board.prince_position[bd.WHITE]]
+    if p_at_white_promo is not None:
+        if p_at_white_promo.type == bd.SOLDIER and \
+           p_at_white_promo.color == bd.WHITE:
+            return False
+
+    p_at_black_promo = board.board1d[board.prince_position[bd.BLACK]]
+    if p_at_black_promo is not None:
+        if p_at_black_promo.type == bd.SOLDIER and \
+           p_at_black_promo.color == bd.BLACK:
+            return False
+
+    # Otherwise, the board is legal.
+    return True
 
 
 def prince_has_moves(board, side_to_check):
@@ -2654,6 +2695,12 @@ if __name__ == '__main__':
 
     # Initializations.
     board = bd.Board(file_name)
+    if not is_legal_loaded_board(board):
+        print("Error: {} is not a legal board for 'The Crown'.".format(
+            file_name
+        ))
+        sys.exit(1)
+
     game_trace = Gametrace(board)
     parameters = PLY4_SEARCH_PARAMS
 
@@ -2667,6 +2714,6 @@ if __name__ == '__main__':
             )
 
     # Display results.
-    utils.display_results(
+    ut.display_results(
         best_move, result, game_end, game_status
     )

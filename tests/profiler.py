@@ -1,11 +1,18 @@
+# Standard library imports
 import time
 import numpy as np
 import unittest
 import cProfile
+from os.path import dirname, realpath
 
-import game_play as gp
-import board as bd
-import utils
+# Local application imports
+import thecrown.board as bd
+import thecrown.crownutils as ut
+import thecrown.gameplay as gp
+
+# Location of saved games.
+dir_path = dirname(dirname(realpath(__file__)))
+GAMES_PATH = dir_path + "/thecrown/games/"
 
 
 class Profiler(unittest.TestCase):
@@ -56,7 +63,7 @@ def loop_pre_evaluate_pseudomoves():
     iterations = 1000
 
     for test_board in test_cases:
-        board = bd.Board(test_board)
+        board = bd.Board(GAMES_PATH + test_board)
         for color in [bd.WHITE, bd.BLACK]:
             board.set_turn(color)
             moves, _ = gp.generate_pseudomoves(board)
@@ -83,7 +90,7 @@ def loop_position_attacked():
     iterations = 100
 
     for test_board in test_cases:
-        board = bd.Board(test_board)
+        board = bd.Board(GAMES_PATH + test_board)
         for coord in range(board.n_positions):
             for color in [bd.WHITE, bd.BLACK]:
                 for _ in range(iterations):
@@ -111,7 +118,7 @@ def loop_generate_pseudomoves():
     iterations = 10000
 
     for test_board in test_cases:
-        board = bd.Board(test_board)
+        board = bd.Board(GAMES_PATH + test_board)
         for color in [bd.WHITE, bd.BLACK]:
             board.set_turn(color)
             for _ in range(iterations):
@@ -163,7 +170,7 @@ def loop_negamax(case_idx):
     iterations = 1
 
     for board_name in test_boards:
-        board = bd.Board(board_name)  # The board to play on.
+        board = bd.Board(GAMES_PATH + board_name)  # The board to play on.
         game_trace = gp.Gametrace(board)  # Tracking repetitions.
         transp_table = gp.Transposition_table() \
             if test_params["transposition_table"] else None
