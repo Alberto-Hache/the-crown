@@ -856,7 +856,8 @@ class Test_gameplay(unittest.TestCase):
         )
 
         params = TEST_SEARCH_PARAMS_4
-        with open("output.txt", "w") as f:
+        output_file = OUTPUT_PATH + OUTPUT_FILE
+        with open(output_file, "w") as f:
             for test in test_cases:
                 file_name, exp_move, exp_result, exp_end, exp_status = test
                 board = bd.Board(GAMES_PATH + file_name)  # The board to put pieces on.
@@ -941,7 +942,8 @@ class Test_gameplay(unittest.TestCase):
         )
 
         params = TEST_SEARCH_PARAMS_4
-        with open("output.txt", "w") as f:
+        output_file = OUTPUT_PATH + OUTPUT_FILE
+        with open(output_file, "w") as f:
             print("")  # To clean up the screen traces.
             for test in test_cases:
                 file_name, exp_move, exp_result, exp_end, exp_status = test

@@ -3,8 +3,9 @@ RUN_PATH=./
 SOURCE_PATH=./thecrown/
 TEST_PATH=./tests/
 
-# Path for test outputs.
-TEST_OUTPUT_PATH=./tests/test_outputs/
+# Path for outputs.
+RUN_OUTPUT_PATH=$(SOURCE_PATH)output/
+TEST_OUTPUT_PATH=$(TEST_PATH)test_outputs/
 
 export PYTHONPATH:=./$(SOURCE_PATH):./$(TEST_PATH):$(PYTHONPATH)
 
@@ -38,6 +39,9 @@ profile-aux:
 	> $(TEST_OUTPUT_PATH)profile_position_attacked.txt
 
 # Clean unnecessary files.
-clean:
-	rm $(TEST_OUTPUT_PATH)profile_*.txt
-	rm $(TEST_OUTPUT_PATH)output.txt
+clean-run:
+	rm -f $(RUN_OUTPUT_PATH)*.txt
+clean-test:
+	rm -f $(TEST_OUTPUT_PATH)profile_*.txt
+	rm -f $(TEST_OUTPUT_PATH)output.txt
+clean: clean-run clean-test
