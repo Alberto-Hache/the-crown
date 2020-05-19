@@ -9,6 +9,10 @@ TEST_OUTPUT_PATH=$(TEST_PATH)test_outputs/
 
 export PYTHONPATH:=./$(SOURCE_PATH):./$(TEST_PATH):$(PYTHONPATH)
 
+# Installation of required libraries.
+init:
+	pip install -r requirements.txt
+
 # Run a default game.
 run:
 	python $(RUN_PATH)crown.py
