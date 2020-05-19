@@ -1,4 +1,3 @@
-# Game of "The Crown"
 Two Princes battle for the empty throne!
 
 ![The Crown](/thecrown/docs/TheCrown_logo_S.png)
@@ -7,7 +6,7 @@ Two Princes battle for the empty throne!
 
 *The Crown* is a chess-inspired board game in which two players battle for their Prince's crowning on a triangular board. Each opponent has six pieces, placed at a vertex of the triangle. The remaining vertex, which they will fight to conquer, is called the *crown* or *crowning box*.
 
-![Starting position](/thecrown/docs/TheCrown_StartingPosition.png)
+![Starting position](/thecrown/docs/TheCrown_StartingPosition.png){:height="50%" width="50%"}
 
 *Starting position of The Crown*
 
