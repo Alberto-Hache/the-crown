@@ -115,7 +115,7 @@ I created this game in 1989, during my last year as a Software Engineer student.
 
 ### License
 
-This project is licensed under GNU General Public License 3.0 - see the [LICENSE.md] file for details.
+This project is licensed under GNU General Public License 3.0 - see the [LICENSE] file for details.
 
 [LICENSE.md]: LICENSE
 
