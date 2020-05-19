@@ -7,16 +7,10 @@
 - Redistribute all files in module folders. DONE
 - Run all tests from base directory. DONE
 - Makefile: DONE
-  - run
-  - test
-  - profile
-  - clean
-- Add LICENSE file: GNU General Public License v3.0
+- Add LICENSE file: GNU General Public License v3.0 DONE
 - Add basic README.md
   - Basic description of the project.
   - Download and install instructions.
-
-  See: https://krzysztofzuraw.com/blog/2016/makefiles-in-python-projects.html
 
 
 ### Medium
