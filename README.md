@@ -57,7 +57,7 @@ $ make run
 
 This should start a machine-vs-machine game in good-old-fashioned text mode on your terminal with search depth 3 (which, if you know some game theory, is a bit shallow, but plays at a reasonable level at a very fast speed)...
 
-![The Crown](/thecrown/docs/TheCrown_textmode.png)
+<img src="thecrown/docs/TheCrown_textmode.png" width="1000">
 
 ### Further testing
 
