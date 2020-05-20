@@ -6,17 +6,18 @@ Two Princes battle for the empty throne!
 
 ## Inspired in chess
 
-*The Crown* is a board game in which two players battle for their Prince's crowning on a triangular board. Each opponent has six pieces, placed at a vertex of the triangle. The remaining vertex, which they will fight to conquer, is the *crown* or *crowning box*.
+*The Crown* is a board game in which two players battle for their Prince's crowning on a triangular board. Each opponent has six pieces, placed on opposite vertices of the board. The remaining vertex, which they will fight to conquer, is the *crown* or *crowning box*.
 
-The game puts most of chess' original flavour (captures, checks, promotions, strategies...) on a different landscape, simplifying gameplay to three piece types: Prince, Knight and Soldier who move pretty much like their square-world relatives.
+The game puts most of chess' original flavour (captures, checks, promotions, strategies...) on a different landscape, simplifying gameplay to three piece types -Prince, Knight and Soldier- who move pretty much like their square-world relatives.
 
 <img src="thecrown/docs/TheCrown_StartingPosition.png" width="250">
 
 *Starting position of The Crown*
 
-**Game Rules**
+**About the game**
 
-(coming soon...)
+- Learn here the [game rules](thecrown/docs/gamerules.md).
+- A comparison between Chess and The Crown.
 
 ## A program to play "The Crown"
 
@@ -55,7 +56,7 @@ Once *The Crown* is installed, you can test it by running it with default argume
 $ make run
 ```
 
-This should start a machine-vs-machine game in good-old-fashioned text mode on your terminal with search depth 3 (which, if you know some game theory, is a bit shallow, but plays at a reasonable level at a very fast speed)...
+This should start a machine-vs-machine game in good-old-fashioned text mode on your terminal with search depth 3 (which, if you know some game theory, is a bit shallow, but plays at a reasonable level at a very fast speed!)...
 
 <img src="thecrown/docs/TheCrown_textmode.png" width="500">
 
