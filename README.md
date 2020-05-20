@@ -77,7 +77,7 @@ This will run a thorough set of tests on all core functionality:
 
 Alberto Hernández Marcos
 
-I created this game in 1989, during my last year before graduating from the University. My passion for chess inspired this deliberately simplified version of the greatest game ever conceived. After slight retouches to the original rules and having enjoyed numerous games with both human and machine players, I think I got what I aimed for: an interesting, simpler variation with a very straightforward goal, respecting and keeping most chess concepts.
+I created this game in 1989, during my last year before graduating from the University. My passion for chess inspired this deliberately simplified version of the greatest game ever conceived. After slight retouches to the original rules and having enjoyed numerous games with both human and machine players, I think I got what I aimed for: an interesting, simpler variation with a different but straightforward goal, yet retaining most chess concepts.
 
 ### License
 

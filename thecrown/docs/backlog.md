@@ -4,21 +4,14 @@
 
 ### High
 
-- Redistribute all files in module folders. DONE
-- Run all tests from base directory. DONE
-- Makefile: DONE
-- Add LICENSE file: GNU General Public License v3.0 DONE
-- Add basic README.md
-  - Basic description of the project.
-  - Download and install instructions.
-
+...
 
 ### Medium
 
 - Add a good README.md
   - Game rules
   - Playing "The Crown"
-  - Testing
+  - Testing **DONE**
 
 - Pylint cleanup:
   - crownutils.py:
