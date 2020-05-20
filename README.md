@@ -17,7 +17,8 @@ The game puts most of chess' original flavour (captures, checks, promotions, str
 **About the game**
 
 - Learn here the [game rules](thecrown/docs/gamerules.md).
-- A comparison between Chess and The Crown.
+- A comparison between Chess and *The Crown* (coming soon).
+- Strategies for opening, middle game and endgame (coming soon).
 
 ## A program to play "The Crown"
 
