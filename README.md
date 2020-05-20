@@ -56,8 +56,7 @@ $ pip install -r requirements.txt
 
 ### Testing the program
 
-Once *The Crown* is installed, you can test it by running it with default arguments. 
-Make sure you are at the home directory (./the-crown), and for there type:
+Once *The Crown* is installed, you can test it by running it with default arguments. Make sure you are at the home directory (./the-crown), and from there type:
 
 ```bash
 $ make run
@@ -95,7 +94,7 @@ Search: 846 nodes, 0.48 sec, max depth=11, hash use=260
 
 ### Further testing
 
-To run all unit tests just use:
+To run all unit tests make sure you are at the home directory (./the-crown), and from there type:
 
 ```bash
 $ make test
@@ -111,11 +110,10 @@ This will run a thorough set of tests on all core functionality:
 
 Alberto Hernández Marcos
 
-I created this game in 1989, during my last year as a Software Engineer student. My passion for chess inspired this deliberately simplified version of the greatest game ever conceived. After slight retouches to the original rules and having enjoyed numerous games with both human and machine players, I think I got what I aimed for: an interesting, simpler variation with a very straightforward goal, respecting and keeping most chess concepts.
+I created this game in 1989, during my last year before graduating from the University. My passion for chess inspired this deliberately simplified version of the greatest game ever conceived. After slight retouches to the original rules and having enjoyed numerous games with both human and machine players, I think I got what I aimed for: an interesting, simpler variation with a very straightforward goal, respecting and keeping most chess concepts.
 
 ### License
 
 This project is licensed under GNU General Public License 3.0 - see the [LICENSE] file for details.
 
 [LICENSE.md]: LICENSE
-
