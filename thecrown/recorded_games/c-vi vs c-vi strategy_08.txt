@@ -1,0 +1,25 @@
+Game started!
+strategy_08.cor
+
+ White: Crowny-VI
+ Black: Crowny-VI
+ Sun May 10 16:20:43 2020
+
+1. e4e3, b4b5
+2. e3d4, a10a9
+3. d4d5, b6b7
+4. c8c1, b7b8
+5. c1c2, a6a7
+6. c2c1, a9a8
+7. c1c9, b8b9
+8. c9c8, a8c8
+9. d7c8, a7a8
+10. c8c9, a8a9
+11. d6d7, a9a10
+12. d7c8, a10a11
+13. e5d7, a11a12
+14. d5c6, a12a13
+
+0 - 1
+
+End of the game: Victory (Prince crowned)

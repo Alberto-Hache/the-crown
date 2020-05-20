@@ -2,7 +2,9 @@
 _kk/
 _benchmarkings/
 _profiling/
-*.txt
+thecrown/output/*.txt
+tests/test_outputs/output.txt
+tests/test_outputs/profile_*.txt
 
 # Visual Studio Code
 .vscode

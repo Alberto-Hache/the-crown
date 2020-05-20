@@ -1,0 +1,51 @@
+Game started!
+strategy_08.cor
+
+ White: Crowny-IV
+ Black: Crowny-IV
+ Sun May 10 14:37:12 2020
+
+1. e4d4, b4b3
+2. d4e3, b3b4
+3. e3d5, b4b3
+4. c8c2, b3b5
+5. c2c8, a10a11
+6. e5e3, a11a10
+7. e3e4, b5b4
+8. d5c6, b4b3
+9. c6c5, b6b5
+10. e4d4, b3a4
+11. d4d5, a4b4
+12. d6e5, b4b3
+13. d5d6, b3b4
+14. e5e3, b4b3
+15. e3e4, b3a4
+16. e4d4, a4b4
+17. d4d5, a10a7
+18. d6e5, a7a11
+19. c5c6, b5b6
+20. d5d4, b4b5
+21. e5d6, a5a4
+22. c6c5, b6c5
+23. c8c5, a4a3
+24. d4d5, a3a4
+25. d6e5, a4a5
+26. d5d6, a6a7
+27. c5b7, a11a8
+28. b7c8, a5a4
+29. d6d5, a4a6
+30. d5c6, a6a5
+31. c8c7, b5b6
+32. c7a8, a7a8
+33. d7c8, a8a9
+34. c8c9, a9a10
+35. c9b10, a10a11
+36. b10b11, b6b7
+37. c6c7, a5a6
+38. e5e4, a6a7
+39. e4d6, a7a6
+40. d6d5, a6a7
+41. d5d6
+1/2 - 1/2
+
+End of the game: Draw, (repetitions)

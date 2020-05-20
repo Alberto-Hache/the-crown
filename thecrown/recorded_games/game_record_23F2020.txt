@@ -1,0 +1,23 @@
+Game started!
+
+ White: Crowny-I
+ Black: Alberto H
+ Fri Feb 28 20:13:18 2020
+
+1. e3d3, b3c3
+2. f1c6, a5b5
+3. e5e3, c1b3
+4. f3d7, a3a9
+5. e3f1, b1a2
+6. e1d2, b5b6
+7. f1e1, b6c5
+8. c6b8, a9a13
+9. d7b10, a2a12
+10. b8a8, a12a8
+11. b10f2, a8a12
+12. e1e2, a12f2
+13. e2f2, a1a2
+14. d2e1, a2a3
+15. e1d1, a3a4
+16. d1d2, a4a5
+17. d2e1, 

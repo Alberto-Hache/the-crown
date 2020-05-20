@@ -1,0 +1,43 @@
+Game started!
+strategy_08.cor
+
+ White: Crowny-V
+ Black: Crowny-V
+ Sun May 10 14:57:08 2020
+
+1. e4e3, a10a11
+2. e3d5, a11a9
+3. d5c6, b6b7
+4. c8b11, a6a7
+5. c6c7, b4b5
+6. d7c8, a7a8
+7. c7b8, b5b6
+8. b8b9, a8a7
+9. b11b10, b7b8
+10. b9a10, a9b7
+11. c8c9, b6b5
+12. d6d7, b5a6
+13. d7c8, b7b6
+14. a10a9, a6b5
+15. b10a10, b8b9
+16. a9a8, b6a8
+17. a10b9, a8a12
+18. b9b10, a12a8
+19. e5d7, a5a6
+20. d7d6, b5b6
+21. d6d5, b6c5
+22. d5d4, c5c6
+23. d4e3, c6c7
+24. c8d7, c7b8
+25. b10b11, a8a9
+26. b11b10, a9a11
+27. e3e4, b8b9
+28. b10a12, a11a12
+29. c9++, a12d7
+30. e4e3, a7a8
+31. e3e2, a8a9
+32. e2d2, d7d2
+
+0 - 1
+
+End of the game: Victory (no pieces left)

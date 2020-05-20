@@ -1,0 +1,131 @@
+Testing of position empty.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 / \ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 / \ / \ / \ / \ / \ / \ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ / \ / \ / \ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+Knight mobility from position a1: 23
+Knight mobility from position a2: 23
+Knight mobility from position b1: 22
+Knight mobility from position b2: 23
+Knight mobility from position c1: 22
+Knight mobility from position c2: 23
+Knight mobility from position d1: 22
+Knight mobility from position d2: 23
+Knight mobility from position e1: 22
+Knight mobility from position e2: 23
+Knight mobility from position f1: 22
+Knight mobility from position f2: 23
+Knight mobility from position g1: 23
+Knight mobility from position a3: 22
+Knight mobility from position a4: 23
+Knight mobility from position b3: 21
+Knight mobility from position b4: 23
+Knight mobility from position c3: 21
+Knight mobility from position c4: 23
+Knight mobility from position d3: 21
+Knight mobility from position d4: 23
+Knight mobility from position e3: 21
+Knight mobility from position e4: 23
+Knight mobility from position f3: 22
+Knight mobility from position a5: 22
+Knight mobility from position a6: 23
+Knight mobility from position b5: 21
+Knight mobility from position b6: 23
+Knight mobility from position c5: 21
+Knight mobility from position c6: 23
+Knight mobility from position d5: 21
+Knight mobility from position d6: 23
+Knight mobility from position e5: 22
+Knight mobility from position a7: 22
+Knight mobility from position a8: 23
+Knight mobility from position b7: 21
+Knight mobility from position b8: 23
+Knight mobility from position c7: 21
+Knight mobility from position c8: 23
+Knight mobility from position d7: 22
+Knight mobility from position a9: 22
+Knight mobility from position a10: 23
+Knight mobility from position b9: 21
+Knight mobility from position b10: 23
+Knight mobility from position c9: 22
+Knight mobility from position a11: 22
+Knight mobility from position a12: 23
+Knight mobility from position b11: 22
+Knight mobility from position a13: 23
+Testing of position position_01.cor:
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 / \ / \ / \ / \ / \ 
+     /---.---.---.---.---\
+  3 /p\ /s\ / \ / \ /S\ / \ 
+   /---.---.---.---.---.---\
+1 / \ / \ / \ / \ /S\ / \ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+Knight mobility from position a1: 8
+Knight mobility from position a2: 8
+Knight mobility from position b1: 9
+Knight mobility from position b2: 8
+Knight mobility from position c1: 15
+Knight mobility from position c2: 18
+Knight mobility from position d1: 17
+Knight mobility from position d2: 18
+Knight mobility from position e2: 2
+Knight mobility from position f1: 3
+Knight mobility from position f2: 13
+Knight mobility from position a4: 11
+Knight mobility from position b4: 16
+Knight mobility from position c3: 16
+Knight mobility from position c4: 17
+Knight mobility from position d3: 15
+Knight mobility from position d4: 16
+Knight mobility from position e4: 11
+Knight mobility from position f3: 12
+Knight mobility from position a5: 18
+Knight mobility from position a6: 21
+Knight mobility from position b5: 19
+Knight mobility from position b6: 20
+Knight mobility from position c5: 20
+Knight mobility from position c6: 20
+Knight mobility from position d5: 18
+Knight mobility from position d6: 22
+Knight mobility from position e5: 18
+Knight mobility from position a7: 20
+Knight mobility from position a8: 20
+Knight mobility from position b7: 18
+Knight mobility from position b8: 18
+Knight mobility from position c7: 18
+Knight mobility from position c8: 22
+Knight mobility from position d7: 21
+Knight mobility from position a9: 19
+Knight mobility from position a10: 18
+Knight mobility from position b9: 16
+Knight mobility from position b10: 20
+Knight mobility from position c9: 21
+Knight mobility from position a11: 17
+Knight mobility from position a12: 20
+Knight mobility from position b11: 19
+Knight mobility from position a13: 20
