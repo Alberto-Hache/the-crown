@@ -2,17 +2,17 @@ Two Princes battle for the empty throne!
 
 ![The Crown](/thecrown/docs/TheCrown_logo_S.png)
 
-*Copyright (c) 1989 Alberto Hernández Marcos*
+*Copyright © 1989 Alberto Hernández Marcos*
 
-## A game inspired in chess
+## Inspired in chess
 
-*The Crown* is a chess-inspired board game in which two players battle for their Prince's crowning on a triangular board. Each opponent has six pieces, placed at a vertex of the triangle. The remaining vertex, which they will fight to conquer, is called the *crown* or *crowning box*.
+*The Crown* is a board game in which two players battle for their Prince's crowning on a triangular board. Each opponent has six pieces, placed at a vertex of the triangle. The remaining vertex, which they will fight to conquer, is the *crown* or *crowning box*.
+
+The game puts most of chess' original flavour (captures, checks, promotions, strategies...) on a different landscape, simplifying gameplay to three piece types: Prince, Knight and Soldier who move pretty much like their square-world relatives.
 
 <img src="thecrown/docs/TheCrown_StartingPosition.png" width="250">
 
 *Starting position of The Crown*
-
-The game puts most of chess' original flavour (captures, checks, promotions, strategies...) on a different landscape, simplifying gameplay to three piece types: Prince, Knight and Soldier who move pretty much like their square-world relatives.
 
 **Game Rules**
 
@@ -20,7 +20,7 @@ The game puts most of chess' original flavour (captures, checks, promotions, str
 
 ## A program to play "The Crown"
 
-Since not many people knew the game, this year I decided to build a program to play against and... actually learn it! The version in this repo CAN finally play really good matches from opening to endgame (and keeps teaching me my own game...).
+Since not many people knew the game, this year I decided to build a program to play against and... well, actually learn how to play it! The version in this repo CAN finally play really good matches from opening to endgame (and keeps teaching me my own game...).
 
 I really hope you enjoy it!
 
@@ -47,13 +47,6 @@ $ cd the-crown
 $ make init
 ```
 
-(Or you can use *pip* if you prefer.)
-
-```bash
-$ cd the-crown
-$ pip install -r requirements.txt
-```
-
 ### Testing the program
 
 Once *The Crown* is installed, you can test it by running it with default arguments. Make sure you are at the home directory (./the-crown), and from there type:
@@ -62,35 +55,9 @@ Once *The Crown* is installed, you can test it by running it with default argume
 $ make run
 ```
 
-This should start a machine-vs-machine game in good-old-fashioned text mode on your terminal with search depth 3 (which, if you know some game theory, is a bit shallow, but plays at a reasonable level)...
+This should start a machine-vs-machine game in good-old-fashioned text mode on your terminal with search depth 3 (which, if you know some game theory, is a bit shallow, but plays at a reasonable level at a very fast speed)...
 
-```bash
-$ make run
-python ./crown.py
-Starting The Crown!
-[starting position]
-               .
-           13 / \ 
-             /---\
-         11 / \ / \ 
-           /---.---\
-        9 / \ / \ / \ 
-         /---.---.---\
-      7 / \ / \ / \ / \ 
-       /---.---.---.---\
-    5 /s\ / \ / \ / \ /S\ 
-     /---.---.---.---.---\
-  3 /k\ /s\ / \ / \ /S\ /K\ 
-   /---.---.---.---.---.---\
-1 /p\ /k\ /s\ / \ /S\ /K\ /P\ 
- ·---·---·---·---·---·---·---·
-  a / b / c / d / e / f / g
-White to move.
-
-Move:   e3d3 (+0.88500)                                                         
-Params: full_depth=3, check_depth=8, hash_max=1048573, rnd=0.00
-Search: 846 nodes, 0.48 sec, max depth=11, hash use=260
-```
+![The Crown](/thecrown/docs/TheCrown_textmode.png)
 
 ### Further testing
 
