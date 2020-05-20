@@ -33,18 +33,18 @@ Soldiers move normally one cell at a time...
 
 <img align="center" src="TheCrown_SoldierMovesInKingdom.png" width="250">
 
-### Limitations
+### Limitations to all pieces
 
 - Pieces cannot be leaped over.
 - The Prince can never be left in check!
 
 ## Checkmate - loss of turn
 
-A checkmated Prince must leave the board and… yield the turn.
+When checkmated, the Prince must leave the board and… yield the turn.
 
 <img align="center" src="TheCrown_Checkmate.png" width="250">
 
-NOTE: The game goes on since the opponent  is not yet king.
+NOTE: This game would go on since the opponent is not yet king.
 
 ## Soldier promotion
 
@@ -56,12 +56,11 @@ NOTE:
 - The new Prince cannot be left in check.
 - Players can only have one Prince.
 
-
 ## Victory
 
 ### Crowning
 
-White wins: their Prince has reached the crown.
+A player wins when their Prince has reached the crown.
 
 <img align="center" src="TheCrown_PrinceCrowning.png" width="250">
 
@@ -73,9 +72,11 @@ A player wins too if, keeping the Prince, the opponent is left with no pieces.
 
 ### Stalemate
 
-It’s black’s move, but their Prince is stalemated.
+The game is a draw when the player to move has no legal move and is not in check.
 
 <img align="center" src="TheCrown_StalematedPrince.png" width="250">
+
+It’s black’s move, but their Prince is stalemated.
 
 ### No Princes left
 
