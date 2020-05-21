@@ -40,8 +40,10 @@ class Test_gameplay(unittest.TestCase):
                 file_name = full_file_name[len(GAMES_PATH):]
                 for position in range(bd.N_POSITIONS):
                     # Loop over each position on that board.
-                    board = bd.Board(GAMES_PATH + file_name)  # Board to put pieces on.
-                    display_board = bd.Board(GAMES_PATH + "empty.cor")  # Tracing board.
+                    # Board to put pieces on.
+                    board = bd.Board(GAMES_PATH + file_name)
+                    # Tracing board.
+                    display_board = bd.Board(GAMES_PATH + "empty.cor")
                     if board.board1d[position] is None:
                         # Test function from that free position.
                         print("\nKnight attacks from position {}"
@@ -85,9 +87,11 @@ class Test_gameplay(unittest.TestCase):
         with open(output_file, "w") as f:
             for file_name in file_list:
                 # Loop over all board states stored.
-                board = bd.Board(GAMES_PATH + file_name)  # Actual board to put pieces on.
+                # Actual board to put pieces on.
+                board = bd.Board(GAMES_PATH + file_name)
                 print("Loading game position {} ...".format(file_name), file=f)
-                display_board = bd.Board(GAMES_PATH + "empty.cor")  # Tracing board.
+                # Tracing board.
+                display_board = bd.Board(GAMES_PATH + "empty.cor")
 
                 for turn in [bd.WHITE, bd.BLACK]:
                     # Try board for both sides.
@@ -272,7 +276,8 @@ class Test_gameplay(unittest.TestCase):
             for file_name in file_list:
                 # Remove rel. path.
                 # file_name = full_file_name[len(GAMES_PATH):]
-                board = bd.Board(GAMES_PATH + file_name)  # Board to put pieces on.
+                # Board to put pieces on.
+                board = bd.Board(GAMES_PATH + file_name)
                 print("Testing of position {}:".format(file_name), file=f)
                 board.print_char(out_file=f)
 
@@ -301,7 +306,8 @@ class Test_gameplay(unittest.TestCase):
             for file_name in file_list:
                 # Remove rel. path.
                 # file_name = full_file_name[len(GAMES_PATH):]
-                board = bd.Board(GAMES_PATH + file_name)  # Board to put pieces on.
+                # Board to put pieces on.
+                board = bd.Board(GAMES_PATH + file_name)
                 print("Testing of position {}:".format(file_name), file=f)
                 board.print_char(out_file=f)
 
@@ -465,7 +471,8 @@ class Test_gameplay(unittest.TestCase):
             file_name, test_move, res1, res2, res3, res4, res5, res6 = \
                 test_case
             board = bd.Board(GAMES_PATH + file_name)
-            board_orig = bd.Board(GAMES_PATH + file_name)  # Reference for unmake tests.
+            # Reference for unmake tests.
+            board_orig = bd.Board(GAMES_PATH + file_name)
             # Parse move.
             coord1, coord2, is_correct = \
                 ut.algebraic_move_2_coords(test_move)
@@ -585,17 +592,28 @@ class Test_gameplay(unittest.TestCase):
 
     def test_evaluate_terminal(self):
         test_cases = (
-            ("position_01.cor", (None, None, False, 0), (None, None, False, 0)),
-            ("position_02.cor", (None, None, False, 0), (None, None, False, 0)),
-            ("position_03.cor", (None, None, False, 0), (None, None, False, 0)),
-            ("position_04.cor", (None, None, False, 0), (None, None, False, 0)),
-            ("position_05.cor", (None, None, False, 0), (None, None, False, 0)),
-            ("position_06.cor", (None, 10000.0, True, 1), (None, -10000.0, True, 1)),
-            ("position_07.cor", (None, 10000.0, True, 2), (None, -10000.0, True, 2)),
-            ("position_08.cor", (None, 0, True, 3), (None, 0, True, 3)),
-            ("position_09.cor", (None, None, False, 0), (None, None, False, 0)),
-            ("position_10.cor", (None, None, False, 0), (None, None, False, 0)),
-            ("position_11.cor", (None, None, False, 0), (None, None, False, 0))
+            ("position_01.cor",
+                (None, None, False, 0), (None, None, False, 0)),
+            ("position_02.cor",
+                (None, None, False, 0), (None, None, False, 0)),
+            ("position_03.cor",
+                (None, None, False, 0), (None, None, False, 0)),
+            ("position_04.cor",
+                (None, None, False, 0), (None, None, False, 0)),
+            ("position_05.cor",
+                (None, None, False, 0), (None, None, False, 0)),
+            ("position_06.cor",
+                (None, 10000.0, True, 1), (None, -10000.0, True, 1)),
+            ("position_07.cor",
+                (None, 10000.0, True, 2), (None, -10000.0, True, 2)),
+            ("position_08.cor",
+                (None, 0, True, 3), (None, 0, True, 3)),
+            ("position_09.cor",
+                (None, None, False, 0), (None, None, False, 0)),
+            ("position_10.cor",
+                (None, None, False, 0), (None, None, False, 0)),
+            ("position_11.cor",
+                (None, None, False, 0), (None, None, False, 0))
         )
 
         for test in test_cases:
@@ -860,7 +878,8 @@ class Test_gameplay(unittest.TestCase):
         with open(output_file, "w") as f:
             for test in test_cases:
                 file_name, exp_move, exp_result, exp_end, exp_status = test
-                board = bd.Board(GAMES_PATH + file_name)  # The board to put pieces on.
+                # The board to put pieces on.
+                board = bd.Board(GAMES_PATH + file_name)
                 # The game trace, indexing first board appropriately.
                 game_trace = gp.Gametrace(board)
                 game_trace.current_board_ply = params["max_depth"] - 1
@@ -935,9 +954,12 @@ class Test_gameplay(unittest.TestCase):
             ("test_minimax_05.cor", None, -10000, True, 2),
             ("test_minimax_06.cor", [46, 48], 9999.0, False, 0),
             ("test_minimax_07.cor", [19, 40], 9999.0, False, 0),
-            ("test_minimax_08.cor", [[32, 46], [32, 48]], 9998.0, False, 0),
-            ("test_minimax_09.cor", [41, 45], 1.541666666666667, False, 0),
-            ("test_minimax_10.cor", [[33, 25], [26, 27], [26, 16]], -9990, False, 0),
+            ("test_minimax_08.cor",
+                [[32, 46], [32, 48]], 9998.0, False, 0),
+            ("test_minimax_09.cor",
+                [41, 45], 1.541666666666667, False, 0),
+            ("test_minimax_10.cor",
+                [[33, 25], [26, 27], [26, 16]], -9990, False, 0),
             ("test_minimax_10b.cor", [28, 26], 9994, False, 0)
         )
 
@@ -947,8 +969,10 @@ class Test_gameplay(unittest.TestCase):
             print("")  # To clean up the screen traces.
             for test in test_cases:
                 file_name, exp_move, exp_result, exp_end, exp_status = test
-                board = bd.Board(GAMES_PATH + file_name)  # The board to put pieces on.
-                game_trace = gp.Gametrace(board)  # The game trace.
+                # The board to put pieces on.
+                board = bd.Board(GAMES_PATH + file_name)
+                # The game trace.
+                game_trace = gp.Gametrace(board)
                 transp_table = gp.Transposition_table() \
                     if params["transposition_table"] else None
                 killer_list = gp.Killer_Moves() \

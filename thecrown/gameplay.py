@@ -975,7 +975,8 @@ def quiesce_WIP(
     n_legal_moves_found = 0
     n_legal_moves_tried = 0
 
-    # 4.1. Null-move: Perform static evaluation if it is legal and not endgame.
+    # 4.1. Null-move ('stand pat'):
+    # Perform static evaluation if it is legal and not endgame.
     player_side = board.turn
     opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
     is_endgame = board.piece_count[player_side][bd.KNIGHT] == 0
@@ -993,10 +994,10 @@ def quiesce_WIP(
     try_stand_pat = not player_in_check and \
         (not is_endgame or depth > params["max_non_dynamic_depth"])
     if try_stand_pat:
-        # Null move heuristic is possible; evaluate it.
+        # "Stand pat" is possible; evaluate it.
         best_move = None
         result_i = evaluate_static(board, depth)
-        # Check result of null_move vs alpha-beta window.
+        # Check result of "stand pat" vs alpha-beta window.
         if result_i >= beta:
             return None, beta, False, ON_GOING  # [fail hard beta cutoff]
         if result_i > alpha:
@@ -1323,7 +1324,7 @@ def quiesce(
     n_legal_moves_tried = 0
     n_legal_moves_found = 0
 
-    # 4.1. Null-move: Perform static evaluation if it is legal.
+    # 4.1. Null-move (stand pat): Perform static evaluation if it is legal.
     player_side = board.turn
     opponent_side = bd.WHITE if player_side == bd.BLACK else bd.BLACK
 
@@ -1336,10 +1337,10 @@ def quiesce(
         board.turn = player_side  # Restablish original turn.
 
     if not player_in_check:
-        # Null move is possible; evaluate it.
+        # A "stand pat" is possible; evaluate it.
         best_move = None
         result_i = evaluate_static(board, depth)
-        # Check result of null_move vs alpha-beta window.
+        # Check result of the "stand pat" vs alpha-beta window.
         if result_i >= beta:
             return None, beta, False, ON_GOING  # [fail hard beta cutoff]
         if result_i > alpha:
@@ -2357,7 +2358,7 @@ def make_pseudomove(
                     - Checkmated Prince leaves
                     - Prince Crowning
                     - Soldier promotions
-                    - Check evasion (no null move)
+                    - Check evasion (no null move / stand pat)
                     - Checks [downto 'max_check_quiesc_depth']
                     (when no enemy Knights):
                     - Prince moves upwards
