@@ -5,23 +5,27 @@
 *Copyright © 1989 Alberto Hernández Marcos*
 
 ## Starting position
-White begins, turns alternate.
+Just like in chess, White begins and turns alternate.
 
 <img align="center" src="TheCrown_StartingPosition.png" width="250">
 
 ## Movement of Pieces
 
+Piece moves and captures are very resembling of chess.
+
 ### Prince
 
-Princes can only move (or capture) one cell at a time.
+Princes can only move (or capture) one cell at a time, being the weakest piece.
 
 <img align="center" src="TheCrown_PrinceMoves.png" width="250">
 
 ### Knight
 
-Knights dominate the field in all three directions.
+Knights dominate the field in all three directions and have a maximum mobility of 23 moves.
 
 <img align="center" src="TheCrown_KnightMoves.png" width="250">
+
+*White to move: the black Knight can be captured.*
 
 ### Soldier
 
@@ -29,14 +33,19 @@ Soldiers move normally one cell at a time...
 
 <img align="center" src="TheCrown_SoldierMoves.png" width="250">
 
-… but in their kingdom they can advance two cells.
+… but in their kingdom they can advance two cells. 
 
 <img align="center" src="TheCrown_SoldierMovesInKingdom.png" width="250">
+
+Players' kingdoms are defined by the starting area of each side:
+
+<img align="center" src="TheCrown_PlayersKingdoms.png" width="250">
+
 
 ### Limitations to all pieces
 
 - Pieces cannot be leaped over.
-- The Prince can never be left in check!
+- The Prince can never be left in check, just like the King in chess!
 
 ## Checkmate - loss of turn
 
@@ -44,13 +53,15 @@ When checkmated, the Prince must leave the board and… yield the turn.
 
 <img align="center" src="TheCrown_Checkmate.png" width="250">
 
-NOTE: This game would go on since the opponent is not yet king.
+*Black to move, but its Prince is checkmated. After the black Prince leaves it's white's move again; this game would go on since the opponent is not yet king.*
 
 ## Soldier promotion
 
 Soldiers reaching their Prince’s starting position promote to Prince.
 
 <img align="center" src="TheCrown_SoldierPromotion.png" width="250">
+
+*Black to move: this Soldier can promote to Prince.*
 
 NOTE:
 - The new Prince cannot be left in check.
@@ -76,7 +87,7 @@ The game is a draw when the player to move has no legal move and is not in check
 
 <img align="center" src="TheCrown_StalematedPrince.png" width="250">
 
-It’s black’s move, but their Prince is stalemated.
+*It’s Black’s move, but their Prince is stalemated.*
 
 ### No Princes left
 
