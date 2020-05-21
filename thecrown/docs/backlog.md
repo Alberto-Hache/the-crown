@@ -2,16 +2,10 @@
 
 ## Project structure
 
-### High
-
-...
-
 ### Medium
 
 - Add a good README.md
-  - Game rules
   - Playing "The Crown"
-  - Testing **DONE**
 
 - Pylint cleanup:
   - crownutils.py:
