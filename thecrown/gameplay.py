@@ -13,7 +13,7 @@ import crownutils as ut
 
 
 ########################################################################
-# Tree search parameters:
+# Game search parameters:
 
 PLY1_SEARCH_PARAMS = {
     "max_depth":                1,
@@ -111,7 +111,7 @@ piece_weights = np.array([
     ]
 ])
 
-# Knights mobility is rewarded upto a max. per Knight:
+# Knight's mobility is rewarded upto a maximum per Knight:
 # max mobility of a Knight = 23 moves, so 2 Knights max = 46 moves.
 # 46 moves * 0.1 = 4.6 ≈ 1/2 Knight
 KNIGHT_MOVE_VALUE = 0.1
@@ -222,7 +222,7 @@ DRAW_THREE_REPETITIONS = 5
 # Table used for game-tracing:
 # Max initial depth dimensioned for trace.
 DEFAULT_TRACE_LENGTH = 500
-# Extension applied to depth every time current lenth is exceeded.
+# Extension applied to depth every time current length is exceeded.
 DEFAULT_TRACE_EXTENSION = int(DEFAULT_TRACE_LENGTH/10)
 
 # Indices:
@@ -233,6 +233,8 @@ N_TRACE_COLS = 3  # Number of columns required for the above data.
 
 ########################################################################
 # Hash table used for transpositions.
+# Note: current implementation, based on Python dictionaries, does NOT
+# reserve memory upfront. This number is thus the maximum limit allowed.
 HASH_SIZE_1 = 65537
 HASH_SIZE_2 = 131071
 HASH_SIZE_3 = 262147
@@ -618,7 +620,7 @@ def negamax(
     t_table=None, trace=None, killer_list=None, search_trace=[]
 ):
     """
-    Given a *legal* position in the game-tree, find and evaluate the best move.
+    Given a *legal* position in the game tree, find and evaluate the best move.
     Algorithm: negamax alpha-beta, fail-hard (value within [alpha, beta]).
 
     Input:
@@ -703,7 +705,7 @@ def negamax(
             # The position has a predictable end: no search needed.
             return None, result, False, ON_GOING
 
-    # Prepare for tree search.
+    # Prepare for game tree search.
     best_move = None
     best_result = -np.Infinity  # Value to store in transposition table.
     n_legal_moves_tried = 0
@@ -969,7 +971,7 @@ def quiesce_WIP(
         # End of game: no move is returned.
         return None, result, game_end, game_status  # TODO: Return beta?
 
-    # Prepare for tree search.
+    # Prepare for game tree search.
     best_move = None
     best_result = -np.Infinity  # Value to store in transposition table.
     n_legal_moves_found = 0
@@ -1318,7 +1320,7 @@ def quiesce(
         # The position has a predictable end: no search needed.
         return None, result, False, ON_GOING
 
-    # Prepare for tree search.
+    # Prepare for game tree search.
     best_move = None
     best_result = -np.Infinity  # Value to store in transposition table.
     n_legal_moves_tried = 0
