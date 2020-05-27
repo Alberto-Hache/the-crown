@@ -205,10 +205,15 @@ END_DEPTH_PENALTY = 1
 
 
 ########################################################################
-# Possible end-game results
+# Possible end-game results - from player's point of view:
 PLAYER_WINS = float(10000)  # Winning score; to be reduced by node depth.
 OPPONENT_WINS = -PLAYER_WINS  # Losing score; to be increased by node depth.
 DRAW = 0
+
+# Possible end-game results - by color:
+TXT_WHITE_WINS = "1 - 0"
+TXT_BLACK_WINS = "0 - 1"
+TXT_DRAW = "1/2 - 1/2"
 
 # Types of game node status
 ON_GOING = 0
@@ -217,6 +222,8 @@ VICTORY_NO_PIECES_LEFT = 2
 DRAW_NO_PRINCES_LEFT = 3
 DRAW_STALEMATE = 4
 DRAW_THREE_REPETITIONS = 5
+PLAYER_RESIGNS = 6
+
 
 ########################################################################
 # Table used for game-tracing:

@@ -60,10 +60,22 @@ crown_players = {
 
 def run_the_crown(arg_list):
     """
-    Main function, receiving 'arguments' as called to main script.
+    Main function, receiving 'arguments' given to main.py
+
+    Arguments are interpreted like this:
+    - 1st string with the name of a player -> White player.
+    - 2nd string with the name of a player -> Black player.
+    - A string ≠ player name -> a board file to load.
+    - integer -> Maximum number of moves to play.
+
+    Default values:
+    - White player: DEFAULT_WHITE_PLAYER
+    - Black player: DEFAULT_BLACK_PLAYER
+    - Board file:   None [initial position]
+    - Num. moves:   Infinity
     """
     # Initialize arguments.
-    file_name = None
+    board_file_name = None
     white_player, black_player = None, None
     max_moves = np.Infinity
 
@@ -83,16 +95,14 @@ def run_the_crown(arg_list):
                 elif black_player is None:
                     black_player = arg
             else:
-                # It must be a file_name to load.
+                # It must be a board_file_name to load.
                 dir_path = os.path.dirname(os.path.realpath(__file__))
-                file_name = f"{dir_path}{GAMES_PATH}{arg}"
+                board_file_name = f"{dir_path}{GAMES_PATH}{arg}"
 
-    # Load position.
-    board = bd.Board(file_name)
+    # Load board position.
+    board = bd.Board(board_file_name)
     if not gp.is_legal_loaded_board(board):
-        print("Error: {} is not a legal board for 'The Crown'.".format(
-            file_name
-        ))
+        print(f"Error: {board_file_name} is not a legal board for The Crown.")
         sys.exit(1)
     # Assign default players to missing sides.
     if white_player is None:
@@ -107,7 +117,8 @@ def run_the_crown(arg_list):
     ]
 
     # Start a match between two players.
-    play_match(board, player_set, max_moves, file_name)
+    game_result, end_status = play_game(
+        board, board_file_name, player_set, max_moves)
 
 
 def request_human_move(board):
@@ -122,7 +133,6 @@ def request_human_move(board):
         result:         None or a string to signal end.
                         - None: the move was valid.
                         - "Quit": human player asked to quit.
-
     """
     move = None
     result = None
@@ -156,10 +166,10 @@ def request_human_move(board):
     return move, result
 
 
-def display_start(board, player, file_name, rec_file):
+def display_start(board, player, board_file_name, rec_file):
     # On-SCREEN output:
-    game_txt = "starting position" if file_name is None \
-        else file_name.split("/")[-1]  # Take name of the file only.
+    game_txt = "Initial position" if board_file_name is None \
+        else board_file_name.split("/")[-1]  # Take name of the file only.
     print(
         "Starting The Crown!\n[{}]"
         .format(game_txt)
@@ -225,23 +235,23 @@ def display_move(board, move, move_number, rec_file):
 
 
 def display_end_results(board, result, end_status, rec_file):
-    # Result of the match.
+    # Result of the game.
     if result == gp.DRAW:
-        match_result_txt = "1/2 - 1/2"
+        game_result_txt = gp.TXT_DRAW
     elif result == gp.PLAYER_WINS and board.turn == bd.WHITE:
-        match_result_txt = "1 - 0"
+        game_result_txt = gp.TXT_BLACK_WINS
     else:
-        match_result_txt = "0 - 1"
+        game_result_txt = gp.TXT_WHITE_WINS
 
     # On-SCREEN output:
     # Final status of the board.
     end_status_txt = "\nEnd of the game: {}".format(
         ut.game_status_txt[end_status])
-    print("{}".format(match_result_txt))
+    print("{}".format(game_result_txt))
     print("{}".format(end_status_txt))
 
     # Game-record FILE:
-    print("\n{}".format(match_result_txt), file=rec_file)
+    print("\n{}".format(game_result_txt), file=rec_file)
     print("{}".format(end_status_txt), file=rec_file)
 
     # Game-traces FILE:
@@ -376,14 +386,35 @@ def display_move_metrics(
         print("{}".format(nodes_per_level), file=metrics_file)
 
 
-def play_match(board, player, max_moves, file_name=None):
+def play_game(board, board_file_name, player_set, max_moves, timing=None):
+    """
+    Play a game of The Crown under the conditions given, returning end result.
+
+    Args:
+        board (Board):          The board position to play.
+        board_file_name (str):  The name of the board to display.
+        player_set (list):      A list with two instances of Player:
+                                white and black player.
+        max_moves (int):        The maximum number of moves to play.
+        timing_type (int):      None = no limit;
+                                "move" = time limit per move.
+                                "game" = total time limit for the game.
+
+    Returns:
+        str:    gp.TXT_DRAW, gp.TXT_WHITE_WINS or gp.TXT_BLACK_WINS
+        int:    gp.ON_GOING, gp.VICTORY_CROWNING, gp.VICTORY_NO_PIECES_LEFT,
+                gp.DRAW_NO_PRINCES_LEFT, gp.DRAW_STALEMATE,
+                gp.DRAW_THREE_REPETITIONS, gp.PLAYER_RESIGNS
+    """
     # Start the match!
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
     rec_file_path = f"{dir_path}{OUTPUT_PATH}{GAME_RECORD_FILE}"
     metrics_file_path = f"{dir_path}{OUTPUT_PATH}{GAME_METRICS_FILE}"
     with open(rec_file_path, "a") as rec_file:
-        move_number = display_start(board, player, file_name, rec_file)
+        move_number = display_start(
+            board, player_set, board_file_name, rec_file
+        )
         # Initialize game variables.
         game_end = False
         player_quit = False
@@ -396,12 +427,12 @@ def play_match(board, player, max_moves, file_name=None):
         while not game_end:
             # Main loop of the full game.
             board.print_char()
-            if player[board.turn].type == MACHINE_PLAYER:
+            if player_set[board.turn].type == MACHINE_PLAYER:
                 # A MACHINE plays this side.
                 move, result, game_end, end_status, time_used, tt_metrics =\
                     gp.play(
                         board,
-                        params=player[board.turn].params,
+                        params=player_set[board.turn].params,
                         trace=game_trace, t_table=t_table[board.turn],
                         killer_list=killer_list[board.turn]
                     )
@@ -409,7 +440,7 @@ def play_match(board, player, max_moves, file_name=None):
                 with open(metrics_file_path, "a") as metrics_file:
                     display_move_metrics(
                         board.turn, move, result,
-                        player[board.turn].params,
+                        player_set[board.turn].params,
                         time_used, tt_metrics,
                         game_trace, metrics_file
                     )
@@ -432,8 +463,10 @@ def play_match(board, player, max_moves, file_name=None):
                 if repetition:
                     # Draw; end of game.
                     game_end = True
+                    result = gp.DRAW
+                    end_status = gp.DRAW_THREE_REPETITIONS
                     display_end_results(
-                        board, gp.DRAW, gp.DRAW_THREE_REPETITIONS, rec_file
+                        board, result, end_status, rec_file
                     )
                 else:
                     # Draw separation line.
@@ -442,10 +475,12 @@ def play_match(board, player, max_moves, file_name=None):
                 # End of the game.
                 if player_quit:
                     # Human chose to quit.
+                    result = gp.OPPONENT_WINS
+                    end_status = gp.PLAYER_RESIGNS
                     display_quit_results(board, rec_file)
                 elif max_moves_played:
                     # Max. number of moves requested reached.
-                    pass
+                    end_status = gp.ON_GOING
                 else:
                     # The game reached an end.
                     display_end_results(board, result, end_status, rec_file)
@@ -455,8 +490,18 @@ def play_match(board, player, max_moves, file_name=None):
                 game_end = True
                 max_moves_played = True
 
+    # Result of the game.
+    if result == gp.DRAW:
+        game_result = gp.TXT_DRAW
+    elif result == gp.PLAYER_WINS and board.turn == bd.WHITE:
+        game_result = gp.TXT_BLACK_WINS
+    else:
+        game_result = gp.TXT_WHITE_WINS
+
+    return game_result, end_status
+
 
 # Main program.
 if __name__ == "__main__":
-    # If called directly, run main function.
+    # If called directly, run main function with arguments passed.
     run_the_crown(sys.argv[1:])

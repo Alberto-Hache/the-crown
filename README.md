@@ -75,6 +75,20 @@ This will run a thorough set of tests on all core functionality:
 - Board management functionality
 - Auxiliary functions
 
+### Playing a game
+
+To play a game against this program, make sure you are at the home directory (./the-crown). Now type:
+
+```bash
+$ python crown.py human crowny-iii
+```
+
+This will start a game between you, playing white, and the program playing black with depth three full-width search.
+
+To type your move, you must enter two coordinates for one of your pieces with origin and destination cells. For example, beginning with e3d3 will move one of your Soldiers towards your opponent (while opening a line for your Knight):
+
+
+
 ### Author
 
 Alberto Hernández Marcos
