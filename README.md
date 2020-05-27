@@ -91,6 +91,8 @@ Type move for White (Q to quit):
 
 You must enter the coordinates of origin and destination cells for one of your pieces. For example, beginning with e5d5 will move one of your Soldiers towards your opponent while clearing a line for one Knight:
 
+<img src="thecrown/docs/TheCrown_Textmode.png" width="500">
+
 <img src="thecrown/docs/TheCrown_Textmode2.png" width="200">
 
 The program will play as black now and, at level 3 (i.e. iii), it shouldn't take more than a couple of seconds per move. Good luck!
