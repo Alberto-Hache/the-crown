@@ -91,9 +91,6 @@ Type move for White (Q to quit):
 
 You must enter the coordinates of origin and destination cells for one of your pieces. For example, beginning with e5d5 will move one of your Soldiers towards your opponent while clearing a line for one Knight:
 
-This should start a machine-vs-machine game in good-old-fashioned text mode on your terminal with search depth 3 (which, if you know some game theory, is a bit shallow, but plays at a reasonable level at a very fast speed!)...
-
-<img src="thecrown/docs/TheCrown_Textmode.png" width="500">
 
 <img src="thecrown/docs/TheCrown_Textmode2.png" width="200">
 
