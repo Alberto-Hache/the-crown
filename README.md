@@ -91,6 +91,8 @@ Type move for White (Q to quit):
 
 You must enter the coordinates of origin and destination cells for one of your pieces. For example, beginning with e5d5 will move one of your Soldiers towards your opponent while clearing a line for one Knight:
 
+This should start a machine-vs-machine game in good-old-fashioned text mode on your terminal with search depth 3 (which, if you know some game theory, is a bit shallow, but plays at a reasonable level at a very fast speed!)...
+
 <img src="thecrown/docs/TheCrown_Textmode.png" width="500">
 
 <img src="thecrown/docs/TheCrown_Textmode2.png" width="200">
@@ -103,7 +105,7 @@ When calling crown.py, arguments are interpreted like this:
 
 - Player names are allocated White and Black in this order. If less than two names are passed, a default machine-player is assigned.
 
-    Example: play a games as black against level 4.
+    Example: play a game as black against level 4.
 
     ```bash
     $ python crown.py crowny-iv human
@@ -116,7 +118,7 @@ When calling crown.py, arguments are interpreted like this:
         crowny-ii   # The computer will play this side at level 2.
         ...         # etc. for crowny-iii, -iv, -v, -vi and -vii.
 
-- The game can start from some prestored position if passed as argument.
+- The game can start from some predefined position if passed as argument.
 
     Example: start playing from position strategy_01.cor (a file in ./thecrown/games/) as white vs level 5.
 
@@ -124,7 +126,7 @@ When calling crown.py, arguments are interpreted like this:
     $ python crown.py human crowny-v strategy_01.cor
     ```
 
-- Finally, to limit the number of moves to play an integer can be passed. This is useful to analyze positions.
+- Finally, an integer can be passed to limit the number of moves to play. This is useful to analyze positions.
 
     Example: play the first three moves at level 6 for black and white in position strategy_03.cor.
 
