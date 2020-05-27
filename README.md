@@ -6,7 +6,7 @@ Two Princes battle for the empty throne!
 
 ## Inspired in chess
 
-*The Crown* is a board game in which two players battle for their Prince's crowning on a triangular board. Each opponent has six pieces, placed on opposite vertices of the board. The remaining vertex, which they will fight to conquer, is the *crown* or *crowning box*.
+*The Crown* is a board game in which two players battle for their Prince's crowning on a triangular board. Each opponent has six pieces, placed on opposite vertices of the board. The remaining vertex, which they will fight to conquer, is the *crown* or *crowning cell*.
 
 The game puts most of chess' original flavour (captures, checks, promotions, strategies...) on a different landscape, simplifying gameplay to three piece types -Prince, Knight and Soldier- who move pretty much like their square-world relatives.
 
@@ -75,7 +75,7 @@ This will run a thorough set of tests on all core functionality:
 - Board management functionality
 - Auxiliary functions
 
-### Playing a game
+### Playing a quick game
 
 To play a game against this program, make sure you are at the home directory (./the-crown). Now type:
 
@@ -83,11 +83,52 @@ To play a game against this program, make sure you are at the home directory (./
 $ python crown.py human crowny-iii
 ```
 
-This will start a game between you, playing white, and the program playing black with depth three full-width search.
+This will start a game between you, playing white, and the program playing black with depth three full-width search. As white, you will be prompted for the first move.
 
-To type your move, you must enter two coordinates for one of your pieces with origin and destination cells. For example, beginning with e3d3 will move one of your Soldiers towards your opponent (while opening a line for your Knight):
+```
+Type move for White (Q to quit):
+````
 
+You must enter the coordinates of origin and destination cells for one of your pieces. For example, beginning with e5d5 will move one of your Soldiers towards your opponent while clearing a line for one Knight:
 
+<img src="thecrown/docs/TheCrown_textmode2.png" width="200">
+
+The program will play as black now and, at level 3 (i.e. iii), it shouldn't take more than a couple of seconds per move. Good luck!
+
+### Program arguments
+
+When calling crown.py, arguments are interpreted like this:
+
+- Player names are allocated White and Black in this order. If less than two names are passed, a default machine-player is assigned.
+
+    Example: play a games as black against level 4.
+
+    ```bash
+    $ python crown.py crowny-iv human
+    ```
+
+    Possible values of players are:
+
+        human       # A user will type moves for this side.
+        crowny-i    # The computer will play this side at level 1.
+        crowny-ii   # The computer will play this side at level 2.
+        ...         # etc. for crowny-iii, -iv, -v, -vi and -vii.
+
+- The game can start from some prestored position if passed as argument.
+
+    Example: start playing from position strategy_01.cor (a file in ./thecrown/games/) as white vs level 5.
+
+    ```bash
+    $ python crown.py human crowny-v strategy_01.cor
+    ```
+
+- Finally, to limit the number of moves to play an integer can be passed. This is useful to analyze positions.
+
+    Example: play the first three moves at level 6 for black and white in position strategy_03.cor.
+
+    ```bash
+    $ python crown.py strategy_05.cor crowny-vi crowny-vi  3
+    ```
 
 ### Author
 

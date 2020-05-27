@@ -419,6 +419,7 @@ def play_game(board, board_file_name, player_set, max_moves, timing=None):
         game_end = False
         player_quit = False
         max_moves_played = False
+        end_status = gp.ON_GOING
         game_trace = gp.Gametrace(board)
         # Initialize one transposition table and killer moves list per side.
         t_table = [gp.Transposition_table(), gp.Transposition_table()]
