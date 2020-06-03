@@ -1,0 +1,10 @@
+name: "Crowny I"
+type: machine
+ranking: 1500
+play method: minimax
+max_depth: 1
+max_check_quiesc_depth: 4
+transposition_table: true
+killer_moves: false  # Needless here.
+iterative_deepening: false  # Needless here.
+randomness: 0

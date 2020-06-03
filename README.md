@@ -10,7 +10,7 @@ Two Princes battle for the empty throne!
 
 The game puts most of chess' original flavour (captures, checks, promotions, strategies...) on a different landscape, simplifying gameplay to three piece types -Prince, Knight and Soldier- who move pretty much like their square-world relatives.
 
-<img src="thecrown/docs/TheCrown_StartingPosition.png" width="250">
+<img align="center" src="thecrown/docs/TheCrown_StartingPosition.png" width="250">
 
 *Starting position of The Crown*
 
@@ -29,7 +29,7 @@ I really hope you enjoy it!
 ### Prerequisites
 
 - Python 3.7+
-- pip
+- [pip](https://pypi.org/project/pip/) package manager
 
 ### Installation
 
@@ -59,7 +59,7 @@ $ make run
 
 This should start a machine-vs-machine game in good-old-fashioned text mode on your terminal with search depth 3 (which, if you know some game theory, is a bit shallow, but plays at a reasonable level at a very fast speed!)...
 
-<img src="thecrown/docs/TheCrown_Textmode.png" width="500">
+<img align="center" src="thecrown/docs/TheCrown_Textmode.png" width="500">
 
 ### Further testing
 
@@ -87,12 +87,11 @@ This will start a game between you, playing white, and the program playing black
 
 ```
 Type move for White (Q to quit):
-````
+```
 
 You must enter the coordinates of origin and destination cells for one of your pieces. For example, beginning with e5d5 will move one of your Soldiers towards your opponent while clearing a line for one Knight:
 
-
-<img src="thecrown/docs/TheCrown_Textmode2.png" width="200">
+<img align="center" src="thecrown/docs/TheCrown_Textmode2.png" width="200">
 
 The program will play as black now and, at level 3 (i.e. iii), it shouldn't take more than a couple of seconds per move. Good luck!
 

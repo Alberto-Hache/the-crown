@@ -1,5 +1,5 @@
 ###############################################################################
-# Auxiliary tables for the board.
+# Auxiliary tables and functions for the board.
 ###############################################################################
 
 # Standard library imports

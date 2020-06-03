@@ -25,7 +25,7 @@ Knights dominate the field in all three directions and have a maximum mobility o
 
 <img align="center" src="TheCrown_KnightMoves.png" width="250">
 
-*~White to move: the black Knight can be captured~*
+*White to move: the black Knight can be captured*
 
 ### Soldier
 
@@ -33,13 +33,13 @@ Soldiers move normally one cell at a time...
 
 <img align="center" src="TheCrown_SoldierMoves.png" width="250">
 
-*~ Moves of the White Soldiers~*
+* Moves of the White Soldiers*
 
 But in their kingdom they can advance two cells. 
 
 <img align="center" src="TheCrown_SoldierMovesInKingdom.png" width="250">
 
-*~Moves of a White Soldier in its kingdom~*
+*Moves of a White Soldier in its kingdom*
 
 Players' kingdoms are defined by the starting area of each side:
 
@@ -57,7 +57,7 @@ When checkmated, the Prince must leave the board and… yield the turn.
 
 <img align="center" src="TheCrown_Checkmate.png" width="250">
 
-*~Black to move, but its Prince is checkmated~*
+*Black to move, but its Prince is checkmated*
 
 *After the black Prince leaves it's White's move again (this game would go on since the opponent is not yet King).*
 
@@ -67,7 +67,7 @@ Soldiers reaching their Prince’s starting position promote to Prince.
 
 <img align="center" src="TheCrown_SoldierPromotion.png" width="250">
 
-*~Black to move: this Soldier can promote to Prince~*
+*Black to move: this Soldier can promote to Prince*
 
 NOTE:
 - The new Prince cannot be left in check.
@@ -93,7 +93,7 @@ The game is a draw when the player to move has no legal move and is not in check
 
 <img align="center" src="TheCrown_StalematedPrince.png" width="250">
 
-*~It’s Black’s move, but its Prince is stalemated~*
+*It’s Black’s move, but its Prince is stalemated*
 
 ### No Princes left
 

@@ -1,3 +1,7 @@
+###############################################################################
+# Management of a game board and pieces.
+###############################################################################
+
 # Standard library imports
 import sys
 import types
@@ -114,7 +118,6 @@ piece_moves_by_code = (
     (simple_moves, soldier_moves[1], knight_moves)
 )
 """
-
 
 class Board:
     def __init__(self, file_name=None):

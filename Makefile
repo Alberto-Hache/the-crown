@@ -19,9 +19,14 @@ run:
 
 # Run all unit tests.
 test:
+	python $(TEST_PATH)test_players.py -v
 	python $(TEST_PATH)test_crownutils.py -v
 	python $(TEST_PATH)test_board.py -v
 	python $(TEST_PATH)test_gameplay.py -v
+
+# Run some specific test.
+test-latest:
+	python $(TEST_PATH)test_players.py -v
 
 # Run profiling for key negamax() function at depth 5.
 profile:

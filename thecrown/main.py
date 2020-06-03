@@ -1,6 +1,12 @@
+###############################################################################
+# Execution of a full game of The Crown.
+###############################################################################
+
 # Standard library imports
 import sys
 import os
+import glob
+import yaml
 import types
 import time
 import datetime
@@ -15,69 +21,55 @@ import crownutils as ut
 # Paths:
 GAMES_PATH = "/games/"  # Location of saved games.
 OUTPUT_PATH = "/output/"  # Results of the game.
+PLAYERS_PATH = "/players/"  # Information about human / machine players.
 # Output files.
 GAME_METRICS_FILE = "game_metrics.txt"
 GAME_RECORD_FILE = "game_record.txt"
 
 # Local constants.
-HUMAN_PLAYER = "Human"
-MACHINE_PLAYER = "Computer"
-
-# Player as a named tuple:
-Player = namedtuple('Player', 'name, type, side, params')
+HUMAN_PLAYER = "human"
+MACHINE_PLAYER = "machine"
 
 # Players set.
 DEFAULT_WHITE_PLAYER = "crowny-iii"
 DEFAULT_BLACK_PLAYER = "crowny-iii"
-
-crown_players = {
-    "human": Player(
-        "Human", HUMAN_PLAYER, None, None
-    ),
-    "crowny-i": Player(
-        "Crowny-I", MACHINE_PLAYER, None, gp.PLY1_SEARCH_PARAMS
-    ),
-    "crowny-ii": Player(
-        "Crowny-II", MACHINE_PLAYER, None, gp.PLY2_SEARCH_PARAMS
-    ),
-    "crowny-iii": Player(
-        "Crowny-III", MACHINE_PLAYER, None, gp.PLY3_SEARCH_PARAMS
-    ),
-    "crowny-iv": Player(
-        "Crowny-IV", MACHINE_PLAYER, None, gp.PLY4_SEARCH_PARAMS
-    ),
-    "crowny-v": Player(
-        "Crowny-V", MACHINE_PLAYER, None, gp.PLY5_SEARCH_PARAMS
-    ),
-    "crowny-vi": Player(
-        "Crowny-VI", MACHINE_PLAYER, None, gp.PLY6_SEARCH_PARAMS
-    ),
-    "crowny-vii": Player(
-        "Crowny-VII", MACHINE_PLAYER, None, gp.PLY7_SEARCH_PARAMS
-    )
-}
 
 
 def run_the_crown(arg_list):
     """
     Main function, receiving 'arguments' given to main.py
 
-    Arguments are interpreted like this:
-    - 1st string with the name of a player -> White player.
-    - 2nd string with the name of a player -> Black player.
-    - A string ≠ player name -> a board file to load.
-    - integer -> Maximum number of moves to play.
+    Argurments:
+        arg_list (list):
+        List elements are interpreted like this:
+        - 1st string with the name of a player -> White player.
+        - 2nd string with the name of a player -> Black player.
+        - A string ≠ player name -> a board file to load.
+        - integer -> Maximum number of moves to play.
 
-    Default values:
-    - White player: DEFAULT_WHITE_PLAYER
-    - Black player: DEFAULT_BLACK_PLAYER
-    - Board file:   None [initial position]
-    - Num. moves:   Infinity
+        Default values:
+        - White player: DEFAULT_WHITE_PLAYER
+        - Black player: DEFAULT_BLACK_PLAYER
+        - Board file:   None [initial position]
+        - Num. moves:   Infinity
+
+    Returns:
+        str:    gp.TXT_DRAW, gp.TXT_WHITE_WINS or gp.TXT_BLACK_WINS
+        int:    gp.ON_GOING, gp.VICTORY_CROWNING, gp.VICTORY_NO_PIECES_LEFT,
+                gp.DRAW_NO_PRINCES_LEFT, gp.DRAW_STALEMATE,
+                gp.DRAW_THREE_REPETITIONS, gp.PLAYER_RESIGNS
+
     """
     # Initialize arguments.
     board_file_name = None
     white_player, black_player = None, None
     max_moves = np.Infinity
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    players_list = glob.glob(f"{dir_path}{PLAYERS_PATH}*.yaml")
+    players_list = [
+        full_name.split("/")[-1]
+        for full_name in players_list
+    ]
 
     # Check args passd
     for arg in arg_list:
@@ -87,8 +79,9 @@ def run_the_crown(arg_list):
         else:
             # Check if it's the name of a player.
             arg = str.lower(arg)
-            player = crown_players.get(arg)  # Check if it's a player.
-            if player:
+            # Check if it's a player.
+            test_name = f"{arg}.yaml"
+            if test_name in players_list:
                 # It's a known player.
                 if white_player is None:
                     white_player = arg
@@ -96,43 +89,63 @@ def run_the_crown(arg_list):
                     black_player = arg
             else:
                 # It must be a board_file_name to load.
-                dir_path = os.path.dirname(os.path.realpath(__file__))
                 board_file_name = f"{dir_path}{GAMES_PATH}{arg}"
 
     # Load board position.
     board = bd.Board(board_file_name)
     if not gp.is_legal_loaded_board(board):
-        print(f"Error: {board_file_name} is not a legal board for The Crown.")
+        # TODO: Find out WHY ON EARTH removing # below makes second if fail??
+        #print(f"Error: {board_file_name} is not a legal board for The Crown.")
         sys.exit(1)
+
     # Assign default players to missing sides.
     if white_player is None:
         white_player = DEFAULT_WHITE_PLAYER
     if black_player is None:
         black_player = DEFAULT_BLACK_PLAYER
 
-    # And now retrieve them from known 'crown_players' dict.
-    player_set = [
-        crown_players[white_player],
-        crown_players[black_player]
-    ]
+    # And now retrieve players' data from their .yaml files. Add ref to file.
+    w_file = f"{dir_path}{PLAYERS_PATH}{white_player}.yaml"
+    with open(w_file) as file:
+        try:
+            w_player_dict = yaml.full_load(file)
+        except yaml.YAMLError:
+            print(f"Error found in player file {w_file}.")
+            sys.exit(1)
+    w_player_dict["file_name"] = white_player  # e.g. "crowny-iii"
+    w_player_dict["file_path"] = w_file  # Full path to .yaml file.
 
-    # Start a match between two players.
+    b_file = f"{dir_path}{PLAYERS_PATH}{black_player}.yaml"
+    with open(b_file) as file:
+        try:
+            b_player_dict = yaml.full_load(file)
+        except yaml.YAMLError:
+            print(f"Error found in player file {b_file}.")
+            sys.exit(1)
+    b_player_dict["file_name"] = black_player  # e.g. "crowny-iii"
+    b_player_dict["file"] = b_file
+
+    player_set = [w_player_dict, b_player_dict]
+
+    # Play the game between the two players.
     game_result, end_status = play_game(
         board, board_file_name, player_set, max_moves)
+
+    return game_result, end_status
 
 
 def request_human_move(board):
     """
     Request and validate a move from the keyboard in algebraic notation.
 
-    Input:
-        board:          Board - the position to play on.
+    Arguments:
+        board (Board):  The position to play on.
 
-    Output:
-        move:           A list [coord1, coord2], or None.
-        result:         None or a string to signal end.
-                        - None: the move was valid.
-                        - "Quit": human player asked to quit.
+    Returns:
+        list:       [coord1, coord2], or None.
+        string:     None or a string to signal end:
+                    - None: the move was valid.
+                    - "Quit": human player asked to quit.
     """
     move = None
     result = None
@@ -166,10 +179,22 @@ def request_human_move(board):
     return move, result
 
 
-def display_start(board, player, board_file_name, rec_file):
+def display_start(board, player_set, board_name, rec_file):
+    """
+    Produce the  starting text on screen, game record  file and
+    game traces file.
+
+    Arguments:
+        board (Board):          The initial position on which the game starts.
+        player_set (list):      A list with two dictionaries with white's
+                                and black's data and playing parameters.
+        board_name (string):    Name of the file containing 'board'.
+        rec_file (file):        The game record file.
+
+    """
     # On-SCREEN output:
-    game_txt = "Initial position" if board_file_name is None \
-        else board_file_name.split("/")[-1]  # Take name of the file only.
+    game_txt = "Initial position" if board_name is None \
+        else board_name.split("/")[-1]  # Take name of the file only.
     print(
         "Starting The Crown!\n[{}]"
         .format(game_txt)
@@ -181,8 +206,8 @@ def display_start(board, player, board_file_name, rec_file):
         "---< The Crown >---\n({})\n".format(game_txt),
         file=rec_file
     )
-    print("White: {}".format(player[0].name), file=rec_file)
-    print("Black: {}".format(player[1].name), file=rec_file)
+    print("White: {}".format(player_set[0]["name"]), file=rec_file)
+    print("Black: {}".format(player_set[1]["name"]), file=rec_file)
     print("{}\n".format(time.ctime()), file=rec_file)
     board.print_char(out_file=rec_file)
     move_number = 1  # Used to print the game played.
@@ -209,6 +234,17 @@ def display_start(board, player, board_file_name, rec_file):
 
 
 def display_move(board, move, move_number, rec_file):
+    """
+    Produce a text describing the move made on screen, game record
+    file and game traces file.
+
+    Arguments:
+        board (Board):          The initial position on which the game starts.
+        move (list):            [coord1, coord2], or None.
+        move_number (int):      The number of move made.
+        rec_file (file):        The game record file.
+
+    """
     # On-SCREEN output:
     pass
 
@@ -390,13 +426,14 @@ def play_game(board, board_file_name, player_set, max_moves, timing=None):
     """
     Play a game of The Crown under the conditions given, returning end result.
 
-    Args:
+    Arguments:
         board (Board):          The board position to play.
         board_file_name (str):  The name of the board to display.
-        player_set (list):      A list with two instances of Player:
-                                white and black player.
+        player_set (list):      A list with two dictionaries with white's
+                                and black's data and playing parameters.
         max_moves (int):        The maximum number of moves to play.
         timing_type (int):      None = no limit;
+                                TODO: Define and implement:
                                 "move" = time limit per move.
                                 "game" = total time limit for the game.
 
@@ -405,6 +442,7 @@ def play_game(board, board_file_name, player_set, max_moves, timing=None):
         int:    gp.ON_GOING, gp.VICTORY_CROWNING, gp.VICTORY_NO_PIECES_LEFT,
                 gp.DRAW_NO_PRINCES_LEFT, gp.DRAW_STALEMATE,
                 gp.DRAW_THREE_REPETITIONS, gp.PLAYER_RESIGNS
+
     """
     # Start the match!
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -428,12 +466,12 @@ def play_game(board, board_file_name, player_set, max_moves, timing=None):
         while not game_end:
             # Main loop of the full game.
             board.print_char()
-            if player_set[board.turn].type == MACHINE_PLAYER:
+            if player_set[board.turn]["type"] == MACHINE_PLAYER:
                 # A MACHINE plays this side.
                 move, result, game_end, end_status, time_used, tt_metrics =\
                     gp.play(
                         board,
-                        params=player_set[board.turn].params,
+                        params=player_set[board.turn],
                         trace=game_trace, t_table=t_table[board.turn],
                         killer_list=killer_list[board.turn]
                     )
@@ -441,7 +479,7 @@ def play_game(board, board_file_name, player_set, max_moves, timing=None):
                 with open(metrics_file_path, "a") as metrics_file:
                     display_move_metrics(
                         board.turn, move, result,
-                        player_set[board.turn].params,
+                        player_set[board.turn],
                         time_used, tt_metrics,
                         game_trace, metrics_file
                     )
@@ -504,5 +542,6 @@ def play_game(board, board_file_name, player_set, max_moves, timing=None):
 
 # Main program.
 if __name__ == "__main__":
-    # If called directly, run main function with arguments passed.
-    run_the_crown(sys.argv[1:])
+    # If called directly, run run_the_crown() with arguments passed.
+    # Ignore results returned (game_result, end_status).
+    _, _ = run_the_crown(sys.argv[1:])

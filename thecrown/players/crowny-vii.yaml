@@ -1,0 +1,10 @@
+name: "Crowny VII"
+type: machine
+ranking: 1500
+play method: minimax
+max_depth: 7
+max_check_quiesc_depth: 17
+transposition_table: true
+killer_moves: true
+iterative_deepening: true
+randomness: 0
