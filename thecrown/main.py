@@ -104,27 +104,9 @@ def run_the_crown(arg_list):
     if black_player is None:
         black_player = DEFAULT_BLACK_PLAYER
 
-    # And now retrieve players' data from their .yaml files. Add ref to file.
-    w_file = f"{dir_path}{PLAYERS_PATH}{white_player}.yaml"
-    with open(w_file) as file:
-        try:
-            w_player_dict = yaml.full_load(file)
-        except yaml.YAMLError:
-            print(f"Error found in player file {w_file}.")
-            sys.exit(1)
-    w_player_dict["file_name"] = white_player  # e.g. "crowny-iii"
-    w_player_dict["file_path"] = w_file  # Full path to .yaml file.
-
-    b_file = f"{dir_path}{PLAYERS_PATH}{black_player}.yaml"
-    with open(b_file) as file:
-        try:
-            b_player_dict = yaml.full_load(file)
-        except yaml.YAMLError:
-            print(f"Error found in player file {b_file}.")
-            sys.exit(1)
-    b_player_dict["file_name"] = black_player  # e.g. "crowny-iii"
-    b_player_dict["file"] = b_file
-
+    # And now retrieve players' data from their .yaml files.
+    w_player_dict = read_player_data(white_player)
+    b_player_dict = read_player_data(black_player)
     player_set = [w_player_dict, b_player_dict]
 
     # Play the game between the two players.
@@ -132,6 +114,25 @@ def run_the_crown(arg_list):
         board, board_file_name, player_set, max_moves)
 
     return game_result, end_status
+
+
+def read_player_data(player_name):
+    """
+    Retrieve players' data from their .yaml files.
+    Add ref to short name (file_name) and full path (file).
+    """
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    p_file = f"{dir_path}{PLAYERS_PATH}{player_name}.yaml"
+    with open(p_file) as file:
+        try:
+            player_dict = yaml.full_load(file)
+        except yaml.YAMLError:
+            print(f"Error found in player file {p_file}.")
+            sys.exit(1)
+    player_dict["file_name"] = player_name  # e.g. "crowny-iii"
+    player_dict["file"] = p_file
+
+    return player_dict
 
 
 def request_human_move(board):
@@ -422,7 +423,9 @@ def display_move_metrics(
         print("{}".format(nodes_per_level), file=metrics_file)
 
 
-def play_game(board, board_file_name, player_set, max_moves, timing=None):
+def play_game(
+    board, board_file_name, player_set, max_moves=np.Infinity, timing=None
+):
     """
     Play a game of The Crown under the conditions given, returning end result.
 
@@ -542,6 +545,6 @@ def play_game(board, board_file_name, player_set, max_moves, timing=None):
 
 # Main program.
 if __name__ == "__main__":
-    # If called directly, run run_the_crown() with arguments passed.
+    # If called directly, call run_the_crown() with arguments passed.
     # Ignore results returned (game_result, end_status).
     _, _ = run_the_crown(sys.argv[1:])

@@ -6,7 +6,6 @@ import types
 import time
 from operator import itemgetter
 from itertools import dropwhile
-import yaml
 
 # Local application imports
 import board as bd

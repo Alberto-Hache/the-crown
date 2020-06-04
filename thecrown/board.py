@@ -119,6 +119,7 @@ piece_moves_by_code = (
 )
 """
 
+
 class Board:
     def __init__(self, file_name=None):
         # Generic boaard info.
