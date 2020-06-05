@@ -252,6 +252,26 @@ def read_player_data(player_name):
     """
     Retrieve players' data from their .yaml files.
     Add ref to short name (file_name) and full path (file).
+
+    Arguments:
+        player_name (str):  Name of the player to read, e.g. "crowny-iv".
+
+    Returns:
+        dictionary:         E.g.:
+        {
+            "name": "Crowny III",
+            "type": machine,
+            "ranking": 1500,
+            "play method": minimax,
+            "max_depth": 3,
+            "max_check_quiesc_depth": 8,
+            "transposition_table": true,
+            "killer_moves": true,
+            "iterative_deepening": true,
+            "randomness": 0,
+            "file_name": "crowny-iii",
+            "file": "...<full_path>...thecrown/players/crowny-iii.yaml"
+        }
     """
     dir_path = os.path.dirname(os.path.realpath(__file__))
     p_file = f"{dir_path}{PLAYERS_PATH}{player_name}.yaml"

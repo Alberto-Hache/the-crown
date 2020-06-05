@@ -196,19 +196,6 @@ def play_match(player_1, rnd_1, player_2, rnd_2, board, n_rounds):
 
             # Save game_record.txt with an appropriate name.
             rec_file_path = f'{dir_path}{OUTPUT_PATH}{GAME_RECORD_FILE}'
-            """
-            if player_set[0]["randomness"] is None or \
-               player_set[0]["randomness"] == 0:
-                rnd_1_txt = ""
-            else:
-                rnd_1_txt = f'(rnd {player_set[0]["randomness"]})'
-
-            if player_set[0]["randomness"] is None or \
-               player_set[0]["randomness"] == 0:
-                rnd_1_txt = ""
-            else:
-                rnd_1_txt = f'(rnd {player_set[0]["randomness"]})'
-            """
             new_file_path = "{}{}{}({}) vs {}({}).txt".format(
                 dir_path, TOURNAMENT_PATH,
                 player_set[0]["file_name"], player_set[0]["randomness"],

@@ -59,7 +59,7 @@ $ make run
 
 This should start a machine-vs-machine game in good-old-fashioned text mode on your terminal with search depth 3 (which, if you know some game theory, is a bit shallow, but plays at a reasonable level at a very fast speed!)...
 
-<img align="center" src="thecrown/docs/TheCrown_Textmode.png" width="500">
+<img align="center" src="thecrown/docs/TheCrown_Textmode_window.png" width="500">
 
 ### Further testing
 
@@ -74,6 +74,7 @@ This will run a thorough set of tests on all core functionality:
 - Overall gameplay
 - Board management functionality
 - Auxiliary functions
+- Predefined players
 
 ### Playing a quick game
 
@@ -91,7 +92,7 @@ Type move for White (Q to quit):
 
 You must enter the coordinates of origin and destination cells for one of your pieces. For example, beginning with e5d5 will move one of your Soldiers towards your opponent while clearing a line for one Knight:
 
-<img align="center" src="thecrown/docs/TheCrown_Textmode2.png" width="200">
+<img align="center" src="thecrown/docs/TheCrown_Textmode.png" width="200">
 
 The program will play as black now and, at level 3 (i.e. iii), it shouldn't take more than a couple of seconds per move. Good luck!
 
@@ -138,6 +139,5 @@ I created this game in 1989, during my last year before graduating from the Univ
 
 ### License
 
-This project is licensed under GNU General Public License 3.0 - see the [LICENSE] file for details.
+This project is licensed under GNU General Public License 3.0 - see the [LICENSE](LICENSE) file for details.
 
-[LICENSE.md]: LICENSE

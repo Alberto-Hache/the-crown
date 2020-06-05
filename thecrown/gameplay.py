@@ -80,7 +80,7 @@ PLY7_SEARCH_PARAMS = {
 
 
 MINIMAL_SEARCH_PARAMS = PLY1_SEARCH_PARAMS
-DEFAULT_SEARCH_PARAMS = PLY5_SEARCH_PARAMS
+DEFAULT_SEARCH_PARAMS = PLY3_SEARCH_PARAMS
 
 ########################################################################
 # Evaluation of static positions.
@@ -1005,7 +1005,7 @@ def quiesce_WIP(
     if try_stand_pat:
         # "Stand pat" is possible; evaluate it.
         best_move = None
-        result_i = evaluate_static(board, depth)
+        result_i = evaluate_static(board, depth, params["randomness"])
         # Check result of "stand pat" vs alpha-beta window.
         if result_i >= beta:
             return None, beta, False, ON_GOING  # [fail hard beta cutoff]
@@ -1348,7 +1348,7 @@ def quiesce(
     if not player_in_check:
         # A "stand pat" is possible; evaluate it.
         best_move = None
-        result_i = evaluate_static(board, depth)
+        result_i = evaluate_static(board, depth, params["randomness"])
         # Check result of the "stand pat" vs alpha-beta window.
         if result_i >= beta:
             return None, beta, False, ON_GOING  # [fail hard beta cutoff]
@@ -1547,14 +1547,15 @@ def quiesce(
         return None, alpha, False, ON_GOING
 
 
-def evaluate_static(board, depth):
+def evaluate_static(board, depth, rnd_stdev=0):
     """
     Evaluate a static position from playing side's perspective.
 
     Input:
-        board:      Board - The game position to evaluate.
-        depth:      int - Depth of node in the search tree.
-
+        board (Board):      The game position to evaluate.
+        depth (int):        Depth of node in the search tree.
+        rnd_stdev (float):  Randomness parameter; standard deviation of the
+                            normal distribution (mean = 0) to sample from.
     Output:
         result:     float - A heuristic evaluation taking into account
                     material and positional features.
@@ -1622,15 +1623,22 @@ def evaluate_static(board, depth):
     soldiers_adv_reward_balance = \
         own_soldiers_adv_reward - opp_soldiers_adv_reward
 
-    # 5. Other factors.
+    # 5. Random factor.
+    if rnd_stdev == 0:
+        noise = 0.0
+    else:
+        noise = np.random.normal(0.0, rnd_stdev)
+
+    # 6. Pre-evaluation.
     pre_eval = \
         material + \
         mobility_balance + \
         crown_distance_balance + \
         soldiers_lag_penalty_balance + \
-        soldiers_adv_reward_balance
+        soldiers_adv_reward_balance + \
+        noise
 
-    # 4.1. Depth is penalized to encourage nearer wins.
+    # FINAL evaluation: Depth is penalized to encourage nearer wins.
     other = - depth*STATIC_DEPTH_PENALTY*np.sign(pre_eval)
 
     return pre_eval + other
