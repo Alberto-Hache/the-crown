@@ -1,3 +1,8 @@
+###############################################################################
+# Execute The Crown
+# passing on the arguments received.
+###############################################################################
+
 # Standard library imports
 import sys
 sys.path.append('thecrown')

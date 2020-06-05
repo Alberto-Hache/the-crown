@@ -37,15 +37,15 @@ DEFAULT_BLACK_PLAYER = "crowny-iii"
 
 def run_the_crown(arg_list):
     """
-    Main function, receiving 'arguments' given to main.py
+    Prepare and launch a game based on 'arguments' passed.
 
     Argurments:
         arg_list (list):
         List elements are interpreted like this:
-        - 1st string with the name of a player -> White player.
-        - 2nd string with the name of a player -> Black player.
-        - A string ≠ player name -> a board file to load.
-        - integer -> Maximum number of moves to play.
+        - 1st string with a player's name -> White player, e.g. "Crowny-ii"
+        - 2nd string with a player's name -> Black player, e.g. "human"
+        - A string ≠ player -> a board file to load, e.g. "position_03.cor"
+        - integer -> Maximum number of moves to play, e.g. "10"
 
         Default values:
         - White player: DEFAULT_WHITE_PLAYER
@@ -95,7 +95,7 @@ def run_the_crown(arg_list):
     board = bd.Board(board_file_name)
     if not gp.is_legal_loaded_board(board):
         # TODO: Find out WHY ON EARTH removing # below makes second if fail??
-        #print(f"Error: {board_file_name} is not a legal board for The Crown.")
+        # print(f"Error: {board_file_name} is not a legal board for The Crown.")
         sys.exit(1)
 
     # Assign default players to missing sides.
@@ -112,6 +112,138 @@ def run_the_crown(arg_list):
     # Play the game between the two players.
     game_result, end_status = play_game(
         board, board_file_name, player_set, max_moves)
+
+    return game_result, end_status
+
+
+def play_game(
+    board, board_file_name, player_set, max_moves=np.Infinity, timing=None
+):
+    """
+    Play a game of The Crown under the conditions given, returning end result.
+
+    Arguments:
+        board (Board):          The board position to play.
+        board_file_name (str):  Full path to the the board.
+        player_set (list):      A list with two dictionaries with white's
+                                and black's playing parameters, e.g.:
+                                "name": "Crowny III"
+                                "type": "machine"
+                                "ranking": 1500
+                                "play method": "minimax"
+                                "max_depth": 3
+                                "max_check_quiesc_depth": 8
+                                "transposition_table": True
+                                "killer_moves": True
+                                "iterative_deepening": True
+                                "randomness": 0
+                                "file_name": "crowny-iii"
+                                "file": full path to player's .yaml file.
+        max_moves (int):        The maximum number of moves to play.
+        timing (int):           None = no time limit;
+                                TODO: Define and implement:
+                                "move" = time limit per move.
+                                "game" = total time limit for the game.
+
+    Returns:
+        str:    gp.TXT_DRAW, gp.TXT_WHITE_WINS or gp.TXT_BLACK_WINS
+        int:    gp.ON_GOING, gp.VICTORY_CROWNING, gp.VICTORY_NO_PIECES_LEFT,
+                gp.DRAW_NO_PRINCES_LEFT, gp.DRAW_STALEMATE,
+                gp.DRAW_THREE_REPETITIONS, gp.PLAYER_RESIGNS
+
+    """
+    # Start the match!
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+
+    rec_file_path = f"{dir_path}{OUTPUT_PATH}{GAME_RECORD_FILE}"
+    metrics_file_path = f"{dir_path}{OUTPUT_PATH}{GAME_METRICS_FILE}"
+    with open(rec_file_path, "a") as rec_file:
+        move_number = display_start(
+            board, player_set, board_file_name, rec_file
+        )
+        # Initialize game variables.
+        game_end = False
+        player_quit = False
+        max_moves_played = False
+        end_status = gp.ON_GOING
+        game_trace = gp.Gametrace(board)
+        # Initialize one transposition table and killer moves list per side.
+        t_table = [gp.Transposition_table(), gp.Transposition_table()]
+        killer_list = [gp.Killer_Moves(), gp.Killer_Moves()]
+        # Main game loop.
+        while not game_end:
+            # Main loop of the full game.
+            board.print_char()
+            if player_set[board.turn]["type"] == MACHINE_PLAYER:
+                # A MACHINE plays this side.
+                move, result, game_end, end_status, time_used, tt_metrics =\
+                    gp.play(
+                        board,
+                        params=player_set[board.turn],
+                        trace=game_trace, t_table=t_table[board.turn],
+                        killer_list=killer_list[board.turn]
+                    )
+                # Print move metrics.
+                with open(metrics_file_path, "a") as metrics_file:
+                    display_move_metrics(
+                        board.turn, move, result,
+                        player_set[board.turn],
+                        time_used, tt_metrics,
+                        game_trace, metrics_file
+                    )
+            else:
+                # A HUMAN plays this side.
+                move, result = request_human_move(board)
+                if result is not None:
+                    # Non-void value signals end.
+                    player_quit = True
+                    game_end = True
+            # Update outputs after move.
+            if not game_end:
+                # Update board with move.
+                coord1, coord2 = move
+                _, _, _ = board.make_move(coord1, coord2)
+                # Update game trace.  TODO: include irreversible arg.
+                repetition = game_trace.register_played_board(board)
+                # Print move in game log.
+                move_number = display_move(board, move, move_number, rec_file)
+                if repetition:
+                    # Draw; end of game.
+                    game_end = True
+                    result = gp.DRAW
+                    end_status = gp.DRAW_THREE_REPETITIONS
+                    display_end_results(
+                        board, result, end_status, rec_file
+                    )
+                else:
+                    # Draw separation line.
+                    print('.' * 80)
+            else:
+                # End of the game.
+                if player_quit:
+                    # Human chose to quit.
+                    result = gp.OPPONENT_WINS
+                    end_status = gp.PLAYER_RESIGNS
+                    display_quit_results(board, rec_file)
+                elif max_moves_played:
+                    # Max. number of moves requested reached.
+                    end_status = gp.ON_GOING
+                else:
+                    # The game reached an end.
+                    display_end_results(board, result, end_status, rec_file)
+            # Update moves count.
+            max_moves -= 1
+            if max_moves == 0:
+                game_end = True
+                max_moves_played = True
+
+    # Result of the game.
+    if result == gp.DRAW:
+        game_result = gp.TXT_DRAW
+    elif result == gp.PLAYER_WINS and board.turn == bd.WHITE:
+        game_result = gp.TXT_BLACK_WINS
+    else:
+        game_result = gp.TXT_WHITE_WINS
 
     return game_result, end_status
 
@@ -421,126 +553,6 @@ def display_move_metrics(
     ]
     with np.printoptions(formatter={'float': '{:>2.0f}'.format}):
         print("{}".format(nodes_per_level), file=metrics_file)
-
-
-def play_game(
-    board, board_file_name, player_set, max_moves=np.Infinity, timing=None
-):
-    """
-    Play a game of The Crown under the conditions given, returning end result.
-
-    Arguments:
-        board (Board):          The board position to play.
-        board_file_name (str):  The name of the board to display.
-        player_set (list):      A list with two dictionaries with white's
-                                and black's data and playing parameters.
-        max_moves (int):        The maximum number of moves to play.
-        timing_type (int):      None = no limit;
-                                TODO: Define and implement:
-                                "move" = time limit per move.
-                                "game" = total time limit for the game.
-
-    Returns:
-        str:    gp.TXT_DRAW, gp.TXT_WHITE_WINS or gp.TXT_BLACK_WINS
-        int:    gp.ON_GOING, gp.VICTORY_CROWNING, gp.VICTORY_NO_PIECES_LEFT,
-                gp.DRAW_NO_PRINCES_LEFT, gp.DRAW_STALEMATE,
-                gp.DRAW_THREE_REPETITIONS, gp.PLAYER_RESIGNS
-
-    """
-    # Start the match!
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-
-    rec_file_path = f"{dir_path}{OUTPUT_PATH}{GAME_RECORD_FILE}"
-    metrics_file_path = f"{dir_path}{OUTPUT_PATH}{GAME_METRICS_FILE}"
-    with open(rec_file_path, "a") as rec_file:
-        move_number = display_start(
-            board, player_set, board_file_name, rec_file
-        )
-        # Initialize game variables.
-        game_end = False
-        player_quit = False
-        max_moves_played = False
-        end_status = gp.ON_GOING
-        game_trace = gp.Gametrace(board)
-        # Initialize one transposition table and killer moves list per side.
-        t_table = [gp.Transposition_table(), gp.Transposition_table()]
-        killer_list = [gp.Killer_Moves(), gp.Killer_Moves()]
-        # Main game loop.
-        while not game_end:
-            # Main loop of the full game.
-            board.print_char()
-            if player_set[board.turn]["type"] == MACHINE_PLAYER:
-                # A MACHINE plays this side.
-                move, result, game_end, end_status, time_used, tt_metrics =\
-                    gp.play(
-                        board,
-                        params=player_set[board.turn],
-                        trace=game_trace, t_table=t_table[board.turn],
-                        killer_list=killer_list[board.turn]
-                    )
-                # Print move metrics.
-                with open(metrics_file_path, "a") as metrics_file:
-                    display_move_metrics(
-                        board.turn, move, result,
-                        player_set[board.turn],
-                        time_used, tt_metrics,
-                        game_trace, metrics_file
-                    )
-            else:
-                # A HUMAN plays this side.
-                move, result = request_human_move(board)
-                if result is not None:
-                    # Non-void value signals end.
-                    player_quit = True
-                    game_end = True
-            # Update outputs after move.
-            if not game_end:
-                # Update board with move.
-                coord1, coord2 = move
-                _, _, _ = board.make_move(coord1, coord2)
-                # Update game trace.  TODO: include irreversible arg.
-                repetition = game_trace.register_played_board(board)
-                # Print move in game log.
-                move_number = display_move(board, move, move_number, rec_file)
-                if repetition:
-                    # Draw; end of game.
-                    game_end = True
-                    result = gp.DRAW
-                    end_status = gp.DRAW_THREE_REPETITIONS
-                    display_end_results(
-                        board, result, end_status, rec_file
-                    )
-                else:
-                    # Draw separation line.
-                    print('.' * 80)
-            else:
-                # End of the game.
-                if player_quit:
-                    # Human chose to quit.
-                    result = gp.OPPONENT_WINS
-                    end_status = gp.PLAYER_RESIGNS
-                    display_quit_results(board, rec_file)
-                elif max_moves_played:
-                    # Max. number of moves requested reached.
-                    end_status = gp.ON_GOING
-                else:
-                    # The game reached an end.
-                    display_end_results(board, result, end_status, rec_file)
-            # Update moves count.
-            max_moves -= 1
-            if max_moves == 0:
-                game_end = True
-                max_moves_played = True
-
-    # Result of the game.
-    if result == gp.DRAW:
-        game_result = gp.TXT_DRAW
-    elif result == gp.PLAYER_WINS and board.turn == bd.WHITE:
-        game_result = gp.TXT_BLACK_WINS
-    else:
-        game_result = gp.TXT_WHITE_WINS
-
-    return game_result, end_status
 
 
 # Main program.

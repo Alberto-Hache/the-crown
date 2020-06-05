@@ -7,6 +7,7 @@ import csv
 import os
 import sys
 from collections import namedtuple
+import shutil
 
 # Local application imports
 import gameplay as gp
@@ -17,12 +18,24 @@ import board as bd
 TOURNAMENT_PATH = "/tournament/"  # Location of all tournament data.
 GAMES_PATH = "/games/"  # Location of saved games.
 PLAYERS_PATH = "/players/"  # Information about human / machine players.
-# Files:
+OUTPUT_PATH = "/output/"  # Results of the game.
+# Output files.
+GAME_METRICS_FILE = "game_metrics.txt"
+GAME_RECORD_FILE = "game_record.txt"
+# Tournament file(s):
 TOURNAMENT_SETTING_FILE = "tournament.csv"
 
 
 def play_tournament(tournament_file_name):
     """
+    Play a full tournament based on conf. file passed.
+    Leave all the results in the tournament/ directory.
+
+    Arguments:
+        tournament_file_name (string):  A .csv file with the settings.
+                                        E.g. "tournament.csv"
+    Returns:
+        None
     """
     tournament = read_tournament_data(tournament_file_name)
     for match in tournament:
@@ -36,11 +49,13 @@ def play_tournament(tournament_file_name):
                 play_match(
                     match["player_1"], match["rnd_1"],
                     match["player_2"], match["rnd_2"],
-                    match["board"], match["n_rounds"]
+                    match["board"], int(match["n_rounds"])
                 )
             # Update players' scores.
             match["score_1"] += player_1_score
             match["score_2"] += player_2_score
+            # Save state of tournament.
+            pass
 
 
 def read_tournament_data(tournament_file_name):
@@ -48,7 +63,8 @@ def read_tournament_data(tournament_file_name):
     Read the settings defining a tournament into a list of matches.
 
     Arguments:
-        None
+        tournament_file_name (string):  A .csv file with the settings.
+                                        E.g. "tournament.csv"
 
     Returns:
         A list containing one row for each match to be played in the
@@ -87,8 +103,9 @@ def read_tournament_data(tournament_file_name):
     with open(tournament_file, 'r') as csv_file:
         try:
             tournament_plan = csv.DictReader(csv_file)
-        except yaml.YAMLError as exc:
+        except Exception as exc:
             print(exc)
+            exit(1)
 
         for match_row in tournament_plan:
             for k, v in match_row.items():
@@ -101,6 +118,23 @@ def read_tournament_data(tournament_file_name):
 
 def play_match(player_1, rnd_1, player_2, rnd_2, board, n_rounds):
     """
+    Play a match according to arguments passed.
+
+    Arguments:
+        player_1 (str): Name of the first player, e.g. "crowny-iv".
+        rnd_1 (float):  Random factor applied to player 1.
+                        None = 0.0
+        player_2 (str): Name of the second player, e.g. "crowny-iii".
+        rnd_2 (float):  Random factor applied to player 2.
+                        None = 0.0
+        board (str):    Initial position of the game to play.
+                        None = "initial_position.cor"
+        n_rounds (int): Number of rounds these players must play.
+                        Each round = 2 games, alternating sides.
+
+    Returns:
+        float:          Score obtained by player_1
+        float:          Score obtained by player_2
 
     """
     # Retrieve players' data from their .yaml files.
@@ -117,13 +151,12 @@ def play_match(player_1, rnd_1, player_2, rnd_2, board, n_rounds):
         player_1_dict["randomness"] == 0 and \
         player_2_dict["randomness"] == 0
 
-    # Load board position.
+    # Identify board position.
+    dir_path = os.path.dirname(os.path.realpath(__file__))
     if board is None:
         board_file_name = None
     else:
-        dir_path = os.path.dirname(os.path.realpath(__file__))
         board_file_name = f"{dir_path}{GAMES_PATH}{board}"
-    board = bd.Board(board_file_name)
 
     # Number of rounds:
     if is_deterministic:
@@ -142,6 +175,10 @@ def play_match(player_1, rnd_1, player_2, rnd_2, board, n_rounds):
         # Each round normally two turns (except full simmetry).
         for turn in range(n_turns):  # 1 or 2.
             # Play a game of the round between the two players.
+            board = bd.Board(board_file_name)
+            if not gp.is_legal_loaded_board(board):
+                print(f"Error: {board_file_name} is not a legal board for The Crown.")
+                sys.exit(1)
             game_result, end_status = main.play_game(
                 board, board_file_name, player_set)
             # Check results and update scorings.
@@ -156,6 +193,29 @@ def play_match(player_1, rnd_1, player_2, rnd_2, board, n_rounds):
             else:
                 player_scores[0] += 0.5
                 player_scores[1] += 0.5
+
+            # Save game_record.txt with an appropriate name.
+            rec_file_path = f'{dir_path}{OUTPUT_PATH}{GAME_RECORD_FILE}'
+            """
+            if player_set[0]["randomness"] is None or \
+               player_set[0]["randomness"] == 0:
+                rnd_1_txt = ""
+            else:
+                rnd_1_txt = f'(rnd {player_set[0]["randomness"]})'
+
+            if player_set[0]["randomness"] is None or \
+               player_set[0]["randomness"] == 0:
+                rnd_1_txt = ""
+            else:
+                rnd_1_txt = f'(rnd {player_set[0]["randomness"]})'
+            """
+            new_file_path = "{}{}{}({}) vs {}({}).txt".format(
+                dir_path, TOURNAMENT_PATH,
+                player_set[0]["file_name"], player_set[0]["randomness"],
+                player_set[1]["file_name"], player_set[1]["randomness"]
+            )
+            shutil.move(rec_file_path, new_file_path)
+
             # Change turns if needed.
             if n_turns > 1:
                 aux1, aux2 = player_set
