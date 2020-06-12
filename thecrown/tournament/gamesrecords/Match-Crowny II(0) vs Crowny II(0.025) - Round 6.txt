@@ -1,0 +1,61 @@
+---< The Crown >---
+(Initial position)
+
+White: Crowny II
+Black: Crowny II
+Sun Jun  7 15:49:15 2020
+
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 /s\ / \ / \ / \ /S\ 
+     /---.---.---.---.---\
+  3 /k\ /s\ / \ / \ /S\ /K\ 
+   /---.---.---.---.---.---\
+1 /p\ /k\ /s\ / \ /S\ /K\ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+1. e3d3, b3c3
+2. f1c6, b1b7
+3. e5e3, c3c2
+4. f3c8, b7a9
+5. e1d1, c2d1
+6. c6c1, a3a2
+7. c1a2, a1a2
+8. c8c1, a2a3
+9. c1a1, a3++
+10. a1d1, a9a12
+11. d1f2, a12a8
+12. d3d4, a8c4
+13. e3e4, a5a7
+14. d4d5, c4c8
+15. e4d6, a7a8
+16. d6d7, c8b8
+17. d5d6, a8a9
+18. f2a1, b8d4
+19. a1a2, a9a10
+20. a2b1, a10b9
+21. b1f2, d4c7
+22. f2a1, c7d4
+23. a1b1, d4e3
+24. d7c8, e3f3
+25. b1f2, f3c4
+26. d6d7, c4c3
+27. f2a1, c3c4
+28. a1a2, c4c5
+29. a2e2, c5c3
+30. g1f2, c3d3
+31. e2e3, d3e3
+32. f2g1, e3e5
+33. g1++
+1/2 - 1/2
+
+End of the game: Draw (no Princes left)

@@ -1,0 +1,46 @@
+---< The Crown >---
+(Initial position)
+
+White: Crowny III
+Black: Crowny III
+Sun Jun  7 17:25:25 2020
+
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 /s\ / \ / \ / \ /S\ 
+     /---.---.---.---.---\
+  3 /k\ /s\ / \ / \ /S\ /K\ 
+   /---.---.---.---.---.---\
+1 /p\ /k\ /s\ / \ /S\ /K\ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+1. e3d3, b3c3
+2. f1c7, b1b6
+3. g1f2, c3c2
+4. e5d5, a1a2
+5. f3c9, a3c3
+6. e1e3, c3c7
+7. c9c7, a2a3
+8. c7c8, a3a4
+9. f2f3, a5a6
+10. f3e4, a4a5
+11. e4e5, c2c3
+12. e5d6, c1b3
+13. d6d7, c3b4
+14. d3c4, b6a9
+15. e3e5, a6b5
+16. c8c5, a9b10
+17. c5c8, b10a9
+
+1/2 - 1/2
+
+End of the game: Draw, (repetitions)

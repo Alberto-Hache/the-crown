@@ -24,7 +24,6 @@ OUTPUT_PATH = "/output/"  # Results of the game.
 PLAYERS_PATH = "/players/"  # Information about human / machine players.
 # Output files.
 GAME_METRICS_FILE = "game_metrics.txt"
-GAME_RECORD_FILE = "game_record.txt"
 
 # Local constants.
 HUMAN_PLAYER = "human"
@@ -58,6 +57,8 @@ def run_the_crown(arg_list):
         int:    gp.ON_GOING, gp.VICTORY_CROWNING, gp.VICTORY_NO_PIECES_LEFT,
                 gp.DRAW_NO_PRINCES_LEFT, gp.DRAW_STALEMATE,
                 gp.DRAW_THREE_REPETITIONS, gp.PLAYER_RESIGNS
+        str:    'rec_file_path', full path to the game moves.
+        str:    'metrics_file_path', full path to the game metrics file.
 
     """
     # Initialize arguments.
@@ -110,14 +111,32 @@ def run_the_crown(arg_list):
     player_set = [w_player_dict, b_player_dict]
 
     # Play the game between the two players.
-    game_result, end_status = play_game(
+    game_result, end_status, rec_file_path, metrics_file_path = play_game(
         board, board_file_name, player_set, max_moves)
 
-    return game_result, end_status
+    return game_result, end_status, rec_file_path, metrics_file_path
+
+
+def create_rec_file_name(
+        game_type, player_1, rnd_1, player_2, rnd_2, round=None
+):
+    """
+    """
+    round = "" if round is None else f" - Round {round}"
+    rnd_1_txt = "" if rnd_1 is None else f"({rnd_1})"
+    rnd_2_txt = "" if rnd_2 is None else f"({rnd_2})"
+
+    name = "{}-{}{} vs {}{}{}.txt".format(
+        game_type,
+        player_1, rnd_1_txt, player_2, rnd_2_txt,
+        round
+    )
+    return name
 
 
 def play_game(
-    board, board_file_name, player_set, max_moves=np.Infinity, timing=None
+    board, board_file_name, player_set, max_moves=np.Infinity, timing=None,
+    game_type="Game", round=None
 ):
     """
     Play a game of The Crown under the conditions given, returning end result.
@@ -144,19 +163,34 @@ def play_game(
                                 TODO: Define and implement:
                                 "move" = time limit per move.
                                 "game" = total time limit for the game.
+        game_type (str):        Type of game played {"Game", "Match"}.
+        round (int):            Number of round between these players.
 
     Returns:
         str:    gp.TXT_DRAW, gp.TXT_WHITE_WINS or gp.TXT_BLACK_WINS
         int:    gp.ON_GOING, gp.VICTORY_CROWNING, gp.VICTORY_NO_PIECES_LEFT,
                 gp.DRAW_NO_PRINCES_LEFT, gp.DRAW_STALEMATE,
                 gp.DRAW_THREE_REPETITIONS, gp.PLAYER_RESIGNS
+        str:    'rec_file_path', full path to the game moves.
+        str:    'metrics_file_path', full path to the game metrics file.
 
     """
-    # Start the match!
+    # Define .txt output files.
     dir_path = os.path.dirname(os.path.realpath(__file__))
-
-    rec_file_path = f"{dir_path}{OUTPUT_PATH}{GAME_RECORD_FILE}"
+    rand_0 = None if player_set[0]["type"] == "human" \
+        else player_set[0]["randomness"]
+    rand_1 = None if player_set[1]["type"] == "human" \
+        else player_set[1]["randomness"]
+    rec_file_name = create_rec_file_name(
+        game_type,
+        player_set[0]["name"], rand_0,
+        player_set[1]["name"], rand_1,
+        round
+    )
+    rec_file_path = f"{dir_path}{OUTPUT_PATH}{rec_file_name}"
     metrics_file_path = f"{dir_path}{OUTPUT_PATH}{GAME_METRICS_FILE}"
+
+    # Start the game!
     with open(rec_file_path, "a") as rec_file:
         move_number = display_start(
             board, player_set, board_file_name, rec_file
@@ -203,22 +237,27 @@ def play_game(
                 # Update board with move.
                 coord1, coord2 = move
                 _, _, _ = board.make_move(coord1, coord2)
-                # Update game trace.  TODO: include irreversible arg.
-                repetition = game_trace.register_played_board(board)
-                # Print move in game log.
-                move_number = display_move(board, move, move_number, rec_file)
-                if repetition:
-                    # Draw; end of game.
+                # Check if the move just made ends the game.
+                _, _, aftermove_game_end, after_move_game_status = \
+                    gp.evaluate_terminal(board, 0)
+                if aftermove_game_end:
+                    # The move made ended the game.
                     game_end = True
-                    result = gp.DRAW
-                    end_status = gp.DRAW_THREE_REPETITIONS
-                    display_end_results(
-                        board, result, end_status, rec_file
-                    )
+                    end_status = after_move_game_status
                 else:
-                    # Draw separation line.
-                    print('.' * 80)
-            else:
+                    # Update game trace.  TODO: include irreversible arg.
+                    repetition = game_trace.register_played_board(board)
+                    # Print move in game log.
+                    move_number = display_move(board, move, move_number, rec_file)
+                    if repetition:
+                        # Draw; end of game.
+                        game_end = True
+                        result = gp.DRAW
+                        end_status = gp.DRAW_THREE_REPETITIONS
+                    else:
+                        # Draw separation line.
+                        print('.' * 80)
+            if game_end:
                 # End of the game.
                 if player_quit:
                     # Human chose to quit.
@@ -229,7 +268,9 @@ def play_game(
                     # Max. number of moves requested reached.
                     end_status = gp.ON_GOING
                 else:
-                    # The game reached an end.
+                    # The game reached a natural end.
+                    print('.' * 80)
+                    board.print_char()
                     display_end_results(board, result, end_status, rec_file)
             # Update moves count.
             max_moves -= 1
@@ -239,13 +280,19 @@ def play_game(
 
     # Result of the game.
     if result == gp.DRAW:
-        game_result = gp.TXT_DRAW
-    elif result == gp.PLAYER_WINS and board.turn == bd.WHITE:
-        game_result = gp.TXT_BLACK_WINS
+        game_result_txt = gp.TXT_DRAW
+    elif result == gp.PLAYER_WINS:
+        if board.turn == bd.WHITE:
+            game_result_txt = gp.TXT_WHITE_WINS
+        else:
+            game_result_txt = gp.TXT_BLACK_WINS
     else:
-        game_result = gp.TXT_WHITE_WINS
+        if board.turn == bd.WHITE:
+            game_result_txt = gp.TXT_BLACK_WINS
+        else:
+            game_result_txt = gp.TXT_WHITE_WINS
 
-    return game_result, end_status
+    return game_result_txt, end_status, rec_file_path, metrics_file_path
 
 
 def read_player_data(player_name):
@@ -427,10 +474,16 @@ def display_end_results(board, result, end_status, rec_file):
     # Result of the game.
     if result == gp.DRAW:
         game_result_txt = gp.TXT_DRAW
-    elif result == gp.PLAYER_WINS and board.turn == bd.WHITE:
-        game_result_txt = gp.TXT_BLACK_WINS
+    elif result == gp.PLAYER_WINS:
+        if board.turn == bd.WHITE:
+            game_result_txt = gp.TXT_WHITE_WINS
+        else:
+            game_result_txt = gp.TXT_BLACK_WINS
     else:
-        game_result_txt = gp.TXT_WHITE_WINS
+        if board.turn == bd.WHITE:
+            game_result_txt = gp.TXT_BLACK_WINS
+        else:
+            game_result_txt = gp.TXT_WHITE_WINS
 
     # On-SCREEN output:
     # Final status of the board.
@@ -578,5 +631,5 @@ def display_move_metrics(
 # Main program.
 if __name__ == "__main__":
     # If called directly, call run_the_crown() with arguments passed.
-    # Ignore results returned (game_result, end_status).
-    _, _ = run_the_crown(sys.argv[1:])
+    # Ignore results returned.
+    _, _, _, _ = run_the_crown(sys.argv[1:])

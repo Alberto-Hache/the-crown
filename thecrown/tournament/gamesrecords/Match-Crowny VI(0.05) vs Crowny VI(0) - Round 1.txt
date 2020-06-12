@@ -1,0 +1,120 @@
+---< The Crown >---
+(Initial position)
+
+White: Crowny VI
+Black: Crowny VI
+Tue Jun  9 20:22:06 2020
+
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 /s\ / \ / \ / \ /S\ 
+     /---.---.---.---.---\
+  3 /k\ /s\ / \ / \ /S\ /K\ 
+   /---.---.---.---.---.---\
+1 /p\ /k\ /s\ / \ /S\ /K\ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+1. e5d5, a5b5
+2. e1d3, b1a2
+3. f3c8, b5b6
+4. f1f2, c1c3
+5. c8c9, a3a8
+6. d5c6, b3b4
+7. c6c7, c3c2
+8. d3d4, b4b5
+9. d4d5, a8a11
+10. f2e1, c2d1
+11. e1c4, d1d2
+12. c9f2, a11a12
+13. c7c8, d2d1
+14. c4e1, b6b7
+15. e1b7, a2c2
+16. b7d3, a12a2
+17. e3e1, a2a7
+18. c8c7, c2a2
+19. d3d1, a2d1
+20. e1d1, b5b6
+21. c7b8, b6c5
+22. d1c2, a7a2
+23. b8b9, a2b1
+24. f2e1, b1a3
+25. d5d6, a3f3
+26. e1f2, f3f2
+27. g1f2, a1a2
+28. f2f3, a2a3
+29. f3e4, a3a4
+30. e4e5, c5c6
+31. d6d7, a4a5
+32. e5d6, c6c7
+33. c2c3, a5a6
+34. b9a10, a6a7
+35. a10a9, a7a6
+36. c3c4, a6a7
+37. c4c5, c7b8
+38. c5b6, b8c7
+39. b6b7, a7a6
+40. a9a8, a6b5
+41. a8a7, b5b4
+42. a7a6, b4b3
+43. b7a8, b3b4
+44. a8a9, b4c3
+45. a6b5, c3c4
+46. b5b6, c4d3
+47. a9a10, d3c4
+48. a10a11, c4d3
+49. a11a12, d3c4
+50. a12a13, c4c3
+51. d6d5, c3b4
+52. a13a12, b4b3
+53. b6b5, b3a4
+54. b5a6, a4b3
+55. d5d6, b3b4
+56. a12b11, b4c3
+57. a6b5, c3c4
+58. b5b6, c4c3
+59. b11b10, c3b4
+60. b10b9, b4b3
+61. b6b5, b3a4
+62. b5a6, a4b3
+63. b9b10, b3b4
+64. b10c9, b4c3
+65. d7c8, c7b8
+66. a6b5, c3c4
+67. b5b6, c4d3
+68. c9b10, d3d4
+69. c8c9, d4e3
+70. b10b11, b8b9
+71. c9b10, b9b8
+72. d6d5, e3e4
+73. b10c9, e4e5
+74. c9c8, b8b9
+75. c8d7, b9b8
+76. d5c6, e5e4
+77. d7d6, e4e3
+78. b6c5, e3e4
+79. c5c4, e4e3
+80. d6e5, e3e2
+81. c4d3, e2f1
+82. d3d4, f1f2
+83. d4e3, f2g1
+84. e3f3, g1++
+85. e5d7, b8b9
+86. c6c7, b9a10
+87. c7b8, a10a9
+88. b8b9, a9a8
+89. b9a10, a8a7
+90. a10a11, a7a8
+91. a11a12, a8a9
+92. a12a13
+1 - 0
+
+End of the game: Victory (Prince crowned)

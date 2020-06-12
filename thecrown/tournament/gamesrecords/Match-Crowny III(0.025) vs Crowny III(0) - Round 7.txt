@@ -1,0 +1,122 @@
+---< The Crown >---
+(Initial position)
+
+White: Crowny III
+Black: Crowny III
+Sun Jun  7 17:22:16 2020
+
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 /s\ / \ / \ / \ /S\ 
+     /---.---.---.---.---\
+  3 /k\ /s\ / \ / \ /S\ /K\ 
+   /---.---.---.---.---.---\
+1 /p\ /k\ /s\ / \ /S\ /K\ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+1. e3d3, b3c3
+2. f1c7, b1b6
+3. g1f2, c3c2
+4. e5d5, a1a2
+5. c7c6, b6a9
+6. f3c9, a9c9
+7. c6c9, a3b3
+8. f2f3, a2a3
+9. f3e4, b3b5
+10. e1e3, a3a4
+11. e4e5, a5a7
+12. e5d6, a4a5
+13. d6d7, a5a6
+14. e3e5, c1b3
+15. c9c6, a7a8
+16. c6b5, b3b5
+17. d7c8, a6a7
+18. c8c9, a8a9
+19. c9b10, a9a10
+20. b10b11, a10a11
+21. d5c6, a7a8
+22. c6c7, a8a9
+23. c7b8, a9a10
+24. e5d7, c2c3
+25. d3d4, b5b6
+26. d4d5, c3c4
+27. d5c6, c4c5
+28. c6c7, b6b5
+29. d7c8, b5a6
+30. c8c9, a6a7
+31. c9b10, a7a8
+32. b8b9, a10a9
+33. c7b8, c5b6
+34. b10c9, b6b7
+35. b8c7, b7b6
+36. c7c8, b6b7
+37. c9b10, a8a7
+38. c8c7, a7a8
+39. b9b8, b7b8
+40. c7b8, a9a10
+41. b8b9, a10a9
+42. b10c9, a8b7
+43. c9c8, b7a8
+44. c8c7, a8b7
+45. c7c6, b7a8
+46. c6d5, a8b7
+47. d5d6, b7a8
+48. d6e5, a8b7
+49. e5d7, b7a8
+50. d7c8, a8b7
+51. c8c9, b7a8
+52. b9b8, a9a10
+53. c9b10, a10a9
+54. b10b9, a8a7
+55. b8b7, a7a6
+56. b7b6, a6a7
+57. b6c5, a7a8
+58. c5c6, a8b7
+59. c6d5, b7a8
+60. d5d6, a8b7
+61. d6e5, b7a8
+62. e5e3, a8b7
+63. e3d3, b7a8
+64. d3c4, a8b7
+65. c4c3, b7a8
+66. c3b4, a8b7
+67. b4b5, b7a8
+68. b5a6, a8b7
+69. a6a7, b7b6
+70. b9b8, b6c5
+71. b8b7, c5c6
+72. a7a8, a9a10
+73. b7b8, c6c5
+74. b8c7, c5b6
+75. c7c6, b6b5
+76. a8b7, b5a6
+77. c6c7, a6a5
+78. b7a8, a5a4
+79. c7b8, a4a5
+80. a8b7, a5a4
+81. b7b6, a4a5
+82. b8c7, a5a6
+83. c7c8, a6a5
+84. b6b7, a5a6
+85. b7a8, a6b5
+86. c8c9, b5b6
+87. c9b10, b6c5
+88. a8b7, c5c6
+89. b7b8, a10a9
+90. b10b9, c6c5
+91. b8c7, c5b6
+92. b9b10, b6b7
+93. b10b9, b7b6
+
+1/2 - 1/2
+
+End of the game: Draw, (repetitions)

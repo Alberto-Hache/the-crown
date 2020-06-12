@@ -1,0 +1,16 @@
+player_1,rnd_1,player_2,rnd_2,board,n_rounds
+crowny-i,,crowny-ii,,,1
+crowny-i,,crowny-iii,,,1
+crowny-i,,crowny-iv,,,1
+crowny-i,,crowny-v,,,1
+crowny-i,,crowny-vi,,,1
+crowny-ii,,crowny-iii,,,1
+crowny-ii,,crowny-iv,,,1
+crowny-ii,,crowny-v,,,1
+crowny-ii,,crowny-vi,,,1
+crowny-iii,,crowny-iv,,,1
+crowny-iii,,crowny-v,,,1
+crowny-iii,,crowny-vi,,,1
+crowny-iv,,crowny-v,,,1
+crowny-iv,,crowny-vi,,,1
+crowny-v,,crowny-vi,,,1

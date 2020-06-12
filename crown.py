@@ -12,4 +12,4 @@ from thecrown.main import run_the_crown
 
 # Main program.
 if __name__ == "__main__":
-    run_the_crown(sys.argv[1:])
+    _, _, _, _ = run_the_crown(sys.argv[1:])

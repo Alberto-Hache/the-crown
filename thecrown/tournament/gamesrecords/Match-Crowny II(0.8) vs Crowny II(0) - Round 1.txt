@@ -1,0 +1,47 @@
+---< The Crown >---
+(Initial position)
+
+White: Crowny II
+Black: Crowny II
+Sun Jun  7 16:07:52 2020
+
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 /s\ / \ / \ / \ /S\ 
+     /---.---.---.---.---\
+  3 /k\ /s\ / \ / \ /S\ /K\ 
+   /---.---.---.---.---.---\
+1 /p\ /k\ /s\ / \ /S\ /K\ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+1. e5d5, b3c3
+2. f3c8, b1b6
+3. f1f2, c3c2
+4. e1d1, a1a2
+5. f2e5, a3c3
+6. e5f2, c3e3
+7. d1c2, e3e1
+8. c2c1, e1f2
+9. c8f2, b6d5
+10. c1c2, a2a3
+11. c2c3, d5d1
+12. f2d1, a5b3
+13. d1a1, a3++
+14. a1a6, b3b2
+15. a6a3, b2c1
+16. g1f2, c1b2
+17. c3b4, b2c2
+18. a3a1, c2c1
+19. a1c1
+1 - 0
+
+End of the game: Victory (no pieces left)

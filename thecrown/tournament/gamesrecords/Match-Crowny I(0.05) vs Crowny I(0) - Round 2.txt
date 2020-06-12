@@ -1,0 +1,56 @@
+---< The Crown >---
+(Initial position)
+
+White: Crowny I
+Black: Crowny I
+Sun Jun  7 15:35:00 2020
+
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 /s\ / \ / \ / \ /S\ 
+     /---.---.---.---.---\
+  3 /k\ /s\ / \ / \ /S\ /K\ 
+   /---.---.---.---.---.---\
+1 /p\ /k\ /s\ / \ /S\ /K\ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+1. e3d3, b3c3
+2. f1c6, b1b7
+3. f3f1, a5b5
+4. c6d6, a1a2
+5. g1f2, b7b6
+6. f2f3, c1b2
+7. f3e4, b6b7
+8. d6d7, b7b6
+9. f1e2, b2b1
+10. e2b8, b6c5
+11. b8a7, c5c6
+12. e5d5, c6b6
+13. e1e3, c3c2
+14. e4e5, b5a6
+15. a7b7, a6b5
+16. b7b6, b5b6
+17. e5d6, b1b2
+18. d3d4, c2c3
+19. e3e5, c3c4
+20. d7c9, c4c5
+21. d6d7, a3a8
+22. c9c8, a8a3
+23. e5d6, b2c2
+24. d6e5, c2c3
+25. d5d6, c3c4
+26. d4d5, a3a4
+27. d5d4, a4a3
+
+1/2 - 1/2
+
+End of the game: Draw, (repetitions)

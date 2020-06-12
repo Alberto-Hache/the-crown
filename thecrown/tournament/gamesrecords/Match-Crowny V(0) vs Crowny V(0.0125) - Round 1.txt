@@ -1,0 +1,71 @@
+---< The Crown >---
+(Initial position)
+
+White: Crowny V
+Black: Crowny V
+Mon Jun  8 00:13:27 2020
+
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 /s\ / \ / \ / \ /S\ 
+     /---.---.---.---.---\
+  3 /k\ /s\ / \ / \ /S\ /K\ 
+   /---.---.---.---.---.---\
+1 /p\ /k\ /s\ / \ /S\ /K\ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+1. e5d5, a5b5
+2. g1f2, b1a2
+3. e1d3, a3a11
+4. f3d6, c1c3
+5. f2f3, a2f1
+6. e3f1, a1a2
+7. f3e4, a2a3
+8. d6d7, a3a4
+9. e4e5, a4a5
+10. e5d6, a5a6
+11. f1e3, a11a7
+12. e3e5, b3a5
+13. d5c6, c3b4
+14. d3d4, a5a4
+15. d4d5, b5b6
+16. d7c9, a7a8
+17. c6c7, b6b5
+18. d6d7, a6a7
+19. d7c8, a4a6
+20. c9b10, b4b3
+21. d5c6, b5b6
+22. c8c9, b3a3
+23. e5d7, a3a4
+24. d7c8, b6b7
+25. c6c5, a6a5
+26. c5c4, a5a6
+27. c8d7, b7b6
+28. c4c5, a8c7
+29. d7c8, c7a11
+30. c5b6, a6b5
+31. b10b7, a7a6
+32. b6b5, a6a5
+33. b5b4, a4b2
+34. b4b3, a11a6
+35. b3b2, a6a12
+36. b7b10, a12a6
+37. b2c1, a6c2
+38. b10b2, a5a6
+39. b2a1, a6b5
+40. a1a5, b5b4
+41. a5b2, b4c3
+42. b2a4, c3++
+43. c1c2
+1 - 0
+
+End of the game: Victory (no pieces left)

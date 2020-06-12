@@ -1,0 +1,88 @@
+---< The Crown >---
+(Initial position)
+
+White: Crowny I
+Black: Crowny I
+Tue Jun  9 19:26:01 2020
+
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 /s\ / \ / \ / \ /S\ 
+     /---.---.---.---.---\
+  3 /k\ /s\ / \ / \ /S\ /K\ 
+   /---.---.---.---.---.---\
+1 /p\ /k\ /s\ / \ /S\ /K\ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+1. e5d7, b3c3
+2. e3d4, b1b6
+3. f3e4, a1a2
+4. d4d3, a3a4
+5. f1a10, a2a3
+6. a10a11, a5a7
+7. e4d6, b6b7
+8. a11a12, c1b1
+9. e1d1, b1a2
+10. a12a11, a4b2
+11. a11e2, a3a4
+12. e2d2, b7b6
+13. d6f2, a4a5
+14. f2e1, a5a6
+15. e1e4, a2a4
+16. g1f2, b2a1
+17. f2f3, a1a2
+18. d3d4, a2b1
+19. d2e1, c3c4
+20. d4e3, b1b2
+21. e3d4, b2c1
+22. e4e3, c1b1
+23. d4d5, b1c1
+24. d7d6, a4a5
+25. e1f2, c4d3
+26. d6e5, c1a1
+27. e5d6, a1a2
+28. e3e4, a2a1
+29. f2f1, a1a2
+30. f1e1, a2a3
+31. e4e3, a3a4
+32. d6d7, a4a3
+33. e1f1, a3a1
+34. d5d6, a1a2
+35. e3c7, d3c4
+36. c7a11, c4c3
+37. f1d5, a2b1
+38. f3e4, b1b2
+39. d5c6, b6c6
+40. a11c6, b2b5
+41. c6d4, a7a8
+42. d4d2, a6a7
+43. d6d5, c3c4
+44. d2d4, b5b3
+45. d1d2, a5a6
+46. d4e2, a8a9
+47. d5d4, a7a8
+48. d7c8, c4c5
+49. e2f1, c5b6
+50. d2d1, b6b7
+51. d4e3, a6a7
+52. c8d7, a9a10
+53. d1d2, a8a9
+54. e3d4, a7a8
+55. d2d3, a10b9
+56. f1f2, a9a10
+57. f2g1, a10a11
+58. g1f2, a11a12
+59. f2a1, a12a13
+
+0 - 1
+
+End of the game: Victory (Prince crowned)

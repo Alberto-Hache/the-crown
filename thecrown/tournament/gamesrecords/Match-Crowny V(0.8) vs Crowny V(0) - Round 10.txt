@@ -1,0 +1,131 @@
+---< The Crown >---
+(Initial position)
+
+White: Crowny V
+Black: Crowny V
+Tue Jun  9 17:05:02 2020
+
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 /s\ / \ / \ / \ /S\ 
+     /---.---.---.---.---\
+  3 /k\ /s\ / \ / \ /S\ /K\ 
+   /---.---.---.---.---.---\
+1 /p\ /k\ /s\ / \ /S\ /K\ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+1. e3d3, b3c3
+2. f1c6, b1b7
+3. e5e3, a5b3
+4. f3c9, a1a2
+5. c9c8, b7c8
+6. c6c8, a3a5
+7. g1f2, a2a3
+8. c8c9, a3a4
+9. f2f3, a5a6
+10. f3e4, a4a5
+11. c9d7, b3a4
+12. e3d5, a6a9
+13. e4e5, a5a6
+14. e5d6, c1b3
+15. d7c8, b3b5
+16. d3d4, c3b4
+17. d6d7, b5b6
+18. d5d6, b6b7
+19. e1e3, a6a7
+20. d6d5, a7a8
+21. e3f3, a4a6
+22. f3e5, a9a10
+23. d7d6, a10b9
+24. c8a13, b9a9
+25. a13b11, b4b5
+26. b11c8, a9a10
+27. e5e4, b5b6
+28. d4e3, a8a9
+29. d5c6, a6a7
+30. e4e5, a7a8
+31. d6d7, a10b8
+32. c6c7, b8b9
+33. e3d5, b6c5
+34. e5f3, b9a10
+35. f3f1, c5b6
+36. d5c6, b6b5
+37. c8b11, b5a6
+38. f1f3, a6a5
+39. d7c8, a5b5
+40. f3e3, b5a6
+41. e3e4, a6a5
+42. e4e5, a5a4
+43. e5f3, a4b3
+44. f3e3, b3b5
+45. c6d5, b5a6
+46. d5d6, a6a7
+47. d6d7, a7a6
+48. e3d3, a6a5
+49. d7d6, a5a7
+50. d6e5, a7a6
+51. e5d5, a6b5
+52. d5d6, b5b4
+53. d3d4, b4b3
+54. d4e3, b3a5
+55. d6e5, a5a4
+56. e3f1, a4a6
+57. f1e3, a6a5
+58. e3e2, a5a7
+59. e5d6, a7a6
+60. d6e5, a6b5
+61. e2e3, b5b6
+62. e3d5, a8a7
+63. e5e3, a7a6
+64. d5d6, a6a5
+65. e3f3, a5a7
+66. d6d7, a7a8
+67. f3e3, b6b5
+68. d7d6, b5b4
+69. e3f3, b4c3
+70. f3f1, c3c4
+71. f1e2, c4c5
+72. d6d5, c5b6
+73. e2e3, a8a7
+74. e3e4, a7a6
+75. d5d6, a6b5
+76. d6d7, b5b4
+77. e4f3, b4b3
+78. f3f2, b3a3
+79. f2f1, a3a5
+80. f1e1, a5a6
+81. e1e3, a9a8
+82. d7d6, b6c5
+83. d6d5, a6b5
+84. e3e2, b5b6
+85. e2e1, a8a9
+86. e1f1, c5c4
+87. f1e3, c4c3
+88. d5c6, c3b4
+89. c6c5, b4b5
+90. c5b6, b5b6
+91. e3e4, a9a8
+92. e4d6, a8a9
+93. d6d5, a9a8
+94. d5c6, a8a9
+95. c6c5, b7b8
+96. c7b8, a9a8
+97. b8b9, a10a9
+98. b9a10, b6b5
+99. a10a9, a8a9
+100. b11b5, a9a8
+101. b5b8, a8a9
+102. b8a11, a9++
+
+1 - 0
+
+End of the game: Victory (no pieces left)

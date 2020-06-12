@@ -1,0 +1,57 @@
+---< The Crown >---
+(Initial position)
+
+White: Alberto H
+Black: Crowny IV
+Wed Jun 10 19:56:15 2020
+
+               .
+           13 / \ 
+             /---\
+         11 / \ / \ 
+           /---.---\
+        9 / \ / \ / \ 
+         /---.---.---\
+      7 / \ / \ / \ / \ 
+       /---.---.---.---\
+    5 /s\ / \ / \ / \ /S\ 
+     /---.---.---.---.---\
+  3 /k\ /s\ / \ / \ /S\ /K\ 
+   /---.---.---.---.---.---\
+1 /p\ /k\ /s\ / \ /S\ /K\ /P\ 
+ ·---·---·---·---·---·---·---·
+  a / b / c / d / e / f / g
+White to move.
+
+1. e3d3, b3c3
+2. e5d5, a3b4
+3. f3a13, b4a7
+4. f1f3, b1b5
+5. e1e3, a1a2
+6. g1f2, a2a3
+7. f3d7, a7a13
+8. d7a13, c3c4
+9. d3d2, a3a4
+10. f2f3, b5c2
+11. d2e1, c2a7
+12. a13c9, c1b3
+13. f3e4, a7c2
+14. e4e5, a5a7
+15. e5d6, a4a5
+16. c9b10, b3b5
+17. d6d7, a5a6
+18. b10b7, c4c5
+19. b7c7, b5b6
+20. d7c8, c2b1
+21. c8c9, b1b5
+22. c9b10, b6b7
+23. c7b9, b7b8
+24. b10b11, b5b6
+25. b11a12, b6a8
+26. b9a11, a8a11
+27. a12a11, b8b9
+28. a11a12, b9a10
+29. a12a13
+1 - 0
+
+End of the game: Victory (Prince crowned)
