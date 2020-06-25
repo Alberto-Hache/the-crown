@@ -442,7 +442,7 @@ class Board:
         n_pos_in_row = 1
         n_indent = 2*self.n_rows + 2
         # Draw the top.
-        line = ".".rjust(n_indent)
+        line = "·".rjust(n_indent)
         print(line, file=out_file)
         # Draw the rows.
         for row in range(self.n_rows, 0, -1):  # rows from 7 to 1.
@@ -489,7 +489,7 @@ class Board:
             # Draw row with horizontal edge.
             n_indent -= 1
             if row == 1:  # Bottom edge.
-                print(" ·" + "---·"*(n_pos_in_row//2) + "---·", file=out_file)
+                print(" ." + "---·"*(n_pos_in_row//2) + "---·", file=out_file)
                 char_ord = ord('a')
                 print("  ", end='', file=out_file)
                 for i in range(self.n_rows - 1):

@@ -58,7 +58,7 @@ def play_tournament(tournament_file_name):
             match["player_1"], match["rnd_1"],
             match["player_2"], match["rnd_2"],
             match["board"], int(match["n_rounds"]),
-            tourn_output_path
+            tourn_output_path, tourn_name
         )
         # Update players' scores.
         pass  # Done offline.
@@ -119,7 +119,8 @@ def read_tournament_data(tournament_file_name):
 
 
 def play_match(
-    player_1, rnd_1, player_2, rnd_2, board_name, n_rounds, tourn_output_path
+    player_1, rnd_1, player_2, rnd_2, board_name, n_rounds,
+    tourn_output_path, tourn_name=""
 ):
     """
     Play a match according to arguments passed.
@@ -141,6 +142,8 @@ def play_match(
                         only 1 game is played).
         tourn_output_path (str):   
                         Full route to text file to update match results.
+        tourn_name (str):
+                        Name of the tournament (e.g. "I_Crown_Tournament")
 
     Returns:
         float:          Score obtained by player_1
@@ -195,7 +198,7 @@ def play_match(
             game_result, end_status, rec_file_path, metrics_file_path = \
                 main.play_game(
                     board, board_file_name, player_set,
-                    game_type=game_type, round=round + 1
+                    game_type=game_type, round=round + 1, tourn_name=tourn_name
                 )
             # Check results and update scorings.
             assert(end_status != gp.ON_GOING), \

@@ -118,7 +118,8 @@ def run_the_crown(arg_list):
 
 
 def create_rec_file_name(
-        game_type, player_1, rnd_1, player_2, rnd_2, round=None
+        game_type, player_1, rnd_1, player_2, rnd_2,
+        round=None, tourn_name=""
 ):
     """
     """
@@ -126,7 +127,8 @@ def create_rec_file_name(
     rnd_1_txt = "" if rnd_1 is None else f"({rnd_1})"
     rnd_2_txt = "" if rnd_2 is None else f"({rnd_2})"
 
-    name = "{}-{}{} vs {}{}{}.txt".format(
+    name = "{}-{}-{}{} vs {}{}{}.txt".format(
+        tourn_name,
         game_type,
         player_1, rnd_1_txt, player_2, rnd_2_txt,
         round
@@ -136,7 +138,7 @@ def create_rec_file_name(
 
 def play_game(
     board, board_file_name, player_set, max_moves=np.Infinity, timing=None,
-    game_type="Game", round=None
+    game_type="Game", round=None, tourn_name=""
 ):
     """
     Play a game of The Crown under the conditions given, returning end result.
@@ -165,6 +167,8 @@ def play_game(
                                 "game" = total time limit for the game.
         game_type (str):        Type of game played {"Game", "Match"}.
         round (int):            Number of round between these players.
+        tourn_name (str):       Name of the tournament
+                                (e.g. "I_Crown_Tournament")
 
     Returns:
         str:    gp.TXT_DRAW, gp.TXT_WHITE_WINS or gp.TXT_BLACK_WINS
@@ -185,7 +189,7 @@ def play_game(
         game_type,
         player_set[0]["name"], rand_0,
         player_set[1]["name"], rand_1,
-        round
+        round, tourn_name
     )
     rec_file_path = f"{dir_path}{OUTPUT_PATH}{rec_file_name}"
     metrics_file_path = f"{dir_path}{OUTPUT_PATH}{GAME_METRICS_FILE}"
