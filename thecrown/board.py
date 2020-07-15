@@ -489,7 +489,7 @@ class Board:
             # Draw row with horizontal edge.
             n_indent -= 1
             if row == 1:  # Bottom edge.
-                print(" ." + "---·"*(n_pos_in_row//2) + "---·", file=out_file)
+                print(" ·" + "---·"*(n_pos_in_row//2) + "---·", file=out_file)
                 char_ord = ord('a')
                 print("  ", end='', file=out_file)
                 for i in range(self.n_rows - 1):
