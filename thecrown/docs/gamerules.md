@@ -63,13 +63,14 @@ When checkmated, the Prince must leave the board and… yield the turn.
 
 ## Soldier promotion
 
-Soldiers reaching their Prince’s starting position promote to Prince.
+Soldiers that reaches its Prince’s starting position is immediately promote to Prince.
 
 <img align="center" src="TheCrown_SoldierPromotion.png" width="250">
 
 *Black to move: this Soldier can promote to Prince*
 
 NOTE:
+- A Soldier can only enter that position if its Prince is off the board.
 - The new Prince cannot be left in check.
 - Players can only have one Prince.
 
