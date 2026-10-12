@@ -33,7 +33,7 @@ Soldiers move normally one cell at a time...
 
 <img align="center" src="TheCrown_SoldierMoves.png" width="250">
 
-* Moves of the White Soldiers*
+*Moves of the White Soldiers*
 
 But in their kingdom they can advance two cells. 
 
@@ -63,7 +63,7 @@ When checkmated, the Prince must leave the board and… yield the turn.
 
 ## Soldier promotion
 
-Soldiers that reaches its Prince’s starting position is immediately promote to Prince.
+A Soldier that reaches its Prince’s starting position is immediately promoted to Prince.
 
 <img align="center" src="TheCrown_SoldierPromotion.png" width="250">
 
