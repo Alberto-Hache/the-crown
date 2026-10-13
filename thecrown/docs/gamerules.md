@@ -70,7 +70,6 @@ A Soldier that reaches its Prince’s starting position is immediately promoted 
 *Black to move: this Soldier can promote to Prince*
 
 NOTE:
-- A Soldier can only enter that position if its Prince is off the board.
 - The new Prince cannot be left in check.
 - Players can only have one Prince.
 
